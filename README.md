@@ -3,6 +3,9 @@
 This project aims to create a web application that enables user’s to search for and
 watch videos.
 
+=> Front prototype (made by v0) : [link](https://v0.dev/chat/simple-streaming-website-dxwD7slikKg?b=b_lL5zpOHzJLe)
+
+
 ## STACK
 
 - Front: NextJS (with React in typescript)
