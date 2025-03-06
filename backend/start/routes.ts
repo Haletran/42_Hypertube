@@ -23,3 +23,5 @@ router.get('/api/:id', ({ params }) => {
 // PATCH /comments/:id
 // DELETE /comments/:id
 // POST /comments or POST /movies/:movie_id/comments
+
+// GET /api/torrent/piratebay?query=NAME_OF_THE_MOVIE

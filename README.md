@@ -10,4 +10,7 @@
 ```bash
 # apply migrations
 cd backend && node ace migration:run
+
+# launch the project
+npm run dev # on both backend and frontend
 ```
