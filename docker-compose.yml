@@ -1,0 +1,26 @@
+services:
+  frontend:
+    image: frontend
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - hypertube-network
+    restart: always
+    
+  backend:
+    image: backend
+    build: ./backend
+    container_name: backend
+    ports:
+      - "3333:3333"
+    networks:
+      - hypertube-network
+    environment:
+      - HOST=0.0.0.0
+    restart: always
+
+networks:
+  hypertube-network:
+    driver: bridge

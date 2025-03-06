@@ -15,8 +15,6 @@ watch videos.
 - Components Lib: shadcn
 - Movie API: TMDB (since IMDB require AWS account and use graphQL)
 
-Might containerize everything later...
-
 ## TODO
 
 - [ ] Create the controllers and the api routes (add more than mandatory routes for easier dev of features)
@@ -35,4 +33,6 @@ cd backend && node ace migration:run
 
 # launch the project
 npm run dev # on both backend and frontend
+# or
+make # on the root of the project
 ```

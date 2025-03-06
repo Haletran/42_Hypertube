@@ -1,0 +1,9 @@
+FROM node
+
+COPY . /back
+WORKDIR /back
+
+RUN npm install
+EXPOSE 3333
+
+CMD ["npm", "run", "dev"]
