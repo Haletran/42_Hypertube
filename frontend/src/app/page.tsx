@@ -1,19 +1,12 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { MovieSearch } from "@/app/components/SearchBar";
 
 export default function Home() {
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    fetch('http://localhost:3333/api/baptiste')
-      .then(res => res.json())
-      .then(data => setMessage(data.message));
-  }, []);
-
   return (
-    <div>
-      <p>{message}</p>
-    </div>
+    <main>
+      <h1 className="text-4xl font-bold text-center mt-8">Hypertube</h1>
+      <MovieSearch />
+    </main>
   );
 }

@@ -8,10 +8,14 @@
 */
 
 import router from '@adonisjs/core/services/router'
+//import type { HttpContext } from '@adonisjs/core/http'
+import MoviesController from '#controllers/movies_controller'
 
 router.get('/api/:id', ({ params }) => {
   return { message: `Hello ${params.id}` }
 })
+
+router.get('/api/movies/:name', [MoviesController, 'index'])
 
 // GET /api/users
 // GET /api/users/:id

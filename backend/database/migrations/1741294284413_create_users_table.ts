@@ -6,6 +6,8 @@ export default class Users extends BaseSchema {
       table.increments('id')
       table.string('name').notNullable()
       table.string('email').unique().notNullable()
+      table.string('prefered_languages').notNullable()
+      table.string('profile_picture').nullable()
       table.timestamps(true, true)
     })
   }
