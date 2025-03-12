@@ -1,10 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Input } from './ui/input';
-import { Search } from 'lucide-react';
-import Image from "next/image"
-import { Star, Play } from "lucide-react"
-import { Button } from '@/app/components/ui/button'
-import { Loader } from 'lucide-react'
+import { Search, Loader } from 'lucide-react';
 import { MovieCard } from './MovieCard';
 
 interface Movie {
@@ -147,11 +143,19 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
         )
       }
 
-      {smovies.length > 0 && <h1 className="mb-2"> Found : {smovies.length} movies</h1>}
-      <MovieCard movies={smovies} observerRef={observerRef} loadState={loading} />
+      {smovies.length > 0 && (
+        <>
+          <h1 className="mb-2"> Found : {smovies.length} movies</h1> &&
+          <MovieCard movies={smovies} observerRef={observerRef} loadState={loading} />
+        </>
+      )}
 
-      {discover.length > 0 && <h1 className="mb-2 text-4xl">Popular Movies</h1>}
-      <MovieCard movies={discover} observerRef={observerRef} loadState={loading} />
+      {discover.length > 0 && (
+        <>
+          <h1 className="mb-2 text-4xl">Popular Movies</h1>
+          <MovieCard movies={discover} observerRef={observerRef} loadState={loading} />
+        </>
+      )}
 
 
     </div >
