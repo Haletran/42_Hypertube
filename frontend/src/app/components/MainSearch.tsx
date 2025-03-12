@@ -132,7 +132,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
         </form>
       </div>
 
-      {loading || smovies.length === 0 && discover.length === 0 && (
+      {smovies.length === 0 && discover.length === 0 && (
         <div className="flex justify-center items-center mt-4" >
           <Loader className="animate-spin h-8 w-8" />
         </div>
