@@ -16,7 +16,7 @@ interface Movie {
 
 interface MovieCardProps {
     movies: Movie[];
-    observerRef: React.MutableRefObject<null>;
+    observerRef: React.RefObject<null>;
     loadState: boolean;
 }
 
@@ -25,7 +25,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
             {movies.length > 0 && movies.map((movie, index) => (
                 movie.poster_path && (
-                    <div key={movie.id} className="group cursor-pointer">
+                    <div key={movie.id} className="group cursor-pointer" >
                         <div className="relative aspect-[2/3] overflow-hidden rounded-md mb-2 bg-zinc-800">
                             <Image
                                 src={`https://image.tmdb.org/t/p/original${movie.poster_path}` || "/placeholder.svg"}
@@ -55,9 +55,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                                 <span className="text-xs text-zinc-400">{Math.round(movie.vote_average * 10) || '0'}%</span>
                             </div>
                         </div>
-                        {index === movies.length - 5 && <div ref={observerRef}></div>}
-
                     </div>
+
                 )
             ))}
             {loadState && (
@@ -65,6 +64,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                     <Loader className="animate-spin h-8 w-8" />
                 </div>
             )}
+            <div ref={observerRef} className="col-span-full h-1"></div>
         </div>
     );
 };

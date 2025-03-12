@@ -93,20 +93,21 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
 
 
   // dont know if this is the best way to do this
+  // infinite scroll
   useEffect(() => {
-    if (!observerRef.current) return;
+    if (!observerRef.current) {
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !loading) {
+        fetchDiscover();
+        observer.unobserve(entry.target);
+      }
+    }, { threshold: 1.0 });
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          fetchDiscover();
-        }
-      },
-      { threshold: 1.0 }
-    );
-
-    observer.observe(observerRef.current);
-
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
     return () => observer.disconnect();
   }, [discover]);
 
@@ -134,7 +135,6 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
         </div>
       )
       }
-
       {
         error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -142,22 +142,18 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
           </div>
         )
       }
-
       {smovies.length > 0 && (
         <>
           <h1 className="mb-2"> Found : {smovies.length} movies</h1> &&
           <MovieCard movies={smovies} observerRef={observerRef} loadState={loading} />
         </>
       )}
-
       {discover.length > 0 && (
         <>
-          <h1 className="mb-2 text-4xl">Popular Movies</h1>
+          <h1 className="mb-2">Popular Movies</h1>
           <MovieCard movies={discover} observerRef={observerRef} loadState={loading} />
         </>
       )}
-
-
     </div >
   );
 }
