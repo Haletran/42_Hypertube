@@ -17,7 +17,6 @@ router.get('/api/:id', ({ params }) => {
 })
 
 router.get('/api/movies/popular', [MoviesDiscover, 'index'])
-
 router.get('/api/movies/:name', [MoviesController, 'index'])
 
 // GET /api/users

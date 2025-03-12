@@ -1,20 +1,12 @@
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/app/components/ui/button"
-
+import { MoviePlayer } from "@/app/components/MoviePlayer"
 
 interface WatchMovieParams {
     params: {
         id: number;
     };
-}
-
-function MoviePlayer({ embedUrl }: { embedUrl: string }) {
-    return (
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-xl bg-black">
-            <iframe src={embedUrl} className="w-full h-full border-none" allowFullScreen title="Movie Player"></iframe>
-        </div>
-    )
 }
 
 export default async function WatchMovie({ params }: WatchMovieParams) {

@@ -19,7 +19,7 @@ watch videos.
 
 - [ ] Create the controllers and the api routes (add more than mandatory routes for easier dev of features)
 - [x] Fix db models for User (add AlreadyWatched feature and add migration / model for it)
-- [ ] Create a basic front template
+- [x] Create a basic front template
 - [ ] Torrent downloader and viewer
 - [ ] Torrent fetcher (PirateBay or PrivateTracker)
 - [ ] Make all the API routes work and secure them with Session token

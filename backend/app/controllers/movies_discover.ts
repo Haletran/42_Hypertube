@@ -12,7 +12,7 @@ export default class MoviesDiscover {
             const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`);
 
             const data = await response.json();
-            return (data.results)
+            return (data)
         } catch (error) {
             return response.status(500).json({
                 error: 'Error fetching discover movie'

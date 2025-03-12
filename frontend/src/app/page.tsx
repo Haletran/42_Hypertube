@@ -1,6 +1,6 @@
 "use client";
 
-import { MovieSearch } from "@/app/components/SearchBar";
+import { MovieSearch } from "@/app/components/MainSearch";
 
 export default function Home() {
   return (
