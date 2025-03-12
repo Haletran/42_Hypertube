@@ -1,6 +1,6 @@
 "use client";
 
-import { MovieSearch } from "@/app/components/MainMenu";
+import { MovieSearch } from "@/app/components/MovieGrid";
 
 export default function Home() {
   return (

@@ -1,7 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class MoviesController {
-    async index({ params, request, response }: HttpContext) {
+    async search({ params, request, response }: HttpContext) {
         const apiKey = process.env.TMDB_API_KEY || '';
         const defaultLanguage = "en-US";
         const language = request.input('language', defaultLanguage);
@@ -24,4 +24,36 @@ export default class MoviesController {
             });
         }
     }
+    async popular({ request, response }: HttpContext) {
+        const apiKey = process.env.TMDB_API_KEY || '';
+        const defaultLanguage = "en-US";
+        const defaultpage = 1;
+        const language = request.input('language', defaultLanguage);
+        const page = request.input('page', defaultpage);
+
+        try {
+            const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`);
+
+            const data = await response.json();
+            return (data)
+        } catch (error) {
+            return response.status(500).json({
+                error: 'Error fetching discover movie'
+            });
+        }
+    }
+
+    async watch({ params, response }: HttpContext) {
+        const embedUrl = `https://vidsrc.to/embed/movie/${params.id}`;
+
+        if (!params.id) {
+            return response.status(400).json({
+                error: 'Missing movie ID'
+            });
+        }
+        return (embedUrl);
+    }
 }
+
+
+

@@ -9,9 +9,33 @@ interface WatchMovieParams {
     };
 }
 
+async function getEmbedUrl(id: number): Promise<string> {
+    try {
+        const response = await fetch(`http://localhost:3333/api/movies/watch/${id}`);
+
+        if (!response.ok) {
+            throw new Error(`Error fetching movie: ${response.status}`);
+        }
+
+        const embedUrl = await response.text();
+
+        if (!embedUrl) {
+            throw new Error('Empty embed URL returned');
+        }
+        return embedUrl;
+    } catch (error) {
+        console.error('Failed to fetch movie:', error);
+        throw new Error('Failed to load movie');
+    }
+}
+
 export default async function WatchMovie({ params }: WatchMovieParams) {
-    const embedUrl = `https://vidsrc.to/embed/movie/${params.id}`;
-    //const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY || "";
+    let embedUrl: string;
+    try {
+        embedUrl = await getEmbedUrl(params.id);
+    } catch (error) {
+        return <div className="text-center p-4">Error loading movie</div>;
+    }
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4">
