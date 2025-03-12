@@ -31,6 +31,9 @@ watch videos.
 # apply migrations
 cd backend && node ace migration:run
 
+#generate a new APP_KEY
+gpg --gen-random --armor 1 16
+
 # launch the project
 npm run dev # on both backend and frontend
 # or

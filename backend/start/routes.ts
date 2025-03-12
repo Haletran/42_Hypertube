@@ -10,10 +10,13 @@
 import router from '@adonisjs/core/services/router'
 //import type { HttpContext } from '@adonisjs/core/http'
 import MoviesController from '#controllers/movies_controller'
+import MoviesDiscover from '#controllers/movies_discover'
 
 router.get('/api/:id', ({ params }) => {
   return { message: `Hello ${params.id}` }
 })
+
+router.get('/api/movies/popular', [MoviesDiscover, 'index'])
 
 router.get('/api/movies/:name', [MoviesController, 'index'])
 
