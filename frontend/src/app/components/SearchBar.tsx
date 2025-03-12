@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useRef } from 'react';
 import { Input } from './ui/input';
 import { Search } from 'lucide-react';
 import Image from "next/image"
@@ -25,6 +25,8 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState<string>('');
+  const [pagenumber, setpagenumber] = useState<number>(1);
+  const observerRef = useRef(null);
 
   const fetchMovie = async (searchTerm: string) => {
     if (!searchTerm) {
@@ -57,14 +59,21 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
   const fetchDiscover = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3333/api/movies/popular/');
+      const response = await fetch(`http://localhost:3333/api/movies/popular?page=${pagenumber}`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
       console.log(data);
-      setDiscover(data);
+
+      // this is dumb but fix duplication issue that shouldn't happen in the first place
+      setDiscover((prev) => {
+        const existingMovieIds = new Set(prev.map((movie) => movie.id));
+        const newMovies = data.filter((movie: Movie) => !existingMovieIds.has(movie.id));
+        return [...prev, ...newMovies];
+      });
+      setpagenumber((prev) => prev + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
@@ -83,6 +92,24 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
     }, 500);
     return () => clearTimeout(debounceTimeout);
   }, [search, onMovieSelect]);
+
+
+  useEffect(() => {
+    if (!observerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchDiscover();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    observer.observe(observerRef.current);
+
+    return () => observer.disconnect();
+  }, [discover]);
 
   return (
     <div className="container mx-auto p-4">
@@ -113,7 +140,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
       {smovies.length > 0 && <h1 className="mb-2"> Found : {smovies.length} movies</h1>}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-        {smovies.length > 0 && smovies.map((movie) => (
+        {smovies.length > 0 && smovies.map((movie, index) => (
           movie.poster_path && (
             <div key={movie.id} className="group cursor-pointer">
               <div className="relative aspect-[2/3] overflow-hidden rounded-md mb-2 bg-zinc-800">
@@ -153,7 +180,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
       {discover.length > 0 && <h1 className="mb-2 text-4xl">Popular Movies</h1>}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-        {discover.length > 0 && discover.map((movie) => (
+        {discover.length > 0 && discover.map((movie, index) => (
           movie.poster_path && (
             <div key={movie.id} className="group cursor-pointer">
               <div className="relative aspect-[2/3] overflow-hidden rounded-md mb-2 bg-zinc-800">
@@ -185,6 +212,8 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
                   <span className="text-xs text-zinc-400">{Math.round(movie.vote_average * 10)}%</span>
                 </div>
               </div>
+              {index === discover.length - 5 && <div ref={observerRef}></div>}
+              {loading && <p>Loading more movies...</p>}
             </div>
           )
         ))}
