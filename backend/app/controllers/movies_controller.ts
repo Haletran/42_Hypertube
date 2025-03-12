@@ -53,6 +53,24 @@ export default class MoviesController {
         }
         return (embedUrl);
     }
+    async getByTmdbById({ params, response, request }: HttpContext) {
+        const apiKey = process.env.TMDB_API_KEY || '';
+        const defaultLanguage = "en-US";
+        const language = request.input('language', defaultLanguage);
+        const id = params.id;
+        console.log(id);
+
+        try {
+            const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=${language}`)
+
+            const data = await res.json();
+            return response.json(data);
+        } catch (error) {
+            return response.status(500).json({
+                error: 'Error fetching movie data'
+            });
+        }
+    }
 }
 
 
