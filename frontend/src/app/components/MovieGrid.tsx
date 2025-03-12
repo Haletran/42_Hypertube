@@ -144,7 +144,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
       }
       {smovies.length > 0 && (
         <>
-          <h1 className="mb-2"> Found : {smovies.length} movies</h1> &&
+          <h1 className="mb-2"> Found : {smovies.length} movies</h1>
           <MovieCard movies={smovies} observerRef={observerRef} loadState={loading} />
         </>
       )}
