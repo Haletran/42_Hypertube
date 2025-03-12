@@ -12,7 +12,13 @@ import router from '@adonisjs/core/services/router'
 import MoviesController from '#controllers/movies_controller'
 router.get('/api/movies/popular', [MoviesController, 'popular'])
 router.get('/api/movies/:name', [MoviesController, 'search'])
-router.get('/api/movie/:id', [MoviesController, 'getByTmdbById'])
+    .where('name', {
+        match: /^[a-zA-Z]+$/,
+    })
+router.get('/api/movies/:id', [MoviesController, 'getByTmdbById'])
+    .where('id', {
+        match: /^[0-9]+$/,
+    })
 router.get('/api/movies/watch/:id', [MoviesController, 'watch'])
 
 // GET /api/users

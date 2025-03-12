@@ -23,8 +23,12 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadState }) => {
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-            {movies.length > 0 && movies.map((movie, index) => (
-                movie.poster_path && (
+            {movies.length > 0 && movies.map((movie, index) => {
+                const releaseDate = new Date(movie.release_date);
+                const today = new Date();
+                const isReleased = releaseDate <= today;
+
+                return movie.poster_path && movie.release_date && isReleased && (
                     <div key={movie.id} className="group cursor-pointer" >
                         <div className="relative aspect-[2/3] overflow-hidden rounded-md mb-2 bg-zinc-800">
                             <Image
@@ -56,9 +60,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                             </div>
                         </div>
                     </div>
-
-                )
-            ))}
+                );
+            })}
             {loadState && (
                 <div className="flex justify-center items-center w-full mt-4">
                     <Loader className="animate-spin h-8 w-8" />

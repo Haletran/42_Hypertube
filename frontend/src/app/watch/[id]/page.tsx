@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronLeft, Star, Calendar, Clock } from "lucide-react";
+import { ChevronLeft, Star, Calendar, Clock, Play } from "lucide-react";
 import { Button } from "@/app/components/ui/button"
 import { MoviePlayer } from "@/app/components/MoviePlayer"
 import { Badge } from "@/app/components/ui/badge"
@@ -33,7 +33,7 @@ async function getEmbedUrl(id: number): Promise<string> {
 
 async function getMovieDetails(id: number) {
     try {
-        const response = await fetch(`http://localhost:3333/api/movie/${id}?language=fr`, {
+        const response = await fetch(`http://localhost:3333/api/movies/${id}?language=fr`, {
             next: { revalidate: 3600 },
         })
 
@@ -113,17 +113,43 @@ function MovieDetails({ movie }: { movie: any }) {
                     )}
 
                     {movie.tagline && <div className="italic text-muted-foreground mt-2">"{movie.tagline}"</div>}
+
                 </div>
             </div>
         </div>
     )
 }
 
+// utils/api.ts or similar file
+export async function getMovieTrailer(movieId: number) {
+    const tmdbApiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    const response = await fetch(
+        `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${tmdbApiKey}&language=en-US`
+    );
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch trailer data');
+    }
+
+    const data = await response.json();
+
+    const trailers = data.results.filter(
+        (video: any) =>
+            video.site === "YouTube" &&
+            (video.type === "Trailer" || video.type === "Teaser")
+    );
+
+    return trailers.length > 0 ? trailers[0] : null;
+}
+
 export default async function WatchMovie({ params }: WatchMovieParams) {
     let embedUrl: string;
     let movie: any;
+    let trailer: any;
+
     try {
-        embedUrl = await getEmbedUrl(params.id);
+        //embedUrl = await getEmbedUrl(params.id);
+        trailer = await getMovieTrailer(params.id);
         movie = await getMovieDetails(params.id);
     } catch (error) {
         return <div className="text-center p-4">Error loading movie</div>;
@@ -140,11 +166,16 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
                 </Link>
             </div>
             <div className="w-full max-w-4xl mt-4 flex flex-col gap-6">
-                {embedUrl && (
+                {trailer && trailer.key && (
+                    <div className="w-full">
+                        <MoviePlayer embedUrl={`https://www.youtube.com/embed/${trailer.key}`} />
+                    </div>
+                )}
+                {/* {embedUrl && (
                     <div className="w-full">
                         <MoviePlayer embedUrl={embedUrl} />
                     </div>
-                )}
+                )} */}
                 {movie && <MovieDetails movie={movie} />}
             </div>
         </div>
