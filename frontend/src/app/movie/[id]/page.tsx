@@ -68,13 +68,22 @@ function MovieDetails({ movie }: { movie: any }) {
                         alt={movie.title || "Movie poster"}
                         className="w-full rounded-lg shadow-md object-cover"
                     />
+                    <Link href={`/watch/${movie.id}`}>
+                        <Button
+                            size="sm"
+                            variant="secondary"
+                            className="mt-2 w-full gap-1 bg-white/20 backdrop-blur-sm text-white border-none hover:bg-white/30">
+                            <Play className="h-4 w-4 mr-2" />
+                            Play
+                        </Button>
+                    </Link>
                 </div>
                 <div className="md:w-2/3 lg:w-3/4 space-y-4">
                     <h1 className="text-3xl md:text-4xl font-bold">{movie.title || "Unknown title"}</h1>
 
                     <div className="flex flex-wrap gap-2">
                         {movie.genres?.map((genre: any) => (
-                            <Badge key={genre.id} variant="secondary">
+                            <Badge key={genre.id} variant="secondary" className="text-black bg-white">
                                 {genre.name}
                             </Badge>
                         ))}
@@ -102,18 +111,6 @@ function MovieDetails({ movie }: { movie: any }) {
                     </div>
 
                     {movie.overview && <p className="text-base text-muted-foreground">{movie.overview}</p>}
-
-                    {movie.production_companies?.length > 0 && (
-                        <div className="pt-2">
-                            <p className="text-sm font-medium">Production:</p>
-                            <p className="text-sm text-muted-foreground">
-                                {movie.production_companies.map((company: any) => company.name).join(", ")}
-                            </p>
-                        </div>
-                    )}
-
-                    {movie.tagline && <div className="italic text-muted-foreground mt-2">"{movie.tagline}"</div>}
-
                 </div>
             </div>
         </div>
