@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/app/components/ui/button"
 import { MoviePlayer } from "@/app/components/MoviePlayer"
+import { getMovieDetails } from "@/app/movie/[id]/page";
 
 interface WatchMovieParams {
     params: {

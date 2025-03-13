@@ -32,10 +32,10 @@ export default class MoviesController {
         const page = request.input('page', defaultpage);
 
         try {
-            const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`);
+            const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`);
 
-            const data = await response.json();
-            return (data)
+            const data = await res.json();
+            return response.json(data);
         } catch (error) {
             return response.status(500).json({
                 error: 'Error fetching discover movie'
@@ -58,7 +58,6 @@ export default class MoviesController {
         const defaultLanguage = "en-US";
         const language = request.input('language', defaultLanguage);
         const id = params.id;
-        console.log(id);
 
         try {
             const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=${language}`)

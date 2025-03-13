@@ -31,7 +31,7 @@ async function getEmbedUrl(id: number): Promise<string> {
 }
 
 
-async function getMovieDetails(id: number) {
+export async function getMovieDetails(id: number) {
     try {
         const response = await fetch(`http://localhost:3333/api/movies/${id}?language=fr`, {
             next: { revalidate: 3600 },
