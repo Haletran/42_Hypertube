@@ -59,7 +59,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                                 <span className="text-xs text-zinc-400">{parseInt(movie.release_date) || 'N/A'}</span>
                                 <div className="flex items-center">
                                     <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 mr-1" />
-                                    <span className="text-xs text-zinc-400">{Math.round(movie.vote_average * 10) || '0'}%</span>
+                                    <span className="text-xs text-zinc-400">{Math.round(movie.vote_average) || '0'}/10</span>
                                 </div>
                             </div>
                         </Link>

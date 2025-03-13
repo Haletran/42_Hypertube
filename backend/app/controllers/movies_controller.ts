@@ -60,7 +60,7 @@ export default class MoviesController {
         const id = params.id;
 
         try {
-            const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=${language}`)
+            const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&append_to_response=credits&language=${language}`);
 
             const data = await res.json();
             return response.json(data);

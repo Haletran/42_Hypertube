@@ -50,6 +50,13 @@ POSTGRES_PASSWORD=postgres #or put another password
 POSTGRES_DB=hypertube
 ```
 
+Also, create a `.env` file in the frontend folder with the following content:
+
+```bash 
+# this is a temporary solution
+NEXT_PUBLIC_TMDB_API_KEY= # add your TMDB API key here
+```
+
 ### Launch the Project
 ```bash
 # To launch the project, without container for backend/frontend only for database

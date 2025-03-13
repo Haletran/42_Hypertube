@@ -1,8 +1,6 @@
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react";
-import { Button } from "@/app/components/ui/button"
 import { MoviePlayer } from "@/app/components/MoviePlayer"
-import { getMovieDetails } from "@/app/movie/[id]/page";
+import { BackButton } from "@/app/components/ui/backButton";
 
 interface WatchMovieParams {
     params: {
@@ -41,8 +39,9 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <div className="w-full max-w-4xl mt-4 flex flex-col gap-6">
+        <div className="flex flex-col items-center justify-center  p-4">
+            <div className="w-full max-w-7xl  flex flex-col gap-6 container mx-auto p-4">
+                <BackButton backUrl={`/movie/${params.id}`} />
                 {embedUrl && (
                     <div className="w-full">
                         <MoviePlayer embedUrl={embedUrl} />
