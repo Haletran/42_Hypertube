@@ -52,10 +52,11 @@ POSTGRES_DB=hypertube
 
 ### Launch the Project
 ```bash
+# To launch the project, without container for backend/frontend only for database
 NIXPKGS_ALLOW_UNFREE=1 nix-shell $1
+npm run dev  # On both backend and frontend
+make database
 
-# On both backend and frontend
-npm run dev
-# Or from the root of the project
+# Or from the root of the project with everything in docker
 make
 ```
