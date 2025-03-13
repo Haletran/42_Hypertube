@@ -59,6 +59,7 @@
     "@vinejs/vine": "^3.0.0",
     "better-sqlite3": "^11.8.1",
     "luxon": "^3.5.0",
+    "pg": "^8.14.0",
     "reflect-metadata": "^0.2.2"
   },
   "hotHook": {

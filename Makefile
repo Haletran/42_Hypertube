@@ -1,6 +1,9 @@
 all:
 	@docker compose -f docker-compose.yml up --build -d --remove-orphans
 
+database:
+	@docker compose -f docker-compose.yml up -d --build database
+
 down:
 	-docker compose -f docker-compose.yml down
 	-docker container prune -f

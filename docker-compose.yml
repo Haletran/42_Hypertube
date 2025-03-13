@@ -21,6 +21,19 @@ services:
       - HOST=0.0.0.0
     restart: always
 
+  database:
+    image: postgres
+    container_name: database
+    ports:
+      - "5432:5432"
+    networks:
+      - hypertube-network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hypertube
+    restart: always
+    
 networks:
   hypertube-network:
     driver: bridge

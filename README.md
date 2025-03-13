@@ -45,6 +45,9 @@ APP_KEY= # generate a new APP_KEY with gpg --gen-random --armor 1 16
 NODE_ENV=development
 SESSION_DRIVER=cookie
 TMDB_API_KEY= # add your TMDB API key here
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres #or put another password
+POSTGRES_DB=hypertube
 ```
 
 ### Launch the Project
