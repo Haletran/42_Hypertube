@@ -13,7 +13,7 @@ interface WatchMovieParams {
 
 export async function getMovieDetails(id: number) {
     try {
-        const response = await fetch(`http://localhost:3333/api/movies/${id}?language=fr`)
+        const response = await fetch(`http://backend:3333/api/movies/${id}?language=fr`)
 
         if (!response.ok) {
             throw new Error(`Failed to fetch movie details: ${response.status}`)
@@ -136,12 +136,13 @@ export async function getMovieTrailer(movieId: number) {
 }
 
 export default async function WatchMovie({ params }: WatchMovieParams) {
+    const movieId = params.id;
     let movie: any;
     let trailer: any;
 
     try {
-        trailer = await getMovieTrailer(params.id);
-        movie = await getMovieDetails(params.id);
+        trailer = await getMovieTrailer(movieId);
+        movie = await getMovieDetails(movieId);
     } catch (error) {
         return <div className="text-center p-4">Error loading movie</div>;
     }

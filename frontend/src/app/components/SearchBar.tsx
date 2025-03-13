@@ -32,7 +32,7 @@ export function SearchBar() {
 
         try {
             setLoading(true);
-            const response = await fetch(`http://localhost:3333/api/movies/${searchTerm}?language=fr`);
+            const response = await fetch(`/api/movies/${searchTerm}?language=fr`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }

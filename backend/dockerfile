@@ -3,8 +3,8 @@ FROM node:latest
 COPY . /back
 WORKDIR /back
 
-RUN npm install
-#RUN node ace db:create && node ace migration:run
+RUN rm -rf node_modules && npm install
+#RUN node ace migration:run
 EXPOSE 3333
 
 CMD ["npm", "run", "dev"]

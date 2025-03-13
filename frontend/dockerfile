@@ -3,7 +3,7 @@ FROM node
 COPY . /front
 WORKDIR /front
 
-RUN npm install
+RUN rm -rf .next && rm -rf node_modules && npm install
 EXPOSE 3000
 
 CMD ["npm", "run", "dev"]

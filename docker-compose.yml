@@ -19,6 +19,8 @@ services:
       - hypertube-network
     environment:
       - HOST=0.0.0.0
+    depends_on:
+      - database
     restart: always
 
   database:
@@ -26,6 +28,8 @@ services:
     container_name: database
     ports:
       - "5432:5432"
+    expose:
+      - "5432"
     networks:
       - hypertube-network
     environment:

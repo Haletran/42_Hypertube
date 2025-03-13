@@ -27,7 +27,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
   const fetchDiscover = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3333/api/movies/popular?page=${pagenumber}&language=fr`);
+      const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=fr`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }

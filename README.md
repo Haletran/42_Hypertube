@@ -39,7 +39,7 @@ To make the project work, create a `.env` file in the backend folder with the fo
 ```bash
 TZ=UTC
 PORT=3333
-HOST=localhost
+HOST=backend
 LOG_LEVEL=info
 APP_KEY= # generate a new APP_KEY with gpg --gen-random --armor 1 16
 NODE_ENV=development

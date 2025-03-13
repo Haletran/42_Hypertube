@@ -2,12 +2,13 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 export default class MoviesController {
     async search({ params, request, response }: HttpContext) {
+        const name = params.name;
         const apiKey = process.env.TMDB_API_KEY || '';
         const defaultLanguage = "en-US";
         const language = request.input('language', defaultLanguage);
 
         try {
-            const first = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${params.name}&language=${language}`);
+            const first = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${name}&language=${language}`);
 
             const test = await first.json() as { results: { id: number }[] };
             const movieIds = test.results.map(result => result.id);
