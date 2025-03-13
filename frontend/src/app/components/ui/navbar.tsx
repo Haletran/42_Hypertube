@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
+import Image from "next/image"
 
 
 export function Navbar() {

@@ -1,9 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Loader } from 'lucide-react';
 import { MovieCard } from './MovieCard';
-import { SearchBar } from './SearchBar';
-import { Navbar } from './ui/navbar';
-import { Nanum_Gothic_Coding } from 'next/font/google';
 
 interface Movie {
   id: number;
@@ -81,7 +78,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
 
   return (
     <div className="container mx-auto p-4">
-      {discover.length === 0 && (
+      {discover.length === 0 && !error && (
         <div className="flex justify-center items-center mt-4" >
           <Loader className="animate-spin h-8 w-8" />
         </div>

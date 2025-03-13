@@ -4,7 +4,6 @@ import { Play, Star } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 interface Movie {
     id: number;
@@ -29,8 +28,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                 const releaseDate = new Date(movie.release_date);
                 const today = new Date();
                 const isReleased = releaseDate <= today;
+                const hasRating = movie.vote_average > 0;
 
-                return movie.poster_path && movie.release_date && isReleased && (
+                return movie.poster_path && movie.release_date && isReleased && hasRating && (
                     <div key={movie.id} className="group cursor-pointer" >
                         <Link key={movie.id} href={`/movie/${movie.id}`}>
                             <div className="relative aspect-[2/3] overflow-hidden rounded-md mb-2 bg-zinc-800">

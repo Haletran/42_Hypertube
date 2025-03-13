@@ -62,7 +62,7 @@ export function SearchBar() {
                     className="pl-8"
                 />
             </form>
-            {loading && <div className="flex justify-center items-center mt-4" >
+            {loading && !error && <div className="flex justify-center items-center mt-4" >
                 <Loader className="animate-spin h-8 w-8" />
             </div>}
             {error && <p className="mt-2 text-center text-red-500">{error}</p>}

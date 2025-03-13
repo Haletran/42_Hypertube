@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronLeft, Star, Calendar, Clock, Play } from "lucide-react";
+import { Star, Calendar, Clock, Play } from "lucide-react";
 import { Button } from "@/app/components/ui/button"
 import { MoviePlayer } from "@/app/components/MoviePlayer"
 import { Badge } from "@/app/components/ui/badge"
