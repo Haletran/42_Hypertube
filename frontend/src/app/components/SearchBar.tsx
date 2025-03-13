@@ -68,8 +68,8 @@ export function SearchBar() {
             {error && <p className="mt-2 text-center text-red-500">{error}</p>}
             {movies.length > 0 && (
                 <>
-                    <div className="flex items-center mt-4 mb-3">
-                        <Badge className="text-black bg-white">
+                    <div className="flex items-center mb-3">
+                        <Badge className="text-black bg-white mt-3">
                             <span className="text-small text-muted-foreground ml-2 ">{movies.length} {movies.length === 1 ? 'result' : 'results'}</span>
                         </Badge>
                     </div>

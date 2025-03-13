@@ -30,7 +30,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
   const fetchDiscover = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3333/api/movies/popular?page=${pagenumber}?language=fr`);
+      const response = await fetch(`http://localhost:3333/api/movies/popular?page=${pagenumber}&language=fr`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -96,7 +96,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
       }
       {discover.length > 0 && (
         <>
-          <h1 className="text-2xl font-bold text-white mt-4 mb-3">Popular Movies</h1>
+          <h1 className="text-2xl font-bold text-white mb-3">Popular Movies</h1>
           <MovieCard movies={discover} observerRef={observerRef} loadState={loading} />
         </>
       )

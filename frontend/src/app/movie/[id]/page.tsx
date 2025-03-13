@@ -140,12 +140,10 @@ export async function getMovieTrailer(movieId: number) {
 }
 
 export default async function WatchMovie({ params }: WatchMovieParams) {
-    let embedUrl: string;
     let movie: any;
     let trailer: any;
 
     try {
-        //embedUrl = await getEmbedUrl(params.id);
         trailer = await getMovieTrailer(params.id);
         movie = await getMovieDetails(params.id);
     } catch (error) {
@@ -153,26 +151,13 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <div className="flex items-center justify-between">
-                <Link href="/" passHref>
-                    <Button className="gap-2 hover:bg-white/10">
-                        <ChevronLeft className="h-4 w-4" />
-                        Back to Home
-                    </Button>
-                </Link>
-            </div>
-            <div className="w-full max-w-4xl mt-4 flex flex-col gap-6">
+        <div className="flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-4xl flex flex-col gap-3">
                 {trailer && trailer.key && (
                     <div className="w-full">
                         <MoviePlayer embedUrl={`https://www.youtube.com/embed/${trailer.key}`} />
                     </div>
                 )}
-                {/* {embedUrl && (
-                    <div className="w-full">
-                        <MoviePlayer embedUrl={embedUrl} />
-                    </div>
-                )} */}
                 {movie && <MovieDetails movie={movie} />}
             </div>
         </div>
