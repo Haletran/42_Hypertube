@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
-import { Input } from './ui/input';
-import { Search, Loader } from 'lucide-react';
+import { Loader } from 'lucide-react';
 import { MovieCard } from './MovieCard';
+import { SearchBar } from './SearchBar';
+import { Navbar } from './ui/navbar';
+import { Nanum_Gothic_Coding } from 'next/font/google';
 
 interface Movie {
   id: number;
@@ -18,41 +20,12 @@ interface MovieSearchProps {
 }
 
 export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
-  const [smovies, setMovies] = useState<Movie[]>([]);
   const [discover, setDiscover] = useState<Movie[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState<string>('');
   const [pagenumber, setpagenumber] = useState<number>(1);
   const observerRef = useRef(null);
 
-  const fetchMovie = async (searchTerm: string) => {
-    if (!searchTerm) {
-      setMovies([]);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await fetch(`http://localhost:3333/api/movies/${searchTerm}?language=fr`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log(data);
-      setMovies(data);
-
-      if (onMovieSelect) {
-        onMovieSelect(data);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchDiscover = async () => {
     try {
@@ -81,15 +54,10 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
 
   useEffect(() => {
     const debounceTimeout = setTimeout(() => {
-      if (search.trim() === '') {
-        fetchDiscover();
-      } else {
-        setDiscover([]);
-        fetchMovie(search);
-      }
+      fetchDiscover();
     }, 500);
     return () => clearTimeout(debounceTimeout);
-  }, [search, onMovieSelect]);
+  }, [onMovieSelect]);
 
 
   // dont know if this is the best way to do this
@@ -113,23 +81,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-6">
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          fetchMovie(search);
-        }} className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search for a movie..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8"
-          />
-        </form>
-      </div>
-
-      {smovies.length === 0 && discover.length === 0 && (
+      {discover.length === 0 && (
         <div className="flex justify-center items-center mt-4" >
           <Loader className="animate-spin h-8 w-8" />
         </div>
@@ -142,18 +94,13 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
           </div>
         )
       }
-      {smovies.length > 0 && (
-        <>
-          <h1 className="mb-2"> Found : {smovies.length} movies</h1>
-          <MovieCard movies={smovies} observerRef={observerRef} loadState={loading} />
-        </>
-      )}
       {discover.length > 0 && (
         <>
-          <h1 className="mb-2">Popular Movies</h1>
+          <h1 className="text-2xl font-bold text-white mt-4 mb-3">Popular Movies</h1>
           <MovieCard movies={discover} observerRef={observerRef} loadState={loading} />
         </>
-      )}
+      )
+      }
     </div >
   );
 }

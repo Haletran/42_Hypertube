@@ -4,6 +4,7 @@ import { Play, Star } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 interface Movie {
     id: number;
@@ -24,7 +25,7 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadState }) => {
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-            {movies.length > 0 && movies.map((movie, index) => {
+            {movies.length > 0 && movies.map((movie) => {
                 const releaseDate = new Date(movie.release_date);
                 const today = new Date();
                 const isReleased = releaseDate <= today;

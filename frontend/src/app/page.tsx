@@ -1,12 +1,17 @@
 "use client";
 
 import { MovieSearch } from "@/app/components/MovieGrid";
+import { Navbar } from "@/app/components/ui/navbar";
+import { SearchBar } from "@/app/components/SearchBar";
 
 export default function Home() {
   return (
     <main>
-      <h1 className="text-4xl font-bold text-center mt-8">Hypertube</h1>
-      <MovieSearch />
+      <div className="container mx-auto p-4">
+        <Navbar />
+        <SearchBar />
+        <MovieSearch />
+      </div>
     </main>
   );
 }
