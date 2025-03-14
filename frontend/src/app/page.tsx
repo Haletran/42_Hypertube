@@ -1,6 +1,6 @@
 "use client";
 
-import { MovieSearch } from "@/app/components/MovieGrid";
+import { MovieGrid } from "@/app/components/MovieGrid";
 import { SearchBar } from "@/app/components/SearchBar";
 
 export default function Home() {
@@ -8,7 +8,7 @@ export default function Home() {
     <main>
       <div className="container mx-auto p-4">
         <SearchBar />
-        <MovieSearch />
+        <MovieGrid />
       </div>
     </main>
   );

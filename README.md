@@ -61,9 +61,13 @@ NEXT_PUBLIC_TMDB_API_KEY= # add your TMDB API key here
 ```bash
 # To launch the project, without container for backend/frontend only for database
 NIXPKGS_ALLOW_UNFREE=1 nix-shell $1
+# You need to change the host in next.config.js to localhost:3333 instead of backend:3333
+# and in /movie/[id]/page.tsx to localhost:3333 instead of backend:3333 same for /watch/[id]/page.tsx
+
 npm run dev  # On both backend and frontend
 make database
 
 # Or from the root of the project with everything in docker
+# do the reverse of the changes in next.config.js and /movie/[id]/page.tsx and /watch/[id]/page.tsx
 make
 ```

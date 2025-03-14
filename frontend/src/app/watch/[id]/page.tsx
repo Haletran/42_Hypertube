@@ -10,7 +10,7 @@ interface WatchMovieParams {
 
 async function getEmbedUrl(id: number): Promise<string> {
     try {
-        const response = await fetch(`http://backend:3333/api/movies/watch/${id}`);
+        const response = await fetch(`http://localhost:3333/api/movies/watch/${id}`);
 
         if (!response.ok) {
             throw new Error(`Error fetching movie: ${response.status}`);

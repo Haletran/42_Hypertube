@@ -13,7 +13,7 @@ interface WatchMovieParams {
 
 export async function getMovieDetails(id: number) {
     try {
-        const response = await fetch(`http://backend:3333/api/movies/${id}?language=fr`)
+        const response = await fetch(`http://localhost:3333/api/movies/${id}?language=fr`)
 
         if (!response.ok) {
             throw new Error(`Failed to fetch movie details: ${response.status}`)
@@ -93,20 +93,22 @@ function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: string })
                         <Button
                             size="sm"
                             variant="secondary"
-                            className="w-full gap-1 bg-white/50 backdrop-blur-sm text-white border-none hover:bg-white/30 cursor-pointer">
+                            className="w-full gap-1 bg-white/50 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer">
                             <Play className="h-4 w-4 mr-2" />
                             Play
                         </Button>
                     </Link>
-                    <Link href={`https://www.youtube.com/embed/${trailerUrl}`} target="_blank" className="w-1/3">
-                        <Button
-                            size="sm"
-                            variant="secondary"
-                            className="w-full gap-1 bg-white/10 backdrop-blur-sm text-white border-none hover:bg-white/30 cursor-pointer">
-                            <Clapperboard className="h-4 w-4 mr-2" />
-                            Watch Trailer
-                        </Button>
-                    </Link>
+                    {trailerUrl && (
+                        <Link href={`https://www.youtube.com/embed/${trailerUrl}`} target="_blank" className="w-1/3">
+                            <Button
+                                size="sm"
+                                variant="secondary"
+                                className="w-full gap-1 bg-white/10 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer">
+                                <Clapperboard className="h-4 w-4 mr-2" />
+                                Watch Trailer
+                            </Button>
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>
@@ -153,7 +155,7 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
         <div className="flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-4xl flex flex-col gap-3">
                 <BackButton backUrl="/" />
-                {movie && trailer && <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} />}
+                {movie && <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} />}
                 {movie && <CastScrollableList movie={movie} />}
             </div>
         </div >

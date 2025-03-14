@@ -31,6 +31,7 @@ export function CastScrollableList({ movie }: { movie: any }) {
                                 </div>
                             </div>
                         ))}
+                        {/* need to fix duplicate here */}
                         {movie.credits.crew.slice(0, 10).map((crew: any) => (
                             <div
                                 key={crew.id}

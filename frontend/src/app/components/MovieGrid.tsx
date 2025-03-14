@@ -12,11 +12,11 @@ interface Movie {
   release_date: string
 }
 
-interface MovieSearchProps {
+interface MovieGridProps {
   onMovieSelect?: (movie: Movie) => void;
 }
 
-export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
+export function MovieGrid({ onMovieSelect }: MovieGridProps) {
   const [discover, setDiscover] = useState<Movie[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +93,7 @@ export function MovieSearch({ onMovieSelect }: MovieSearchProps) {
       }
       {discover.length > 0 && (
         <>
-          <h1 className="text-2xl font-bold text-white mb-3">Popular Movies</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Popular Movies</h1>
           <MovieCard movies={discover} observerRef={observerRef} loadState={loading} />
         </>
       )
