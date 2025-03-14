@@ -10,7 +10,7 @@ watch videos.
 
 - Front: NextJS (with React in typescript)
 - Backend: AdonisJS (REST API)
-- DB: Sqlite for now
+- DB: Postgres
 - CSS Lib: Tailwind CSS
 - Components Lib: shadcn
 - Movie API: TMDB (since IMDB require AWS account and use graphQL)
@@ -22,6 +22,10 @@ watch videos.
 - [x] Create a basic front template
 - [ ] Torrent downloader and viewer
 - [ ] Torrent fetcher (PirateBay or PrivateTracker)
+
+### To do for next week:
+
+- [ ] Add Comments section for each movie
 - [ ] Make all the API routes work and secure them with Session token
 - [ ] Create Register / Login / Oauth2 to access the website
 - [ ] On front-page, only render movies that are on the view and remove the others 
