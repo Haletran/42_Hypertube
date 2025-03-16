@@ -6,7 +6,7 @@ import { SearchBar } from "@/app/components/SearchBar";
 export default function Home() {
   return (
     <main>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-2">
         <SearchBar />
         <MovieGrid />
       </div>

@@ -1,4 +1,15 @@
+import { Separator } from "@/app/components/ui/separator";
+
+function removeDuplicates(arr: any, key: any) {
+    return [...new Map(arr.map((item: any) => [key(item), item])).values()];
+}
+
+
+
 export function CastScrollableList({ movie }: { movie: any }) {
+    movie.credits.cast = removeDuplicates(movie.credits.cast, (actor: any) => actor.id);
+    movie.credits.crew = removeDuplicates(movie.credits.crew, (crew: any) => crew.id);
+
     return (
         movie && movie.credits && movie.credits.cast && movie.credits.cast.length > 0 && (
             <div className="mt-4">
@@ -31,7 +42,7 @@ export function CastScrollableList({ movie }: { movie: any }) {
                                 </div>
                             </div>
                         ))}
-                        {/* need to fix duplicate here */}
+                        <Separator orientation="vertical" />
                         {movie.credits.crew.slice(0, 10).map((crew: any) => (
                             <div
                                 key={crew.id}
