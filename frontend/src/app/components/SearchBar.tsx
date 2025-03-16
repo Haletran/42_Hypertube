@@ -27,18 +27,20 @@ export function SearchBar() {
         if (!searchTerm) {
             setMovies([]);
             setLoading(false);
+            setError(null);
             return;
         }
 
         try {
             setLoading(true);
-            const response = await fetch(`/api/movies/${searchTerm}?language=fr`);
+            const encodedSearch = encodeURIComponent(searchTerm);
+            const response = await fetch(`/api/movies/${encodedSearch}?language=fr`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log(data);
+            setError(null);
             setMovies(data);
             setLoading(false);
         } catch (err) {
