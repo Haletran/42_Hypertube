@@ -65,7 +65,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                 {movie.overview && <p className="text-base text-muted-foreground">{movie.overview}</p>}
                 {!movie.overview && <p className="text-base text-muted-foreground">No description available...</p>}
                 <div className="flex gap-2 mt-7">
-                    <Link href={`/watch/${movie.id}`} className="flex-grow">
+                    <Link href={`${movie.id}/watch/`} className="flex-grow">
                         <Button
                             size="sm"
                             variant="secondary"

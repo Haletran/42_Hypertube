@@ -1,4 +1,3 @@
-import Link from "next/link"
 import { MoviePlayer } from "@/app/components/MoviePlayer"
 import { BackButton } from "@/app/components/ui/backButton";
 

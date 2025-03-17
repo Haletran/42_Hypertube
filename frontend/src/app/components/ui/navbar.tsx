@@ -3,8 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
-import Image from "next/image"
-
+import { DownloadBar } from "../DownloadBar"
 
 export function Navbar() {
     return (
@@ -17,13 +16,17 @@ export function Navbar() {
                     }}>
                         <h1 className="text-xl font-bold tracking-tight">Hypertube</h1>
                     </Link>
-                    <Avatar>
-                        <AvatarImage src="https://xsgames.co/randomusers/assets/avatars/male/1.jpg" />
-                        <AvatarFallback>BP</AvatarFallback>
-                    </Avatar>
+                    <div className="flex items-center gap-4">
+                        <DownloadBar downloads={[]} />
+                        <Avatar>
+                            <AvatarImage src="https://xsgames.co/randomusers/assets/avatars/male/1.jpg" />
+                            <AvatarFallback>BP</AvatarFallback>
+                        </Avatar>
+                    </div>
                 </div>
-            </header>
-        </div>
+
+            </header >
+        </div >
     )
 }
 
