@@ -10,23 +10,27 @@
 import router from '@adonisjs/core/services/router'
 //import type { HttpContext } from '@adonisjs/core/http'
 import MoviesController from '#controllers/movies_controller'
+import AuthController from '#controllers/auth_controller'
 
 // GET /api/movies
 // GET /api/movies/:id
+
 router.group(() => {
-    router.get('/api/movies/popular', [MoviesController, 'popular'])
+  router.get('/movies/popular', [MoviesController, 'popular'])
 
-    router.get('/api/movies/:id', [MoviesController, 'getByTmdbById'])
-        .where('id', {
-            match: /^[0-9]+$/,
-        })
-    router.get('/api/movies/watch/:id', [MoviesController, 'watch'])
+  router.get('/movies/:id', [MoviesController, 'getByTmdbById'])
+    .where('id', {
+      match: /^[0-9]+$/,
+    })
+  router.get('/movies/watch/:id', [MoviesController, 'watch'])
 
-    router.get('/api/movies/:name', [MoviesController, 'search'])
-        .where('name', {
-            match: /^[a-zA-Z]+$/,
-        })
-})
+  router.get('/movies/:name', [MoviesController, 'search'])
+    .where('name', {
+      match: /^[a-zA-Z0-9 ]+$/,
+    })
+  router.post('/auth/register', [AuthController, 'register']);
+  router.post('/auth/login', [AuthController, 'login']);
+}).prefix('/api')
 
 
 // GET /api/users

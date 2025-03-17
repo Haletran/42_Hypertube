@@ -21,6 +21,7 @@ export function MovieGrid({ onMovieSelect }: MovieGridProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [pagenumber, setpagenumber] = useState<number>(1);
+  const [firstLoad, setFirstLoad] = useState<boolean>(true);
   const observerRef = useRef(null);
 
 
@@ -33,7 +34,6 @@ export function MovieGrid({ onMovieSelect }: MovieGridProps) {
       }
 
       const data = await response.json();
-      console.log(data.results);
 
       // this is dumb but fix duplication issue that shouldn't happen in the first place
       setDiscover((prev) => {
@@ -52,6 +52,11 @@ export function MovieGrid({ onMovieSelect }: MovieGridProps) {
   useEffect(() => {
     const debounceTimeout = setTimeout(() => {
       fetchDiscover();
+      if (firstLoad) {
+        // here to fetch more movies on first load to fill the screen
+        setFirstLoad(false);
+        fetchDiscover();
+      }
     }, 500);
     return () => clearTimeout(debounceTimeout);
   }, [onMovieSelect]);

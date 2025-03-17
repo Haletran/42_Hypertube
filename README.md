@@ -43,15 +43,17 @@ To make the project work, create a `.env` file in the backend folder with the fo
 ```bash
 TZ=UTC
 PORT=3333
-HOST=backend
 LOG_LEVEL=info
 APP_KEY= # generate a new APP_KEY with gpg --gen-random --armor 1 16
 NODE_ENV=development
+DB_HOST=127.0.0.1
+DB_PORT=5432
 SESSION_DRIVER=cookie
+HOST=0.0.0.0
 TMDB_API_KEY= # add your TMDB API key here
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres #or put another password
-POSTGRES_DB=hypertube
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=hypertube
 ```
 
 Also, create a `.env` file in the frontend folder with the following content:

@@ -34,3 +34,8 @@ body {
   background: color-mix(in srgb, var(--foreground) 15%, var(--background));
   color: var(--foreground);
 }
+
+.bg-muted {
+  background: color-mix(in srgb, var(--foreground) 30%, var(--background));
+  color: var(--foreground);
+}
