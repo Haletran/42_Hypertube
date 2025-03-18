@@ -20,7 +20,7 @@ export default function Player({ streamId }: { streamId: string }) {
         console.error('Error checking stream status:', error)
       }
     }
-
+ 
     const interval = setInterval(checkStatus, 2000)
     return () => clearInterval(interval)
   }, [streamId])
