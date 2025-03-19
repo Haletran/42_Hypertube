@@ -11,11 +11,18 @@ import router from '@adonisjs/core/services/router'
 //import type { HttpContext } from '@adonisjs/core/http'
 import MoviesController from '#controllers/movies_controller'
 import AuthController from '#controllers/auth_controller'
+import StreamController from '#controllers/stream_controller'
 
 // GET /api/movies
 // GET /api/movies/:id
 
+
+
 router.group(() => {
+  router.post('/stream/start', [StreamController, 'start'])
+  router.get('/stream/:id/status', [StreamController, 'status'])
+  router.get('/stream/:id/video', [StreamController, 'video'])
+  
   router.get('/movies/popular', [MoviesController, 'popular'])
 
   router.get('/movies/:id', [MoviesController, 'getByTmdbById'])
@@ -30,6 +37,7 @@ router.group(() => {
     })
   router.post('/auth/register', [AuthController, 'register']);
   router.post('/auth/login', [AuthController, 'login']);
+  
 }).prefix('/api')
 
 
