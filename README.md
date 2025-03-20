@@ -61,6 +61,13 @@ Also, create a `.env` file in the frontend folder with the following content:
 NEXT_PUBLIC_TMDB_API_KEY= # add your TMDB API key here
 ```
 
+```bash
+curl -X POST http://localhost:3333/api/stream/start \
+    -H "Content-Type: application/json" \
+    -d '{"magnet":"magnet:?xt=urn:btih:FD568F2CEBA6B2603E761E4B13E5308C8B0F8AE4"}' 
+```
+
+
 ### Launch the Project
 ```bash
 # To launch the project, without container for backend/frontend only for database
