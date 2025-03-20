@@ -19,16 +19,14 @@ watch videos.
 
 - [x] Fix db models for User (add AlreadyWatched feature and add migration / model for it)
 - [x] Create a basic front template
-- [ ] Torrent downloader and viewer
-- [ ] Torrent fetcher (PirateBay or PrivateTracker)
-
-### To do for next week:
-
+- [x] Torrent downloader and viewer
+- [x] Torrent fetcher (PirateBay or PrivateTracker)
 - [x] Add Comments section for each movie
+- [ ] Selection of movies via bar (check discord video) (already movie or not [.mp4 | .hls])
 - [ ] Fix search bar to search for movies (problem with spaces etc..., parsing)
 - [ ] Create Register / Login / Oauth2 to access the website
 - [ ] Make all the API routes work and secure them with Session token
-- [ ] On front-page, only render movies that are on the view and remove the others 
+- [ ] On front-page, only render movies that are on the view and remove the others
 
 ## Setup the Project
 
