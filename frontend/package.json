@@ -21,6 +21,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cva": "^0.0.0",
+    "hls": "^0.0.1",
+    "hls.js": "^1.5.20",
     "lucide-react": "^0.479.0",
     "motion": "^12.5.0",
     "next": "15.2.1",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/hls.js": "^1.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

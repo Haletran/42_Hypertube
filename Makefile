@@ -1,5 +1,5 @@
 all:
-	@docker compose -f docker-compose.yml up --build -d --remove-orphans
+	@docker compose -f docker-compose.yml up --build
 
 database:
 	@docker compose -f docker-compose.yml up -d --build database

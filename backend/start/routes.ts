@@ -12,6 +12,7 @@ import router from '@adonisjs/core/services/router'
 import MoviesController from '#controllers/movies_controller'
 import AuthController from '#controllers/auth_controller'
 import StreamController from '#controllers/stream_controller'
+import path from 'node:path'
 
 // GET /api/movies
 // GET /api/movies/:id
@@ -22,7 +23,11 @@ router.group(() => {
   router.post('/stream/start', [StreamController, 'start'])
   router.get('/stream/:id/status', [StreamController, 'status'])
   router.get('/stream/:id/video', [StreamController, 'video'])
-  
+  router.get('/stream/:streamId/:segment.ts', [StreamController, 'videoSegment'])
+
+
+
+
   router.get('/movies/popular', [MoviesController, 'popular'])
 
   router.get('/movies/:id', [MoviesController, 'getByTmdbById'])

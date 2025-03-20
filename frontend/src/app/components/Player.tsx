@@ -1,38 +1,32 @@
-import { useEffect, useRef, useState } from 'react'
+"use client";
 
-export default function Player({ streamId }: { streamId: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [progress, setProgress] = useState(0)
+import { useEffect, useRef } from 'react';
+import Hls from 'hls.js';
+
+export default function Player({ streamId } : { streamId: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const res = await fetch(`/api/stream/${streamId}/status`)
-        const { progress, url } = await res.json()
-        
-        setProgress(progress)
-        
-        if (url && videoRef.current) {
-          videoRef.current.src = url
-          videoRef.current.play()
-        }
-      } catch (error) {
-        console.error('Error checking stream status:', error)
-      }
-    }
- 
-    const interval = setInterval(checkStatus, 2000)
-    return () => clearInterval(interval)
-  }, [streamId])
+    const video = videoRef.current;
+    let hls: Hls | null = null;
 
-  return (
-    <div>
-      <video 
-        ref={videoRef} 
-        controls 
-        style={{ width: '100%', height: 'auto' }}
-      />
-      <div>Progression : {progress}%</div>
-    </div>
-  )
+    if (video && Hls.isSupported()) {
+      hls = new Hls();
+      hls.loadSource(`/api/stream/${streamId}/video`);
+      hls.attachMedia(video);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play();
+      });
+    } else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = `/api/stream/${streamId}/video`;
+      video.play();
+    }
+
+    return () => {
+      hls && hls.destroy();
+    };
+  }, [streamId]);
+
+  return <video ref={videoRef} controls style={{ width: '100%', height: 'auto' }} />;
 }

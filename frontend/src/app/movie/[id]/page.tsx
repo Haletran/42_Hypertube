@@ -12,7 +12,7 @@ interface WatchMovieParams {
 
 export async function getMovieDetails(id: number) {
     try {
-        const response = await fetch(`http://localhost:3333/api/movies/${id}?language=fr`)
+        const response = await fetch(`http://backend:3333/api/movies/${id}?language=fr`)
 
         if (!response.ok) {
             throw new Error(`Failed to fetch movie details: ${response.status}`)
