@@ -23,7 +23,7 @@ interface RegisterUser {
 
 async function login({ params }: LoginUser) {
     try {
-        const response = await fetch('http://localhost:3333/api/auth/login', {
+        const response = await fetch('http://backend:3333/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ async function login({ params }: LoginUser) {
 
 async function register({ params }: RegisterUser) {
     try {
-        const response = await fetch('http://localhost:3333/api/auth/register', {
+        const response = await fetch('http://backend:3333/api/auth/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
