@@ -15,7 +15,7 @@ async function getEmbedUrl(id: number): Promise<string> {
             throw new Error(`Error fetching movie: ${response.status}`);
         }
         
-        const embedUrl = "stream_1742398514958_ithso"
+        const embedUrl = "675353";
 
         if (!embedUrl) {
             throw new Error('Empty embed URL returned');

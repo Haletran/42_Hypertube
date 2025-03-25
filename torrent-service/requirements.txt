@@ -1,2 +1,6 @@
-redis==4.5.5
-libtorrent==2.0.11
+redis
+libtorrent
+ffprobe-python
+python-dotenv
+beautifulsoup4
+requests
