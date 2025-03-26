@@ -13,6 +13,7 @@ interface Movie {
     poster_path: string;
     vote_average: number;
     release_date: string
+    original_title: string;
 }
 
 export function SearchBar() {
@@ -42,6 +43,7 @@ export function SearchBar() {
             const data = await response.json();
             setError(null);
             setMovies(data);
+            console.log(data);
             setLoading(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unknown error occurred');

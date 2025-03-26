@@ -207,13 +207,11 @@ async def handle_torrent(magnet: str, stream_id: str):
         video_file = None
         for f in handle.get_torrent_info().files():
             if f.path.endswith(('.mp4', '.mkv', '.avi')):
-                print(f.path)
                 video_file = os.path.join(download_path, f.path)
                 break
 
         if not video_file:
             raise Exception("Aucun fichier vidéo trouvé dans le torrent")
-
 
         while not handle.status().is_seeding:
             status = handle.status()
@@ -223,7 +221,6 @@ async def handle_torrent(magnet: str, stream_id: str):
             
             if progress >= 5 and not r.exists(f'stream:{stream_id}:hls_started'):
                 if os.path.exists(video_file):
-                    hls_path = os.path.join(HLS_DIR, stream_id)
                     extracted_subs = await extract_subtitles(video_file, hls_path, stream_id)
                     external_subs = await download_external_subs(imdb_id, name, stream_id)
                     
@@ -231,14 +228,29 @@ async def handle_torrent(magnet: str, stream_id: str):
                     logging.info(f"Sous-titres extraits: {all_subs}")
                     for lang, sub_path in all_subs:
                         r.sadd(f'stream:{stream_id}:subtitles', f"/hls/{stream_id}/{os.path.basename(sub_path)}")
-                        success = await convert_to_hls(video_file, hls_path, stream_id)
-                        if success:
-                            r.set(f'stream:{stream_id}:hls_started', '1')
-                            r.set(f'stream:{stream_id}:url', f"/hls/{stream_id}/stream.m3u8")
+                    
+                    success = await convert_to_hls(video_file, hls_path, stream_id)
+                    if success:
+                        r.set(f'stream:{stream_id}:hls_started', '1')
+                        r.set(f'stream:{stream_id}:url', f"/hls/{stream_id}/stream.m3u8")
             
             await asyncio.sleep(1)
 
-        await convert_to_hls(video_file, hls_path, stream_id)
+        mp4_file = os.path.join(download_path, "video.mp4")
+        if not video_file.endswith('.mp4'):
+            logging.info(f"Converting {video_file} to MP4")
+            convert_cmd = [
+                'ffmpeg',
+                '-i', video_file,
+                '-c:v', 'copy',
+                '-c:a', 'copy',
+                mp4_file
+            ]
+            proc = await asyncio.create_subprocess_exec(*convert_cmd)
+            await proc.wait()
+        else:
+            shutil.copy2(video_file, mp4_file)
+
         r.set(f'stream:{stream_id}:status', 'complete')
         logging.info(f"Téléchargement complet: {stream_id}")
 

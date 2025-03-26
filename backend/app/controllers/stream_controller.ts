@@ -20,11 +20,29 @@ export default class StreamController {
   }
 
   public async status({ params, response }: HttpContext) {
-    const progress = await Redis.get(`stream:${params.id}:progress`)
-    return response.json({
-      status: progress ? 'processing' : 'pending',
-      progress: progress || 0
-    })
+    const streamId = params.id
+    const keys = [
+      'progress', 'status', 'download_rate', 'upload_rate', 
+      'peers', 'eta', 'file_type', 'file_size', 
+      'mp4_ready', 'mp4_url', 'hls_started', 'url', 'subtitles'
+    ]
+  
+    const data: any = {}
+  
+    for (const key of keys) {
+      const fullKey = `stream:${streamId}:${key}`
+      const type = await Redis.type(fullKey)
+  
+      if (type === 'string') {
+        data[key] = await Redis.get(fullKey)
+      } else if (type === 'set') {
+        data[key] = await Redis.smembers(fullKey)
+      } else {
+        data[key] = null
+      }
+    }
+  
+    return response.json(data)
   }
 
   public async video({ params, response }: HttpContext) {
@@ -86,7 +104,7 @@ export default class StreamController {
 
   public async subtitlesFile({ params, response }: HttpContext) {
 
-    const vttPath = path.join('data', 'hls', params.streamId, params.file);
+    const vttPath = path.join('data', params.streamId, params.file);
   
     try {
       await fs.access(vttPath);
@@ -101,6 +119,30 @@ export default class StreamController {
     }
   }
   
+  public async download({  params, response }: HttpContext) {
+    const title = params.title;
+    if (!title) {
+      return response.badRequest({ error: 'Movie title is required' });
+    }
+
+    try {
+      const apiResponse = await fetch(`https://apibay.org/q.php?q=${title}`);
+      
+      if (!apiResponse.ok) {
+        return response.status(apiResponse.status).json({ 
+          error: 'Failed to fetch from API' 
+        });
+      }
+      
+      const data = await apiResponse.json();
+      return response.json(data);
+    } catch (error) {
+      return response.status(500).json({
+        error: 'Failed to fetch torrent data',
+        details: error.message
+      });
+    }
+  }
   
 }
   
