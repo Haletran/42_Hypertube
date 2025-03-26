@@ -25,8 +25,8 @@ router.group(() => {
   router.get('/stream/:id/video', [StreamController, 'video'])
   router.get('/stream/:streamId/:segment.ts', [StreamController, 'videoSegment'])
   router.get('/stream/:streamId/subtitles', [StreamController, 'subtitles'])
+  router.get('/stream/:title/download', [StreamController, 'download'])
   router.get('/stream/:streamId/:file', [StreamController, 'subtitlesFile'])
-
 
   router.get('/movies/popular', [MoviesController, 'popular'])
 

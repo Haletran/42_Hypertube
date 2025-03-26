@@ -1,9 +1,9 @@
-import React from 'react';
 import Image from 'next/image';
 import { Play, Star } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 interface Movie {
     id: number;
@@ -13,6 +13,7 @@ interface Movie {
     poster_path: string;
     vote_average: number;
     release_date: string
+    isAvailable: boolean;
 }
 
 interface MovieCardProps {
@@ -21,7 +22,43 @@ interface MovieCardProps {
     loadState: boolean;
 }
 
+
+
+
 export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadState }) => {
+    const [availableMovies, setAvailableMovies] = useState<{[key: number]: boolean}>({});
+
+    const isAvailable = async (id: number): Promise<boolean> => {
+        try {
+            const response = await fetch(`http://localhost:3333/api/stream/${id}/video`);
+            return response.ok;
+        } catch (error) {
+            console.error('Failed to fetch movie:', error);
+            return false;
+        }
+    }
+
+    useEffect(() => {
+        const checkAvailability = async () => {
+            const availabilityMap: {[key: number]: boolean} = {};
+            
+            // Use Promise.all to run checks in parallel
+            await Promise.all(
+                movies.map(async (movie) => {
+                    try {
+                        availabilityMap[movie.id] = await isAvailable(movie.id);
+                    } catch {
+                        availabilityMap[movie.id] = false;
+                    }
+                })
+            );
+            
+            setAvailableMovies(availabilityMap);
+        };
+
+        checkAvailability();
+    }, [movies]);
+
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
             {movies.length > 0 && movies.map((movie) => {
@@ -40,17 +77,19 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                                     fill
                                     className="object-cover transition-transform duration-300 group-hover:scale-105 group-hover:opacity-75"
                                 />
+                                {availableMovies[movie.id] && (
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
                                     <Button
                                         size="sm"
                                         variant="secondary"
                                         className="w-full gap-1 bg-white/20 backdrop-blur-sm text-white border-none hover:bg-white/30"
-                                        onClick={() => window.location.href = `/watch/${movie.id}`}
+                                        onClick={() => window.location.href = `/movie/${movie.id}/watch/`}
                                     >
                                         <Play className="h-4 w-4" />
                                         Play
                                     </Button>
                                 </div>
+                                )}
                             </div>
                             <h3 className="font-medium text-sm text-white group-hover:text-blue-400 transition-colors line-clamp-1">
                                 {movie.title}
