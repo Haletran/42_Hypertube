@@ -57,7 +57,7 @@ services:
   torrent-service:
     image: python:3.10-slim
     container_name: torrent-service
-    command: ["sh", "-c", "apt-get update && apt install ffmpeg -y && cd /app && pip install -r requirements.txt && python main.py"]
+    command: ["sh", "-c", "apt-get update && apt install ffmpeg curl unzip tar -y && cd /app && pip install -r requirements.txt && python main.py"]
     volumes:
       - ./torrent-service:/app
       - ./shared-data:/app/data

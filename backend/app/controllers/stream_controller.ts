@@ -6,8 +6,7 @@ import path from 'path'
 
 export default class StreamController {
   public async start({ request, response }: HttpContext) {
-    const { magnet } = request.only(['magnet'])
-    const streamId = `stream_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+    const { magnet, streamId } = request.only(['magnet', 'streamId'])
 
     await Redis.publish('torrent:start', JSON.stringify({
       streamId,
@@ -65,5 +64,43 @@ export default class StreamController {
       });
     }
   }
+
+  public async subtitles({ params, response }: HttpContext) {
+    const subtitlesPath = path.join('data', 'hls', params.streamId, 'subtlist-en.m3u8');
+  
+    try {
+      await fs.access(subtitlesPath); 
+  
+      response.header('Content-Type', 'application/vnd.apple.mpegurl');
+      response.header('Cache-Control', 'no-cache');
+      response.header('Access-Control-Allow-Origin', '*');
+      response.header('Accept-Ranges', 'bytes');
+      
+      return response.stream(createReadStream(subtitlesPath));
+    } catch (error) {
+      return response.notFound({
+        error: 'Subtitles not found',
+      });
+    }
+  }
+
+  public async subtitlesFile({ params, response }: HttpContext) {
+
+    const vttPath = path.join('data', 'hls', params.streamId, params.file);
+  
+    try {
+      await fs.access(vttPath);
+      response.header('Content-Type', 'text/vtt');
+      response.header('Cache-Control', 'no-cache');
+      response.header('Access-Control-Allow-Origin', '*');
+      return response.download(vttPath);
+    } catch (error) {
+      return response.notFound({
+        error: 'Subtitle file not found',
+      });
+    }
+  }
+  
+  
 }
   
