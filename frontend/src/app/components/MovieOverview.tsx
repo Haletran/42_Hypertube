@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from "react";
-import { Star, Calendar, Clock, Download, Clapperboard, X } from "lucide-react";
+import { use, useState, useEffect } from "react";
+import { Star, Calendar, Clock, Download, Clapperboard, X, Play } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import Link from "next/link";
+import { s } from "motion/react-client";
 
 interface Torrent {
     id: string;
@@ -12,12 +13,14 @@ interface Torrent {
     seeders: number;
     leechers: number;
     size: string;
+    info_hash: string;
 }
 
 export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: string }) {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
     const [showTorrents, setShowTorrents] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isPlayable, setIsPlayable] = useState(false);
 
     if (!movie) {
         return <div className="text-center py-8">Movie details not available</div>;
@@ -44,7 +47,8 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                     name: item.name,
                     seeders: parseInt(item.seeders),
                     leechers: parseInt(item.leechers),
-                    size: formatBytes(parseInt(item.size))
+                    size: formatBytes(parseInt(item.size)),
+                    info_hash: item.info_hash
                 })));
             } else {
                 setTorrents([]);
@@ -58,12 +62,65 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
         }
     };
 
+
+    const downloadTorrent = async (info_hash: string, movieId: string) => {
+        try {
+
+            const response = await fetch(`http://localhost:3333/api/stream/start`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    magnet: `magnet:?xt=urn:btih:${info_hash}`,
+                    streamId: movieId.toString()
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to start stream: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log(data);
+            setShowTorrents(false);
+        } catch (error) {
+            console.error("Error starting stream:", error);
+        }
+    }
+
+    const isAvailable = async (id: number): Promise<boolean> => {
+        try {
+            const response = await fetch(`http://localhost:3333/api/stream/${id}/video`);
+            return response.ok;
+        } catch (error) {
+            console.error('Failed to fetch movie:', error);
+            return false;
+        }
+    }
+
+
+
     const formatBytes = (bytes: number) => {
         if (bytes === 0) return '0 Bytes';
         const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
         const i = Math.floor(Math.log(bytes) / Math.log(1024));
         return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
     };
+
+    useEffect(() => {
+        (async () => {
+            const available = await isAvailable(movie.id);
+            if (available) {
+                setIsPlayable(true);
+                console.log(`Movie with ID ${movie.id} is available for streaming.`);
+            } else {
+                setIsPlayable(false);
+                console.log(`Movie with ID ${movie.id} is not available for streaming.`);
+            }
+        })();
+    }, []);
+
 
     return (
         <div className="flex flex-col md:flex-row gap-6 relative">
@@ -116,6 +173,18 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                 {movie.overview && <p className="text-base text-muted-foreground">{movie.overview}</p>}
                 {!movie.overview && <p className="text-base text-muted-foreground">No description available...</p>}
                 <div className="flex gap-2 mt-7">
+                    {isPlayable && (
+                    <Button
+                        size="sm"
+                        variant="secondary"
+                        className="flex-grow gap-1 bg-white/50 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer"
+                        onClick={() => { window.location.href = `http://localhost:3000/movie/${movie.id}/watch`; }}
+                    >
+                        <Play className="h-4 w-4 mr-2" />
+                        Play
+                    </Button>
+                    )}
+                    {!isPlayable && (
                     <Button
                         size="sm"
                         variant="secondary"
@@ -125,6 +194,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                         <Download className="h-4 w-4 mr-2" />
                         Download
                     </Button>
+                    )}
                     {trailerUrl && (
                         <Link href={`https://www.youtube.com/embed/${trailerUrl}`} target="_blank" className="w-1/3">
                             <Button
@@ -140,7 +210,6 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                 </div>
             </div>
 
-            {/* Torrents Modal */}
             {showTorrents && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-auto">
@@ -156,11 +225,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                             ) : torrents.length > 0 ? (
                                 <div className="space-y-2">
                                     {torrents.map((torrent) => (
-                                        <Link 
-                                            href={`/movie/${movie.id}/watch?torrentId=${torrent.id}`} 
-                                            key={torrent.id}
-                                            className="flex justify-between items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                                        >
+                                        <div  className="flex justify-between items-center p-3 rounded-md">
                                             <div className="flex-1 truncate">
                                                 <p className="font-medium truncate">{torrent.name}</p>
                                                 <p className="text-xs text-muted-foreground">Size: {torrent.size}</p>
@@ -168,9 +233,17 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                                             <div className="flex gap-4 items-center text-sm">
                                                 <span className="text-green-500">S: {torrent.seeders}</span>
                                                 <span className="text-red-500">L: {torrent.leechers}</span>
-                                                <Button size="sm" variant="secondary">Select</Button>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="secondary"
+                                                    onClick={() => {
+                                                        downloadTorrent(torrent.info_hash, movie.id);
+                                                    }}
+                                                >
+                                                    Select
+                                                </Button>
                                             </div>
-                                        </Link>
+                                        </div>
                                     ))}
                                 </div>
                             ) : (

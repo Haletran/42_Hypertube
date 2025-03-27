@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 
 interface Movie {
     id: number;
+    imdb_id: string;
     title: string;
     tagline: string;
     overview: string;
@@ -21,9 +22,6 @@ interface MovieCardProps {
     observerRef: React.RefObject<null>;
     loadState: boolean;
 }
-
-
-
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadState }) => {
     const [availableMovies, setAvailableMovies] = useState<{[key: number]: boolean}>({});
@@ -42,7 +40,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
         const checkAvailability = async () => {
             const availabilityMap: {[key: number]: boolean} = {};
             
-            // Use Promise.all to run checks in parallel
             await Promise.all(
                 movies.map(async (movie) => {
                     try {

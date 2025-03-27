@@ -34,8 +34,9 @@ export function SearchBar() {
 
         try {
             setLoading(true);
-            const encodedSearch = encodeURIComponent(searchTerm);
-            const response = await fetch(`/api/movies/${encodedSearch}?language=fr`);
+
+            const encodedSearchTerm = encodeURIComponent(searchTerm);
+            const response = await fetch(`/api/movies/search/${encodedSearchTerm}?language=fr`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }

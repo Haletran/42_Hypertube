@@ -119,7 +119,7 @@ export default class StreamController {
     }
   }
   
-  public async download({  params, response }: HttpContext) {
+  public async getPirateBay({ params, response }: HttpContext) {
     const title = params.title;
     if (!title) {
       return response.badRequest({ error: 'Movie title is required' });

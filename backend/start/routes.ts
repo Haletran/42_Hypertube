@@ -12,12 +12,8 @@ import router from '@adonisjs/core/services/router'
 import MoviesController from '#controllers/movies_controller'
 import AuthController from '#controllers/auth_controller'
 import StreamController from '#controllers/stream_controller'
-import path from 'node:path'
-
 // GET /api/movies
 // GET /api/movies/:id
-
-
 
 router.group(() => {
   router.post('/stream/start', [StreamController, 'start'])
@@ -25,7 +21,7 @@ router.group(() => {
   router.get('/stream/:id/video', [StreamController, 'video'])
   router.get('/stream/:streamId/:segment.ts', [StreamController, 'videoSegment'])
   router.get('/stream/:streamId/subtitles', [StreamController, 'subtitles'])
-  router.get('/stream/:title/download', [StreamController, 'download'])
+  router.get('/stream/:title/download', [StreamController, 'getPirateBay'])
   router.get('/stream/:streamId/:file', [StreamController, 'subtitlesFile'])
 
   router.get('/movies/popular', [MoviesController, 'popular'])
@@ -36,10 +32,7 @@ router.group(() => {
     })
   router.get('/movies/watch/:id', [MoviesController, 'watch'])
 
-  router.get('/movies/:name', [MoviesController, 'search'])
-    .where('name', {
-      match: /^[a-zA-Z0-9 ]+$/,
-    })
+  router.get('/movies/search/:name', [MoviesController, 'search'])
   router.post('/auth/register', [AuthController, 'register']);
   router.post('/auth/login', [AuthController, 'login']);
   
