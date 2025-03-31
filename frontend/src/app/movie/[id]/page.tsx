@@ -1,5 +1,4 @@
 import { CastScrollableList } from "@/app/components/CastScrollableList"
-import { BackButton } from "@/app/components/ui/backButton";
 import { MovieDetails } from "@/app/components/MovieOverview";
 import { CommentSection } from "@/app/components/CommentSection";
 
@@ -52,6 +51,7 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
     let movie: any;
     let trailer: any;
 
+
     try {
         trailer = await getMovieTrailer(movieId);
         movie = await getMovieDetails(movieId);
@@ -59,12 +59,9 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
         return <div className="text-center p-4">Error loading movie</div>;
     }
 
-    console.log(movie);
-
     return (
         <div className="flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-4xl flex flex-col gap-3">
-                <BackButton backUrl="/" />
                 {movie && (
                     <>
                         <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} />

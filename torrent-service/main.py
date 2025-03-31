@@ -192,7 +192,7 @@ async def handle_torrent(magnet: str, stream_id: str):
         params = {
             'save_path': download_path,
             'storage_mode': lt.storage_mode_t.storage_mode_sparse,
-            'url': magnet
+            'url': magnet,
         }
         
         handle = ses.add_torrent(params)

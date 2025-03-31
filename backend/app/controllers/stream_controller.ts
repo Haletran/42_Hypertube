@@ -3,6 +3,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import fs from 'fs/promises'
 import { createReadStream } from 'fs'
 import path from 'path'
+import { request } from 'http'
 
 export default class StreamController {
   public async start({ request, response }: HttpContext) {
@@ -32,7 +33,7 @@ export default class StreamController {
     for (const key of keys) {
       const fullKey = `stream:${streamId}:${key}`
       const type = await Redis.type(fullKey)
-  
+
       if (type === 'string') {
         data[key] = await Redis.get(fullKey)
       } else if (type === 'set') {
@@ -119,30 +120,57 @@ export default class StreamController {
     }
   }
   
-  public async getPirateBay({ params, response }: HttpContext) {
+  public async getTorrentsList({ params, request, response }:HttpContext) {
     const title = params.title;
+    const provider = request.qs().provider;
+    const apiKey = process.env.SHAREWOOD_API_KEY || '';
+
+    if (!provider) {
+      return response.badRequest({ error: 'Provider is required' });
+    }
+
     if (!title) {
       return response.badRequest({ error: 'Movie title is required' });
     }
 
-    try {
-      const apiResponse = await fetch(`https://apibay.org/q.php?q=${title}`);
-      
-      if (!apiResponse.ok) {
-        return response.status(apiResponse.status).json({ 
-          error: 'Failed to fetch from API' 
+    if (provider === 'piratebay') {
+      try {
+        const apiResponse = await fetch(`https://apibay.org/q.php?q=${title}`);
+        
+        if (!apiResponse.ok) {
+          return response.status(apiResponse.status).json({ 
+            error: 'Failed to fetch from API' 
+          });
+        }
+        
+        const data = await apiResponse.json();
+        return response.json(data);
+      } catch (error) {
+        return response.status(500).json({
+          error: 'Failed to fetch torrent data',
+          details: error.message
         });
       }
-      
-      const data = await apiResponse.json();
-      return response.json(data);
-    } catch (error) {
-      return response.status(500).json({
-        error: 'Failed to fetch torrent data',
-        details: error.message
-      });
+    } else if (provider === 'sharewood') {
+      try {
+        //https://www.oxtorrent.co/recherche/films/cars
+        const apiResponse = await fetch(`https://itorrentsearch.vercel.app/api/1337x/${title}`);
+        
+        if (!apiResponse.ok) {
+          return response.status(apiResponse.status).json({ 
+            error: 'Failed to fetch from API' 
+          });
+        }
+        
+        const data = await apiResponse.json();
+        return response.json(data);
+      } catch (error) {
+        return response.status(500).json({
+          error: 'Failed to fetch torrent data',
+          details: error.message
+        });
+      }
     }
   }
-  
 }
   

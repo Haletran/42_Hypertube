@@ -4,12 +4,14 @@ import { MovieCard } from './MovieCard';
 
 interface Movie {
   id: number;
+  imdb_id: string;
   title: string;
   tagline: string;
   overview: string;
   poster_path: string;
   vote_average: number;
   release_date: string
+  isAvailable: boolean;
 }
 
 interface MovieGridProps {

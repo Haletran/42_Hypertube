@@ -1,11 +1,9 @@
-'use client';
-
+"use client";
 import { use, useState, useEffect } from "react";
-import { Star, Calendar, Clock, Download, Clapperboard, X, Play } from "lucide-react";
+import { Star, Calendar, Clock, Download, Clapperboard, X, Play, Loader } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import Link from "next/link";
-import { s } from "motion/react-client";
 
 interface Torrent {
     id: string;
@@ -21,6 +19,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
     const [showTorrents, setShowTorrents] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isPlayable, setIsPlayable] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     if (!movie) {
         return <div className="text-center py-8">Movie details not available</div>;
@@ -35,7 +34,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
         try {
             console.log(movie.original_title);
             
-            const response = await fetch(`http://localhost:3000/api/stream/${movie.original_title}/download`);
+            const response = await fetch(`http://localhost:3333/api/stream/${movie.original_title}/download?provider=sharewood`);
             if (!response.ok) {
                 throw new Error(`Failed to fetch torrents: ${response.status}`);
             }
@@ -43,12 +42,12 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
             
             if (Array.isArray(data) && data.length > 0 && data[0].id !== "0") {
                 setTorrents(data.slice(0, 10).map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                    seeders: parseInt(item.seeders),
-                    leechers: parseInt(item.leechers),
-                    size: formatBytes(parseInt(item.size)),
-                    info_hash: item.info_hash
+                    id: movie.id,
+                    name: item.Name || item.title,
+                    seeders: parseInt(item.Seeders),
+                    leechers: parseInt(item.Leechers),
+                    size: item.Size,
+                    info_hash: item.Magnet
                 })));
             } else {
                 setTorrents([]);
@@ -62,17 +61,21 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
         }
     };
 
-
     const downloadTorrent = async (info_hash: string, movieId: string) => {
         try {
 
+            // Extract just the hash part if it's a complete magnet URI
+            const hashValue = info_hash.startsWith('magnet:') ? 
+                info_hash.match(/urn:btih:([a-zA-Z0-9]+)/)?.[1] || info_hash :
+                info_hash;
+                
             const response = await fetch(`http://localhost:3333/api/stream/start`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    magnet: `magnet:?xt=urn:btih:${info_hash}`,
+                    magnet: `magnet:?xt=urn:btih:${hashValue}`,
                     streamId: movieId.toString()
                 })
             });
@@ -82,6 +85,8 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
             }
             
             const data = await response.json();
+
+            await checkDownload(movieId);
             console.log(data);
             setShowTorrents(false);
         } catch (error) {
@@ -100,6 +105,22 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
     }
 
 
+    const checkDownload = async (id: any): Promise<boolean> => {
+        try {
+            const response = await fetch(`http://localhost:3333/api/stream/${id}/status`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch movie status: ${response.status}`);
+            }
+            const data = await response.json();
+            setIsDownloading(data.status === 'downloading');
+            console.log("STATUS : " , data.status, "| PROGRESS : ", data.progress);
+            return data.status === 'downloading';
+        } catch (error) {
+            console.error('Failed to fetch movie status:', error);
+            setIsDownloading(false);
+            return false;
+        }
+    }
 
     const formatBytes = (bytes: number) => {
         if (bytes === 0) return '0 Bytes';
@@ -111,6 +132,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
     useEffect(() => {
         (async () => {
             const available = await isAvailable(movie.id);
+            await checkDownload(movie.id);
             if (available) {
                 setIsPlayable(true);
                 console.log(`Movie with ID ${movie.id} is available for streaming.`);
@@ -119,7 +141,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                 console.log(`Movie with ID ${movie.id} is not available for streaming.`);
             }
         })();
-    }, []);
+    }, [isAvailable, isDownloading]);
 
 
     return (
@@ -172,34 +194,29 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
 
                 {movie.overview && <p className="text-base text-muted-foreground">{movie.overview}</p>}
                 {!movie.overview && <p className="text-base text-muted-foreground">No description available...</p>}
+                {isDownloading && (
+                        <div>
+                            <p className="text-sm text-red-500">Downloading...</p>
+                        </div>
+                    )}
                 <div className="flex gap-2 mt-7">
-                    {isPlayable && (
                     <Button
-                        size="sm"
-                        variant="secondary"
-                        className="flex-grow gap-1 bg-white/50 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer"
-                        onClick={() => { window.location.href = `http://localhost:3000/movie/${movie.id}/watch`; }}
+                        className={`flex-grow gap-1 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer ${isPlayable ? 'bg-white/50' : 'bg-white/50'}`}
+                        onClick={isPlayable 
+                            ? () => window.location.href = `http://localhost:3000/movie/${movie.id}/watch` 
+                            : fetchTorrents}
                     >
-                        <Play className="h-4 w-4 mr-2" />
-                        Play
+                        {isPlayable ? (
+                            <Play className="h-4 w-4 mr-2" />
+                        ) : (
+                            <Download className="h-4 w-4 mr-2" />
+                        )}
+                        {isPlayable ? 'Play' : 'Download'}
                     </Button>
-                    )}
-                    {!isPlayable && (
-                    <Button
-                        size="sm"
-                        variant="secondary"
-                        className="flex-grow gap-1 bg-white/50 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer"
-                        onClick={fetchTorrents}
-                    >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                    </Button>
-                    )}
+                    
                     {trailerUrl && (
                         <Link href={`https://www.youtube.com/embed/${trailerUrl}`} target="_blank" className="w-1/3">
                             <Button
-                                size="sm"
-                                variant="secondary"
                                 className="w-full gap-1 bg-white/10 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer"
                             >
                                 <Clapperboard className="h-4 w-4 mr-2" />
@@ -212,20 +229,20 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
 
             {showTorrents && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-auto">
+                    <div className="bg-secondary rounded-lg max-w-2xl w-full max-h-[80vh] overflow-auto">
                         <div className="p-4 border-b flex justify-between items-center">
                             <h2 className="text-xl font-bold">Available Downloads for {movie.title}</h2>
                             <Button variant="ghost" size="sm" onClick={() => setShowTorrents(false)} className="rounded-full">
                                 <X className="h-4 w-4" />
                             </Button>
                         </div>
-                        <div className="p-4">
+                        <div className="p-4 ">
                             {isLoading ? (
                                 <div className="text-center py-8">Loading torrents...</div>
                             ) : torrents.length > 0 ? (
-                                <div className="space-y-2">
+                                <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
                                     {torrents.map((torrent) => (
-                                        <div  className="flex justify-between items-center p-3 rounded-md">
+                                        <div key={torrent.id} className="flex justify-between items-center p-3 rounded-md">
                                             <div className="flex-1 truncate">
                                                 <p className="font-medium truncate">{torrent.name}</p>
                                                 <p className="text-xs text-muted-foreground">Size: {torrent.size}</p>
@@ -235,7 +252,6 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                                                 <span className="text-red-500">L: {torrent.leechers}</span>
                                                 <Button 
                                                     size="sm" 
-                                                    variant="secondary"
                                                     onClick={() => {
                                                         downloadTorrent(torrent.info_hash, movie.id);
                                                     }}

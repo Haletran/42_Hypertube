@@ -82,3 +82,10 @@ make database
 # do the reverse of the changes in next.config.js and /movie/[id]/page.tsx and /watch/[id]/page.tsx
 make
 ```
+
+
+curl -X POST http://localhost:3333/api/stream/start \
+  -H "Content-Type: application/json" \
+  -d '{"magnet":"magnet:?xt=urn:btih:b7ba8edf1c2a5f80c8dd4aedf27e81e15a85fee6&tr=http://tracker.p2p-world.net:8080/2t9i8O8FwPIrgw2VHU18K4qP872rrCvj/announce", "streamId":"1190215"}'
+{"id":"675353","statusUrl":"/stream/675353/status"}%  
+

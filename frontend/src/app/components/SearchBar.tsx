@@ -1,19 +1,21 @@
+"use client";
 import { Input } from '@/app/components/ui/input';
 import { Search } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MovieCard } from './MovieCard';
 import { Loader } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 
 interface Movie {
     id: number;
+    imdb_id: string;
     title: string;
     tagline: string;
     overview: string;
     poster_path: string;
     vote_average: number;
     release_date: string
-    original_title: string;
+    isAvailable: boolean;
 }
 
 export function SearchBar() {
@@ -52,10 +54,21 @@ export function SearchBar() {
         }
     };
 
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchParam = urlParams.get('search');
+        if (searchParam) {
+            setSearch(searchParam);
+            fetchMovie(searchParam);
+        }
+    }, []);
+
     return (
         <div className="container mx-auto p-4">
             <form onSubmit={(e) => {
                 e.preventDefault();
+                window.history.pushState({}, '', `?search=${encodeURIComponent(search)}`);
                 fetchMovie(search);
             }} className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />

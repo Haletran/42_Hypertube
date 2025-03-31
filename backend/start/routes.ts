@@ -21,7 +21,7 @@ router.group(() => {
   router.get('/stream/:id/video', [StreamController, 'video'])
   router.get('/stream/:streamId/:segment.ts', [StreamController, 'videoSegment'])
   router.get('/stream/:streamId/subtitles', [StreamController, 'subtitles'])
-  router.get('/stream/:title/download', [StreamController, 'getPirateBay'])
+  router.get('/stream/:title/download', [StreamController, 'getTorrentsList'])
   router.get('/stream/:streamId/:file', [StreamController, 'subtitlesFile'])
 
   router.get('/movies/popular', [MoviesController, 'popular'])
@@ -47,5 +47,3 @@ router.group(() => {
 // PATCH /comments/:id
 // DELETE /comments/:id
 // POST /comments or POST /movies/:movie_id/comments
-
-// GET /api/torrent/piratebay/:name

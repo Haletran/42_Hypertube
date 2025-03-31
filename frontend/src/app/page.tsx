@@ -7,7 +7,6 @@ export default function Home() {
   return (
     <main>
       <div className="container mx-auto p-2">
-        <SearchBar />
         <MovieGrid />
       </div>
     </main>

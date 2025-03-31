@@ -66,12 +66,13 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
 
                 return movie.poster_path && movie.release_date && isReleased && hasRating && (
                     <div key={movie.id} className="group cursor-pointer" >
-                        <Link key={movie.id} href={`/movie/${movie.id}`}>
+                        <Link key={movie.id} href={`/movie/${movie.id}`} >
                             <div className="relative aspect-[2/3] overflow-hidden rounded-md mb-2 bg-zinc-800">
                                 <Image
                                     src={`https://image.tmdb.org/t/p/original${movie.poster_path}` || "/placeholder.svg"}
                                     alt={movie.title}
                                     fill
+                                    loading='lazy'
                                     className="object-cover transition-transform duration-300 group-hover:scale-105 group-hover:opacity-75"
                                 />
                                 {availableMovies[movie.id] && (

@@ -1,1 +1,4 @@
 ./shared-data
+.env
+.nodes-modules
+/node_modules
