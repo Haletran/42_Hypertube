@@ -10,10 +10,10 @@ export default class AuthController {
         return response.status(201).json({ message: "User created" });
     }
 
-    public async login({ request, response, auth }: HttpContext) {
-        const data = request.all();
-        const payload = await LoginValidator.validate(data);
-        return (payload);
-        //return response.status(201).json({ message: "User Connected" });
+    public async login({ request, auth, response }: HttpContext) {
+        const { email, password } = request.only(['email', 'username', 'password'])
+        const user = await User.verifyCredentials(email, password);
+        await auth.use('api').login(user)
+        return response.status(201).json({ message: "LoggedIN" })
     }
 }

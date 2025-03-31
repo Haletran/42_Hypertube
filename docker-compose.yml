@@ -8,11 +8,11 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/front
-    command: ["sh", "-c", "cd /front && rm -rf .next && rm -rf node_modules && npm install && npm run dev"]
+    command: [ "sh", "-c", "cd /front && rm -rf .next && rm -rf node_modules && npm install && npm run dev" ]
     networks:
       - hypertube-network
     restart: always
-    
+
   backend:
     image: node:latest
     container_name: backend
@@ -22,7 +22,7 @@ services:
       - REDIS_PORT=6379
     ports:
       - "3333:3333"
-    command: ["sh", "-c", "cd /back && rm -rf node_modules && npm install && npm run dev"]
+    command: [ "sh", "-c", "cd /back && rm -rf node_modules && npm install && node ace migration:run && npm run dev" ]
     volumes:
       - ./backend:/back
       - ./shared-data:/back/data
@@ -44,7 +44,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: hypertube
     restart: always
-    
+
   redis:
     image: redis:7-alpine
     container_name: redis
@@ -57,7 +57,7 @@ services:
   torrent-service:
     image: python:3.10-slim
     container_name: torrent-service
-    command: ["sh", "-c", "apt-get update && apt install ffmpeg curl unzip tar -y && cd /app && pip install -r requirements.txt && python main.py"]
+    command: [ "sh", "-c", "apt-get update && apt install ffmpeg curl unzip tar -y && cd /app && pip install -r requirements.txt && python main.py" ]
     volumes:
       - ./torrent-service:/app
       - ./shared-data:/app/data
@@ -71,7 +71,7 @@ services:
     networks:
       - hypertube-network
     restart: always
-    
+
 networks:
   hypertube-network:
     driver: bridge

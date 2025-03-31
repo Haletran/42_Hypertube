@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/ta
 
 interface LoginUser {
     params: {
-        username: string;
+        email: string;
         password: string;
     }
 }
@@ -23,7 +23,7 @@ interface RegisterUser {
 
 async function login({ params }: LoginUser) {
     try {
-        const response = await fetch('http://backend:3333/api/auth/login', {
+        const response = await fetch('http://localhost:3333/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ async function login({ params }: LoginUser) {
 
 async function register({ params }: RegisterUser) {
     try {
-        const response = await fetch('http://backend:3333/api/auth/register', {
+        const response = await fetch('http://localhost:3333/api/auth/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export default function Auth() {
         setError([]);
         setIsLoading(true);
         try {
-            const result = await login({ params: { username, password } });
+            const result = await login({ params: { email, password } });
             if (result.errors) {
                 setError(result.errors.map((err: any) => err.message));
                 return;
@@ -130,9 +130,9 @@ export default function Auth() {
                         <div className="space-y-3">
                             <Input
                                 type="text"
-                                placeholder="Username"
+                                placeholder="Email"
                                 className="w-full p-2 rounded-md"
-                                onChange={(e) => setUsername(e.target.value)}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
                             <Input
                                 type="password"
