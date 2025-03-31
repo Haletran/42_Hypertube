@@ -10,10 +10,23 @@ export default class AuthController {
         return response.status(201).json({ message: "User created" });
     }
 
-    public async login({ request, auth, response }: HttpContext) {
+    public async login({ request }: HttpContext) {
         const { email, password } = request.only(['email', 'username', 'password'])
         const user = await User.verifyCredentials(email, password);
-        await auth.use('api').login(user)
-        return response.status(201).json({ message: "LoggedIN" })
+        const token = await User.accessTokens.create(user)
+        return (token)
+    }
+
+    public async logout({ auth }: HttpContext) {
+        const user = auth.user!;
+        await User.accessTokens.delete(user, user.currentAccessToken.identifier)
+        return { message: "success" }
+    }
+
+    public async me({ auth }: HttpContext) {
+        await auth.check();
+        return {
+            user: auth.user,
+        }
     }
 }
