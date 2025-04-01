@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
 
 export default function Player({ streamId }: { streamId: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -86,7 +87,6 @@ export default function Player({ streamId }: { streamId: string }) {
         hls.on(Hls.Events.MANIFEST_PARSED, async () => {
           await loadSubtitles();
         });
-
         hls.on(Hls.Events.ERROR, (event, data) => {
           if (data.fatal) {
             console.error("HLS error:", data);
@@ -110,5 +110,24 @@ export default function Player({ streamId }: { streamId: string }) {
     };
   }, [streamId]);
 
-  return <video ref={videoRef} controls />;
+  return (
+    <div className="relative">
+      {isLoading && (
+      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+      </div>
+      )}
+      <video
+      ref={videoRef}
+      controls
+      className="w-full"
+      onLoadedData={() => {
+        setIsLoading(false);
+        videoRef.current?.play().catch(err => console.error("Autoplay failed:", err));
+      }}
+      onPlaying={() => setIsLoading(false)}
+      autoPlay
+      />
+    </div>
+  );
 }

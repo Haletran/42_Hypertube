@@ -250,9 +250,11 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                 {isDownloading && (
                         <div className="relative w-full pt-5">
                             <Progress value={progress} className="w-full h-6" />
+                            {progress > 0 && progress < 100 && (
                                 <span className="text-sm font-medium text-white">
                                     {progress}%
                                 </span>
+                            )}
                             </div>
                     )}
                 <div className="flex gap-2 mt-7">
