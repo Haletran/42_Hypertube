@@ -19,6 +19,7 @@ export default function LoginPage() {
           console.error('Login failed:', error);
         }
   };
+  const github_url =  `https://github.com/login/oauth/authorize?scope=user:bpasquier123@gmail.com&client_id=` + process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
   const loginUrl = new URL('https://api.intra.42.fr/oauth/authorize');
   const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
   if (!clientId) {
@@ -58,6 +59,7 @@ export default function LoginPage() {
         <Button onClick={handleLogin} className="mb-4 w-64">Login</Button>
         
         <Button onClick={() => window.location.href = `${loginUrl}`} className="mb-4 w-64 bg-blue-500 hover:bg-blue-600 text-white">Login with 42</Button>
+        <Button onClick={() => window.location.href = `${github_url}`} className="mb-4 w-64 bg-blue-500 hover:bg-blue-600 text-white">Login with Github</Button>
         
         <Link href="/register" className="text-accent">Go to Register</Link>
     </div>

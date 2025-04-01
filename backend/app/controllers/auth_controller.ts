@@ -65,6 +65,56 @@ export default class AuthController {
         }
     }
 
+    public async oauthgithub({request, response}: HttpContext)
+    {
+        const code = request.qs().code
+        if (!code) {
+            return { error: 'No code' }
+        }
+
+        try {
+            const response2 = await axios.post('https://github.com/login/oauth/access_token', {
+                grant_type: 'authorization_code',
+                client_id: process.env.GITHUB_CLIENT_ID,
+                client_secret: process.env.GITHUB_CLIENT_SECRET,
+                code: code
+            }, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+
+            const accessToken = response2.data.access_token
+            if (!accessToken) {
+                throw new Error('No access token')
+            }
+
+            const me = await axios.get('https://api.github.com/user', {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            })
+
+            const existingUser = await User.findBy('email', me.data.login + '@github.com')
+            let user: any;
+            
+            if (existingUser) {
+              user = existingUser
+            } else {
+              user = await User.firstOrCreate({
+                email: me.data.login + '@github.com',
+                username: me.data.login,
+                password: 'github',
+              })
+            }
+            const tokenResult = await User.accessTokens.create(user)
+            const tokenValue = tokenResult.token || tokenResult.value || tokenResult.toString()
+            return response.redirect(`http://localhost:3000?token=${tokenValue}`)
+        } catch (error) {
+            console.error('Oauth42 failed:', error);
+        }
+    }
+
+
+
     public async logout({ auth }: HttpContext) {
         const user = auth.user!;
         await User.accessTokens.delete(user, user.currentAccessToken.identifier)

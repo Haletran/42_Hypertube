@@ -56,6 +56,8 @@ DB_PASSWORD=postgres
 DB_DATABASE=hypertube
 CLIENT_ID= # add your 42 API client ID here
 CLIENT_SECRET= # add your 42 API secret here
+GITHUB_CLIENT_ID= # add your github API client ID here
+GITHUB_CLIENT_SECRET= # add your github API secret here
 ```
 
 Also, create a `.env` file in the frontend folder with the following content:
@@ -65,6 +67,7 @@ Also, create a `.env` file in the frontend folder with the following content:
 NEXT_PUBLIC_TMDB_API_KEY= # add your TMDB API key here
 NEXT_PUBLIC_BACKEND_URL=http://localhost:3333
 NEXT_PUBLIC_CLIENT_ID= # add your 42 API client ID here
+NEXT_PUBLIC_GITHUB_CLIENT_ID= # add your github API client ID here
 ```
 
 ```bash

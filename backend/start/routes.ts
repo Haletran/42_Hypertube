@@ -21,9 +21,9 @@ router.group(() => {
   router.get('/me', [AuthController, 'me']);
 }).prefix('/api/auth')
 
-
 router.group(() => {
   router.get('/42', [AuthController, 'oauth42']);
+  router.get('/github', [AuthController, 'oauthgithub'])
 }).prefix('/api/oauth')
 
 router.group(() => {
