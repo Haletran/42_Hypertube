@@ -1,4 +1,4 @@
-redis
+aioredis
 libtorrent
 ffprobe-python
 python-dotenv
