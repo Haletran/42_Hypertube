@@ -26,9 +26,9 @@ export function Navbar() {
         <div className="container mx-auto p-4">
             <header className="sticky top-0 z-50 w-full  bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container flex h-16 items-center justify-between">
-                    <Link href="/" className="flex items-center" onClick={(e) => {
+                    <Link href="/dashboard" className="flex items-center" onClick={(e) => {
                         e.preventDefault();
-                        window.location.href = '/';
+                        window.location.href = '/dashboard';
                     }}>
                         <h1 className="text-xl font-bold tracking-tight">Hypertube</h1>
                     </Link>
