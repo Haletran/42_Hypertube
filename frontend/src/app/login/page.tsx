@@ -19,6 +19,7 @@ export default function LoginPage() {
           console.error('Login failed:', error);
         }
   };
+
   const github_url =  `https://github.com/login/oauth/authorize?scope=user:bpasquier123@gmail.com&client_id=` + process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
   const loginUrl = new URL('https://api.intra.42.fr/oauth/authorize');
   const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
@@ -31,9 +32,17 @@ export default function LoginPage() {
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get('token');
-    if (token && auth) {
-      auth.setToken(token);
-      window.location.href = '/dashboard';
+    if (token) {
+      try {
+        const parsedToken = JSON.parse(token);
+        console.log('Parsed Token:', parsedToken.token);
+        if (token && auth) {
+          auth.setToken(parsedToken.token);
+          window.location.href = '/dashboard';
+        }
+      } catch (error) {
+        console.error('Failed to parse token:', error);
+      }
     }
   }, [auth]);
   

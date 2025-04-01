@@ -14,6 +14,7 @@ import Cookies from 'js-cookie';
 export function Navbar() {
     const auth = useContext(AuthContext);
     const [profile_picture, setProfilePicture] = useState('');
+    const [name, setName] = useState('');
 
 
     const logout = async () => {
@@ -31,8 +32,8 @@ export function Navbar() {
             try {
                 const token = Cookies.get('token');
                 const response = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
-                setProfilePicture(response.data.profile_picture);
-                console.log(response.data);
+                setProfilePicture(response.data.user.profilePicture || '');
+                setName(response.data.user.username);
             } catch (error) {
                 console.error('Failed to get user:', error);
             }
@@ -58,8 +59,8 @@ export function Navbar() {
                             </Link>
                             <DropdownMenu.Trigger asChild>
                                 <Avatar>
-                                    <AvatarImage src={profile_picture || "https://xsgames.co/randomusers/assets/avatars/male/1.jpg"} />
-                                    <AvatarFallback>BP</AvatarFallback>
+                                    <AvatarImage src={profile_picture} />
+                                    <AvatarFallback>{name ? name.charAt(0).toUpperCase() : ''}</AvatarFallback>
                                 </Avatar>
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Portal>
