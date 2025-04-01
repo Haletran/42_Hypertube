@@ -3,6 +3,7 @@ import { use, useState, useEffect } from "react";
 import { Star, Calendar, Clock, Download, Clapperboard, X, Play, Loader } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
+import { Progress } from "@/app/components/ui/progress";
 import Link from "next/link";
 import { Torrent } from '@/types';
 
@@ -16,6 +17,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
     const [providersTorrents, setProvidersTorrents] = useState<Record<string, Torrent[]>>();
     const [selectedProvider, setSelectedProvider] = useState<'all' | '1337x' | 'piratebay' | 'yts' | 'eztv' | 'tgx' | 'torlock' | 'nyaasi' | 'rarbg' | 'kickass' | 'bitsearch' | 'glodls' | 'limetorrent' | 'torrentfunk' | 'torrentproject'>('all');
     const [isFetching, setIsFetching] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     if (!movie) {
         return <div className="text-center py-8">Movie details not available</div>;
@@ -110,6 +112,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
             const data = await response.json();
 
             await checkDownload(movieId);
+            setIsDownloading(true);
             console.log(data);
             setShowTorrents(false);
         } catch (error) {
@@ -135,8 +138,13 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                 throw new Error(`Failed to fetch movie status: ${response.status}`);
             }
             const data = await response.json();
-            setIsDownloading(data.status === 'downloading');
-            console.log("STATUS : " , data.status, "| PROGRESS : ", data.progress);
+            if (data.status === 'complete') {
+                setIsDownloading(false);
+                setProgress(100);
+                return false;
+            }
+            setIsDownloading(data.status);
+            setProgress(data.progress);
             return data.status === 'downloading';
         } catch (error) {
             console.error('Failed to fetch movie status:', error);
@@ -153,7 +161,27 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
     };
 
     useEffect(() => {
-        (async () => {
+        const checkInitialState = async () => {
+            const available = await isAvailable(movie.id);
+            if (available) {
+                setIsPlayable(true);
+                console.log(`Movie with ID ${movie.id} is available for streaming.`);
+            } else {
+                const isCurrentlyDownloading = await checkDownload(movie.id);
+                if (isCurrentlyDownloading || progress > 0) {
+                    setIsDownloading(true);
+                }
+            }
+        };
+        
+        checkInitialState();
+        
+        const interval = setInterval(async () => {
+            if (progress === 100) {
+                setIsPlayable(true);
+                clearInterval(interval);
+                return;
+            }
             const available = await isAvailable(movie.id);
             await checkDownload(movie.id);
             if (available) {
@@ -163,8 +191,10 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                 setIsPlayable(false);
                 console.log(`Movie with ID ${movie.id} is not available for streaming.`);
             }
-        })();
-    }, [isAvailable, isDownloading]);
+        }, 500);
+        
+        return () => clearInterval(interval);
+    }, [movie.id, progress]);
 
 
     return (
@@ -218,9 +248,12 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                 {movie.overview && <p className="text-base text-muted-foreground">{movie.overview}</p>}
                 {!movie.overview && <p className="text-base text-muted-foreground">No description available...</p>}
                 {isDownloading && (
-                        <div>
-                            <p className="text-sm text-red-500">Downloading...</p>
-                        </div>
+                        <div className="relative w-full pt-5">
+                            <Progress value={progress} className="w-full h-6" />
+                                <span className="text-sm font-medium text-white">
+                                    {progress}%
+                                </span>
+                            </div>
                     )}
                 <div className="flex gap-2 mt-7">
                     <Button
@@ -228,12 +261,17 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                         onClick={isPlayable 
                             ? () => window.location.href = `http://localhost:3000/movie/${movie.id}/watch` 
                             : fetchTorrents}
-                        disabled={isFetching}
+                        disabled={isFetching || isDownloading && !isPlayable}
                     >
                         {isFetching ? (
                             <>
                                 <Loader className="h-4 w-4 mr-2 animate-spin" />
                                 Fetching...
+                            </>
+                        ) : isDownloading && !isPlayable ? (
+                            <>
+                                <Loader className="h-4 w-4 mr-2 animate-spin" />
+                                Downloading...
                             </>
                         ) : isPlayable ? (
                             <>

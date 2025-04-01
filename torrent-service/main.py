@@ -247,7 +247,7 @@ async def handle_torrent(magnet: str, stream_id: str):
 
         while not handle.status().is_seeding:
             status = handle.status()
-            progress = int(status.progress * 100)
+            progress = int(status.progress * 101)
             
             asyncio.create_task(update_progress(r, stream_id, progress))
             if progress >= 5 and not await r.exists(f'stream:{stream_id}:hls_started'):

@@ -31,12 +31,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get('token');
-    if (token) {
-      console.log('Got token:', token);
-      auth?.setToken(token);
+    if (token && auth) {
+      auth.setToken(token);
       window.location.href = '/dashboard';
     }
-  }, []);
+  }, [auth]);
   
 
   return (

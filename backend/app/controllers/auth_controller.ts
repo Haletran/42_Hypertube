@@ -47,7 +47,7 @@ export default class AuthController {
 
             const existingUser = await User.findBy('email', me.data.email)
             let user: any;
-            
+
             if (existingUser) {
               user = existingUser
             } else {
@@ -55,11 +55,11 @@ export default class AuthController {
                 email: me.data.email,
                 username: me.data.login,
                 password: '42',
+                profile_picture: me.data.image.link,
               })
             }
-            const tokenResult = await User.accessTokens.create(user)
-            const tokenValue = tokenResult.token || tokenResult.value || tokenResult.toString()
-            return response.redirect(`http://localhost:3000?token=${tokenValue}`)
+            const token = await User.accessTokens.create(user)
+            return response.redirect(`http://localhost:3000?token=${token}`)
         } catch (error) {
             console.error('Oauth42 failed:', error);
         }
@@ -93,27 +93,25 @@ export default class AuthController {
                 headers: { Authorization: `Bearer ${accessToken}` },
             })
 
-            const existingUser = await User.findBy('email', me.data.login + '@github.com')
+            const existingUser = await User.findBy('email', me.data.email || me.data.login + '@github.com')
             let user: any;
             
             if (existingUser) {
               user = existingUser
             } else {
               user = await User.firstOrCreate({
-                email: me.data.login + '@github.com',
+                email: me.data.email || me.data.login + '@github.com',
                 username: me.data.login,
                 password: 'github',
+                profile_picture: me.data.avatar_url,
               })
             }
-            const tokenResult = await User.accessTokens.create(user)
-            const tokenValue = tokenResult.token || tokenResult.value || tokenResult.toString()
-            return response.redirect(`http://localhost:3000?token=${tokenValue}`)
+            const token = await User.accessTokens.create(user)
+            return response.redirect(`http://localhost:3000?token=${token}`)
         } catch (error) {
             console.error('Oauth42 failed:', error);
         }
     }
-
-
 
     public async logout({ auth }: HttpContext) {
         const user = auth.user!;

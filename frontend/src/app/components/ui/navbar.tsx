@@ -1,15 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { useContext } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { DownloadBar } from "../DownloadBar"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import { AuthContext } from '@/contexts/AuthContext';
 import { Search, LogOut } from "lucide-react"
+import api from '@/utils/api';
+import Cookies from 'js-cookie';
+
 
 export function Navbar() {
     const auth = useContext(AuthContext);
+    const [profile_picture, setProfilePicture] = useState('');
 
 
     const logout = async () => {
@@ -21,6 +25,21 @@ export function Navbar() {
             console.error('Logout failed:', error);
         }
     }
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const token = Cookies.get('token');
+                const response = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+                setProfilePicture(response.data.profile_picture);
+                console.log(response.data);
+            } catch (error) {
+                console.error('Failed to get user:', error);
+            }
+        };
+        fetchUserData();
+    }, []);
+
 
     return (
         <div className="container mx-auto p-4">
@@ -39,7 +58,7 @@ export function Navbar() {
                             </Link>
                             <DropdownMenu.Trigger asChild>
                                 <Avatar>
-                                    <AvatarImage src="https://xsgames.co/randomusers/assets/avatars/male/1.jpg" />
+                                    <AvatarImage src={profile_picture || "https://xsgames.co/randomusers/assets/avatars/male/1.jpg"} />
                                     <AvatarFallback>BP</AvatarFallback>
                                 </Avatar>
                             </DropdownMenu.Trigger>

@@ -49,7 +49,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     };
 
-
   const logout = () => {
     Cookies.remove('token', { path: '/' });
     api.delete('/api/auth/logout');
