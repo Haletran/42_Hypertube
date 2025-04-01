@@ -1,7 +1,8 @@
+'use client';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Navbar } from "@/app/components/ui/navbar";
 import "./globals.css";
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,10 +14,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Hypertube",
-  description: "Very legal and very cool movie streaming service",
-};
 
 export default function RootLayout({
   children,
@@ -28,8 +25,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
+        <AuthProvider>
         {children}
+        </AuthProvider>
       </body>
     </html >
   );

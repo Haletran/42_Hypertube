@@ -5,18 +5,8 @@ import { useState, useRef, useEffect } from 'react';
 import { MovieCard } from './MovieCard';
 import { Loader } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
+import { Movie } from '@/types';
 
-interface Movie {
-    id: number;
-    imdb_id: string;
-    title: string;
-    tagline: string;
-    overview: string;
-    poster_path: string;
-    vote_average: number;
-    release_date: string
-    isAvailable: boolean;
-}
 
 export function SearchBar() {
     const [movies, setMovies] = useState<Movie[]>([]);

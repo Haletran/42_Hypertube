@@ -4,24 +4,8 @@ import { Button } from '@/app/components/ui/button';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Movie, MovieCardProps } from '@/types';
 
-interface Movie {
-    id: number;
-    imdb_id: string;
-    title: string;
-    tagline: string;
-    overview: string;
-    poster_path: string;
-    vote_average: number;
-    release_date: string
-    isAvailable: boolean;
-}
-
-interface MovieCardProps {
-    movies: Movie[];
-    observerRef: React.RefObject<null>;
-    loadState: boolean;
-}
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadState }) => {
     const [availableMovies, setAvailableMovies] = useState<{[key: number]: boolean}>({});

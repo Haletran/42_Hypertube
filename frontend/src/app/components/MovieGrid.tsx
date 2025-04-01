@@ -1,22 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Loader } from 'lucide-react';
 import { MovieCard } from './MovieCard';
-
-interface Movie {
-  id: number;
-  imdb_id: string;
-  title: string;
-  tagline: string;
-  overview: string;
-  poster_path: string;
-  vote_average: number;
-  release_date: string
-  isAvailable: boolean;
-}
-
-interface MovieGridProps {
-  onMovieSelect?: (movie: Movie) => void;
-}
+import { Movie, MovieGridProps } from '@/types';
 
 export function MovieGrid({ onMovieSelect }: MovieGridProps) {
   const [discover, setDiscover] = useState<Movie[]>([]);

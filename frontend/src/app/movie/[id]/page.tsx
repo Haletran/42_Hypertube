@@ -1,13 +1,7 @@
 import { CastScrollableList } from "@/app/components/CastScrollableList"
 import { MovieDetails } from "@/app/components/MovieOverview";
 import { CommentSection } from "@/app/components/CommentSection";
-
-
-interface WatchMovieParams {
-    params: {
-        id: number;
-    };
-}
+import { WatchMovieParams } from "@/types";
 
 export async function getMovieDetails(id: number) {
     try {

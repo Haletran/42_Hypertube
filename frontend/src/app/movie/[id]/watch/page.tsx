@@ -1,12 +1,6 @@
 import { BackButton } from "@/app/components/ui/backButton";
 import Player from "@/app/components/Player";
-
-interface WatchMovieParams {
-    params: {
-        id: number;
-    };
-}
-
+import { WatchMovieParams } from "@/types";
 
 export default async function WatchMovie({ params }: WatchMovieParams) {
     const { id } = await params;

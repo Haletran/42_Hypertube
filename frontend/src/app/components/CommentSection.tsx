@@ -1,15 +1,8 @@
 "use client";
-
 import { Textarea } from "@/app/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
-
-interface Comment {
-    id: number;
-    author: string;
-    content: string;
-    date: string;
-}
+import { Comment } from "@/types";
 
 const mockComments: Comment[] = [
     {

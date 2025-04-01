@@ -4,15 +4,8 @@ import { Star, Calendar, Clock, Download, Clapperboard, X, Play, Loader } from "
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import Link from "next/link";
+import { Torrent } from '@/types';
 
-interface Torrent {
-    id: string;
-    name: string;
-    seeders: number;
-    leechers: number;
-    size: string;
-    info_hash: string;
-}
 
 export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: string }) {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
