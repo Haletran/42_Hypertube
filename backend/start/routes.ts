@@ -23,6 +23,10 @@ router.group(() => {
 
 
 router.group(() => {
+  router.get('/42', [AuthController, 'oauth42']);
+}).prefix('/api/oauth')
+
+router.group(() => {
 
   router.post('/start', [StreamController, 'start'])
   router.get('/:id/status', [StreamController, 'status'])

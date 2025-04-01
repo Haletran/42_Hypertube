@@ -30,6 +30,13 @@ watch videos.
 
 ## Setup the Project
 
+### Setup 42 oauth
+
+Add this to redirect URI in 42 API settings:
+```
+http://localhost:3333/api/oauth/42
+```
+
 ### Environment Setup
 To make the project work, create a `.env` file in the backend folder with the following content:
 
@@ -47,6 +54,8 @@ TMDB_API_KEY= # add your TMDB API key here
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_DATABASE=hypertube
+CLIENT_ID= # add your 42 API client ID here
+CLIENT_SECRET= # add your 42 API secret here
 ```
 
 Also, create a `.env` file in the frontend folder with the following content:
@@ -54,6 +63,8 @@ Also, create a `.env` file in the frontend folder with the following content:
 ```bash 
 # this is a temporary solution
 NEXT_PUBLIC_TMDB_API_KEY= # add your TMDB API key here
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3333
+NEXT_PUBLIC_CLIENT_ID= # add your 42 API client ID here
 ```
 
 ```bash

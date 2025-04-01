@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { RegisterValidator, LoginValidator } from '#validators/register_user';
 import User from '#models/user'
+import axios from 'axios'
 
 export default class AuthController {
     public async register({ request }: HttpContext) {
@@ -15,6 +16,53 @@ export default class AuthController {
         await User.findByOrFail('email', email);
         const token = await User.accessTokens.create(user)
         return (token)
+    }
+
+    public async oauth42({ request, response }: HttpContext) {
+        const url = new URL(request.url(), request.completeUrl(true))
+        const code = request.qs().code
+        
+        if (!code) {
+            return { error: 'No code' }
+        }
+
+        try {
+            const response2 = await axios.post('https://api.intra.42.fr/oauth/token', {
+                grant_type: 'authorization_code',
+                client_id: process.env.CLIENT_ID,
+                client_secret: process.env.CLIENT_SECRET,
+                redirect_uri: url,
+                code: code,
+            })
+
+            const accessToken = response2.data.access_token
+            if (!accessToken) {
+                throw new Error('No access token')
+            }
+    
+            await new Promise((resolve) => setTimeout(resolve, 500))
+            const me = await axios.get('https://api.intra.42.fr/v2/me', {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            })
+
+            const existingUser = await User.findBy('email', me.data.email)
+            let user: any;
+            
+            if (existingUser) {
+              user = existingUser
+            } else {
+              user = await User.firstOrCreate({
+                email: me.data.email,
+                username: me.data.login,
+                password: '42',
+              })
+            }
+            const tokenResult = await User.accessTokens.create(user)
+            const tokenValue = tokenResult.token || tokenResult.value || tokenResult.toString()
+            return response.redirect(`http://localhost:3000?token=${tokenValue}`)
+        } catch (error) {
+            console.error('Oauth42 failed:', error);
+        }
     }
 
     public async logout({ auth }: HttpContext) {

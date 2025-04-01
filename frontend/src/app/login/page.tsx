@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect, use } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
 import { Button } from '@/app/components/ui/button';
 import Link from "next/link";
@@ -19,6 +19,24 @@ export default function LoginPage() {
           console.error('Login failed:', error);
         }
   };
+  const loginUrl = new URL('https://api.intra.42.fr/oauth/authorize');
+  const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+  if (!clientId) {
+    throw new Error('NEXT_PUBLIC_CLIENT_ID is not defined');
+  }
+  loginUrl.searchParams.set('client_id', clientId);
+  loginUrl.searchParams.set('redirect_uri', process.env.NEXT_PUBLIC_BACKEND_URL + '/api/oauth/42');
+  loginUrl.searchParams.set('response_type', 'code');
+
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get('token');
+    if (token) {
+      console.log('Got token:', token);
+      auth?.setToken(token);
+      window.location.href = '/dashboard';
+    }
+  }, []);
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -38,7 +56,9 @@ export default function LoginPage() {
           className="mb-4 p-2 border rounded w-64"
         />
         <Button onClick={handleLogin} className="mb-4 w-64">Login</Button>
-
+        
+        <Button onClick={() => window.location.href = `${loginUrl}`} className="mb-4 w-64 bg-blue-500 hover:bg-blue-600 text-white">Login with 42</Button>
+        
         <Link href="/register" className="text-accent">Go to Register</Link>
     </div>
   );

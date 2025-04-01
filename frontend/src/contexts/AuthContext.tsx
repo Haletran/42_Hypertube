@@ -3,9 +3,11 @@ import api from '../utils/api';
 import { User } from '@/types';
 import Cookies from 'js-cookie';
 
+
 interface AuthContextProps {
   user: User | null;
   login: (email: string, password: string) => Promise<any>;
+  setToken: (token: string) => void;
   register: (username: string, email: string, password: string) => Promise<any>;
   logout: () => void;
 }
@@ -40,12 +42,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userResponse.data);
   };
 
+  const setToken = (token: string) => {
+    Cookies.set('token', token, {
+        expires: 7,
+        path: '/'
+    });
+    };
 
 
   const logout = () => {
     Cookies.remove('token', { path: '/' });
     api.delete('/api/auth/logout');
-    // also add logout to the backend
     setUser(null);
   };
 
@@ -59,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [])
   
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register,  setToken, logout }}>
       {children}
     </AuthContext.Provider>
   );
