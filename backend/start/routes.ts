@@ -31,6 +31,7 @@ router.group(() => {
   router.post('/start', [StreamController, 'start'])
   router.get('/:id/status', [StreamController, 'status'])
   router.get('/:id/video', [StreamController, 'video'])
+  router.get('/:id/video.mp4', [StreamController, 'videomp4'])
   router.get('/:streamId/:segment.ts', [StreamController, 'videoSegment'])
   router.get('/:streamId/subtitles', [StreamController, 'subtitles'])
   router.get('/:title/download', [StreamController, 'getTorrentsList'])

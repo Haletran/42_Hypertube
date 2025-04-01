@@ -13,6 +13,9 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
     const [isLoading, setIsLoading] = useState(false);
     const [isPlayable, setIsPlayable] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [providersTorrents, setProvidersTorrents] = useState<Record<string, Torrent[]>>();
+    const [selectedProvider, setSelectedProvider] = useState<'all' | '1337x' | 'piratebay' | 'yts' | 'eztv' | 'tgx' | 'torlock' | 'nyaasi' | 'rarbg' | 'kickass' | 'bitsearch' | 'glodls' | 'limetorrent' | 'torrentfunk' | 'torrentproject'>('all');
+    const [isFetching, setIsFetching] = useState(false);
 
     if (!movie) {
         return <div className="text-center py-8">Movie details not available</div>;
@@ -23,34 +26,61 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
         : "/placeholder.svg?height=750&width=500";
 
     const fetchTorrents = async () => {
+        setIsFetching(true);
         setIsLoading(true);
         try {
-            console.log(movie.original_title);
+            const response = await fetch(`http://localhost:3333/api/stream/${movie.original_title}/download`);
+            if (!response.ok) throw new Error(`Failed to fetch torrents: ${response.status}`);
             
-            const response = await fetch(`http://localhost:3333/api/stream/${movie.original_title}/download?provider=sharewood`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch torrents: ${response.status}`);
-            }
             const data = await response.json();
-            
-            if (Array.isArray(data) && data.length > 0 && data[0].id !== "0") {
-                setTorrents(data.slice(0, 10).map((item: any) => ({
-                    id: movie.id,
-                    name: item.Name || item.title,
-                    seeders: parseInt(item.Seeders),
-                    leechers: parseInt(item.Leechers),
-                    size: item.Size,
-                    info_hash: item.Magnet
-                })));
-            } else {
-                setTorrents([]);
-            }
+            console.log('API Response:', data);
+
+            const transformed: Record<string, Torrent[]> = {
+                all: [],
+                '1337x': [],
+                piratebay: [],
+                yts: [],
+                eztv: [],
+                tgx: [],
+                torlock: [],
+                nyaasi: [],
+                rarbg: [],
+                kickass: [],
+                bitsearch: [],
+                glodls: [],
+                limetorrent: [],
+                torrentfunk: [],
+                torrentproject: []
+            };
+
+            Object.entries(data).forEach(([provider, torrents]) => {
+                if (Array.isArray(torrents)) {
+                    const cleanTorrents = torrents
+                        .filter(t => t?.Magnet)
+                        .map(t => ({
+                            id: movie.id,
+                            name: t.Name || t.title,
+                            seeders: parseInt(t.Seeders) || 0,
+                            leechers: parseInt(t.Leechers) || 0,
+                            size: t.Size || 'N/A',
+                            info_hash: t.Magnet
+                        }));
+
+                    if (provider === '1337x' || provider === 'piratebay' || provider === 'yts' || provider === 'eztv' || provider === 'tgx' || provider === 'torlock' || provider === 'nyaasi' || provider === 'rarbg' || provider === 'kickass' || provider === 'bitsearch' || provider === 'glodls' || provider === 'limetorrent' || provider === 'torrentfunk' || provider === 'torrentproject') {
+                        transformed[provider] = cleanTorrents;
+                    }
+                    transformed.all.push(...cleanTorrents);
+                }
+            });
+
+            setProvidersTorrents(transformed);
+            setShowTorrents(true);
         } catch (error) {
             console.error("Error fetching torrents:", error);
-            setTorrents([]);
+            setProvidersTorrents({});
         } finally {
             setIsLoading(false);
-            setShowTorrents(true);
+            setIsFetching(false); 
         }
     };
 
@@ -198,13 +228,24 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                         onClick={isPlayable 
                             ? () => window.location.href = `http://localhost:3000/movie/${movie.id}/watch` 
                             : fetchTorrents}
+                        disabled={isFetching}
                     >
-                        {isPlayable ? (
-                            <Play className="h-4 w-4 mr-2" />
+                        {isFetching ? (
+                            <>
+                                <Loader className="h-4 w-4 mr-2 animate-spin" />
+                                Fetching...
+                            </>
+                        ) : isPlayable ? (
+                            <>
+                                <Play className="h-4 w-4 mr-2" />
+                                Play
+                            </>
                         ) : (
-                            <Download className="h-4 w-4 mr-2" />
+                            <>
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                            </>
                         )}
-                        {isPlayable ? 'Play' : 'Download'}
                     </Button>
                     
                     {trailerUrl && (
@@ -222,41 +263,68 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
 
             {showTorrents && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-secondary rounded-lg max-w-2xl w-full max-h-[80vh] overflow-auto">
+                    <div className="bg-secondary rounded-lg max-w-4xl w-full max-h-[80vh] overflow-auto">
                         <div className="p-4 border-b flex justify-between items-center">
-                            <h2 className="text-xl font-bold">Available Downloads for {movie.title}</h2>
-                            <Button variant="ghost" size="sm" onClick={() => setShowTorrents(false)} className="rounded-full">
+                            <h2 className="text-xl font-bold">Sources pour {movie.title}</h2>
+                            <Button variant="ghost" size="sm" onClick={() => setShowTorrents(false)}>
                                 <X className="h-4 w-4" />
                             </Button>
                         </div>
-                        <div className="p-4 ">
+                        
+                        {/* Onglets des providers */}
+                        <div className="px-4 py-2 border-b">
+                            <div className="flex gap-2 flex-wrap">
+                                {providersTorrents && Object.keys(providersTorrents).map(provider => (
+                                    <Button
+                                        key={provider}
+                                        variant={selectedProvider === provider ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => setSelectedProvider(provider as any)}
+                                    >
+                                        {provider.toUpperCase()}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+
+
+                        {/* Liste des torrents */}
+                        <div className="p-4">
                             {isLoading ? (
-                                <div className="text-center py-8">Loading torrents...</div>
-                            ) : torrents.length > 0 ? (
-                                <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
-                                    {torrents.map((torrent) => (
-                                        <div key={torrent.id} className="flex justify-between items-center p-3 rounded-md">
-                                            <div className="flex-1 truncate">
-                                                <p className="font-medium truncate">{torrent.name}</p>
-                                                <p className="text-xs text-muted-foreground">Size: {torrent.size}</p>
-                                            </div>
-                                            <div className="flex gap-4 items-center text-sm">
-                                                <span className="text-green-500">S: {torrent.seeders}</span>
-                                                <span className="text-red-500">L: {torrent.leechers}</span>
-                                                <Button 
-                                                    size="sm" 
-                                                    onClick={() => {
-                                                        downloadTorrent(torrent.info_hash, movie.id);
-                                                    }}
-                                                >
-                                                    Select
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div className="text-center py-8">
+                                    <Loader className="h-6 w-6 animate-spin mx-auto" />
+                                    <p>Chargement des sources...</p>
                                 </div>
                             ) : (
-                                <div className="text-center py-8">No torrents found for this movie</div>
+                                <>
+                                    {providersTorrents[selectedProvider]?.length > 0 ? (
+                                        <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                                            {providersTorrents[selectedProvider].map((torrent, index) => (
+                                                <div key={index} className="flex justify-between items-center p-3 rounded-md bg-background">
+                                                    <div className="flex-1 truncate">
+                                                        <p className="font-medium truncate">{torrent.name}</p>
+                                                        <div className="flex gap-2 text-xs text-muted-foreground mt-1">
+                                                            <span>{torrent.size}</span>
+                                                            <span>•</span>
+                                                            <span className="text-green-500">↑ {torrent.seeders}</span>
+                                                            <span className="text-red-500">↓ {torrent.leechers}</span>
+                                                        </div>
+                                                    </div>
+                                                    <Button 
+                                                        size="sm" 
+                                                        onClick={() => downloadTorrent(torrent.info_hash, movie.id)}
+                                                    >
+                                                        Sélectionner
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            Aucune source trouvée {selectedProvider !== 'all' ? `sur ${selectedProvider}` : ''}
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

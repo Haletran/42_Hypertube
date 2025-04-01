@@ -6,7 +6,7 @@ import asyncio
 import subprocess
 from pathlib import Path
 from ffprobe import FFProbe
-import redis
+import aioredis
 from dotenv import load_dotenv
 import requests
 from bs4 import BeautifulSoup
@@ -27,6 +27,14 @@ logging.basicConfig(
 DOWNLOAD_DIR = "./data"
 HLS_DIR = "./data/hls"
 REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+
+
+async def update_progress(redis_client, stream_id, progress):
+    try:
+        logging.info(f"Progression mise à jour pour {stream_id}: {progress}%")
+        await redis_client.setex(f"progress:{stream_id}", 3600, str(progress))
+    except Exception as e:
+        logging.error(f"Erreur mise à jour progression: {str(e)}")
 
 async def extract_subtitles(video_path, output_dir, stream_id):
     """Extraire les sous-titres intégrés avec ffmpeg"""
@@ -167,6 +175,28 @@ async def convert_to_hls(input_path, output_dir, stream_id):
     except Exception as e:
         logging.error(f"Erreur conversion HLS: {str(e)}")
         return False
+        
+async def hls_conversion_task(redis_client, stream_id, video_file, hls_path, imdb_id, name):
+    """Tâche séparée pour la conversion HLS avec accès à Redis"""
+    try:
+        if os.path.exists(video_file):
+            extracted_subs = await extract_subtitles(video_file, hls_path, stream_id)
+            external_subs = await download_external_subs(imdb_id, name, stream_id)
+            
+            all_subs = extracted_subs + external_subs
+            logging.info(f"Sous-titres extraits: {all_subs}")
+            # for lang, sub_path in all_subs:
+            #     await redis_client.sadd(f'stream:{stream_id}:subtitles', f"/hls/{stream_id}/{os.path.basename(sub_path)}")
+            
+            success = await convert_to_hls(video_file, hls_path, stream_id)
+            if success:
+                await redis_client.set(f'stream:{stream_id}:hls_started', '1')
+            #     await redis_client.set(f'stream:{stream_id}:url', f"/hls/{stream_id}/stream.m3u8")
+    except Exception as e:
+        logging.error(f"Erreur conversion HLS: {str(e)}")
+        await redis_client.set(f'stream:{stream_id}:error', str(e))
+    finally:
+        await redis_client.delete(f'stream:{stream_id}:hls_processing')
 
 async def handle_torrent(magnet: str, stream_id: str):
     response = requests.get(
@@ -180,7 +210,7 @@ async def handle_torrent(magnet: str, stream_id: str):
         logging.error(f"IMDB ID non trouvé pour TMDB ID {stream_id}")
         return
 
-    r = redis.Redis(host=REDIS_HOST)
+    r = await aioredis.from_url(f"redis://{REDIS_HOST}")
     
     try:
         download_path = os.path.join(DOWNLOAD_DIR, stream_id)
@@ -199,7 +229,7 @@ async def handle_torrent(magnet: str, stream_id: str):
         handle.set_sequential_download(True)
         
         logging.info(f"Début du téléchargement: {stream_id}")
-        r.set(f'stream:{stream_id}:status', 'downloading')
+        await r.set(f'stream:{stream_id}:status', 'downloading')
 
         while not handle.has_metadata():
             await asyncio.sleep(0.1)
@@ -213,26 +243,19 @@ async def handle_torrent(magnet: str, stream_id: str):
         if not video_file:
             raise Exception("Aucun fichier vidéo trouvé dans le torrent")
 
+        hls_task = None
+
         while not handle.status().is_seeding:
             status = handle.status()
             progress = int(status.progress * 100)
             
-            r.setex(f'stream:{stream_id}:progress', 30, progress)
-            
-            if progress >= 5 and not r.exists(f'stream:{stream_id}:hls_started'):
-                if os.path.exists(video_file):
-                    extracted_subs = await extract_subtitles(video_file, hls_path, stream_id)
-                    external_subs = await download_external_subs(imdb_id, name, stream_id)
-                    
-                    all_subs = extracted_subs + external_subs
-                    logging.info(f"Sous-titres extraits: {all_subs}")
-                    for lang, sub_path in all_subs:
-                        r.sadd(f'stream:{stream_id}:subtitles', f"/hls/{stream_id}/{os.path.basename(sub_path)}")
-                    
-                    success = await convert_to_hls(video_file, hls_path, stream_id)
-                    if success:
-                        r.set(f'stream:{stream_id}:hls_started', '1')
-                        r.set(f'stream:{stream_id}:url', f"/hls/{stream_id}/stream.m3u8")
+            asyncio.create_task(update_progress(r, stream_id, progress))
+            if progress >= 5 and not await r.exists(f'stream:{stream_id}:hls_started'):
+                if not hls_task and video_file:
+                    hls_task = asyncio.create_task(
+                        hls_conversion_task(r, stream_id, video_file, hls_path, imdb_id, name)
+                    )
+                    # await r.set(f'stream:{stream_id}:hls_processing', '1')
             
             await asyncio.sleep(1)
 
@@ -251,25 +274,25 @@ async def handle_torrent(magnet: str, stream_id: str):
         else:
             shutil.copy2(video_file, mp4_file)
 
-        r.set(f'stream:{stream_id}:status', 'complete')
+        await r.set(f'stream:{stream_id}:status', 'complete')
         logging.info(f"Téléchargement complet: {stream_id}")
 
     except Exception as e:
         logging.error(f"Erreur avec {stream_id}: {str(e)}")
-        r.set(f'stream:{stream_id}:status', 'error')
-        r.set(f'stream:{stream_id}:error', str(e))
+        await r.set(f'stream:{stream_id}:status', 'error')
+        await r.set(f'stream:{stream_id}:error', str(e))
     finally:
         ses.remove_torrent(handle)
 
 async def main():
-    r = redis.Redis(host=REDIS_HOST)
+    r = await aioredis.from_url(f"redis://{REDIS_HOST}")
     pubsub = r.pubsub()
-    pubsub.subscribe('torrent:start')
+    await pubsub.subscribe('torrent:start')
 
     logging.info("Service HLS Torrent prêt")
 
     while True:
-        message = pubsub.get_message(ignore_subscribe_messages=True)
+        message = await pubsub.get_message(ignore_subscribe_messages=True)
         if message:
             try:
                 data = json.loads(message['data'])

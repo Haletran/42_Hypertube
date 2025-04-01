@@ -4,6 +4,7 @@ import fs from 'fs/promises'
 import { createReadStream } from 'fs'
 import path from 'path'
 import { request } from 'http'
+import { ALL } from 'dns'
 
 export default class StreamController {
   public async start({ request, response }: HttpContext) {
@@ -21,30 +22,42 @@ export default class StreamController {
   }
 
   public async status({ params, response }: HttpContext) {
-    const streamId = params.id
-    const keys = [
-      'progress', 'status', 'download_rate', 'upload_rate', 
-      'peers', 'eta', 'file_type', 'file_size', 
-      'mp4_ready', 'mp4_url', 'hls_started', 'url', 'subtitles'
-    ]
+    const streamId = params.id;
+    
+    const status = {
+      progress: await Redis.get(`progress:${streamId}`),
+      // hls_started: await Redis.get(`stream:${streamId}:hls_started`),
+      // hls_processing: await Redis.get(`stream:${streamId}:hls_processing`),
+      // url: await Redis.get(`stream:${streamId}:url`),
+      // subtitles: await Redis.smembers(`stream:${streamId}:subtitles`),
+      status: await Redis.get(`stream:${streamId}:status`)
+    };
   
-    const data: any = {}
-  
-    for (const key of keys) {
-      const fullKey = `stream:${streamId}:${key}`
-      const type = await Redis.type(fullKey)
-
-      if (type === 'string') {
-        data[key] = await Redis.get(fullKey)
-      } else if (type === 'set') {
-        data[key] = await Redis.smembers(fullKey)
-      } else {
-        data[key] = null
-      }
-    }
-  
-    return response.json(data)
+    return response.json(status);
   }
+
+  public async videomp4({ params, response }: HttpContext) {
+    const mp4Path = path.join('data', params.id, 'video.mp4');
+    try {
+      await fs.access(mp4Path);
+
+      response.header('Content-Type', 'video/mp4');
+      response.header('Cache-Control', 'no-cache');
+      response.header('Access-Control-Allow-Origin', '*');
+      response.header('Accept-Ranges', 'bytes');
+      
+      return response.stream(createReadStream(mp4Path));
+    }
+    catch (error) {
+      return response.notFound({
+        real_error: error,
+        error: 'Video not ready yet',
+        progress: await Redis.get(`stream:${params.id}:progress`) || 0,
+      });
+    }
+  }
+
+
 
   public async video({ params, response }: HttpContext) {
     const streamPath = path.join('data', 'hls', params.id, 'stream.m3u8');
@@ -120,57 +133,49 @@ export default class StreamController {
     }
   }
   
-  public async getTorrentsList({ params, request, response }:HttpContext) {
+  public async getTorrentsList({ params, response }: HttpContext) {
     const title = params.title;
-    const provider = request.qs().provider;
-    const apiKey = process.env.SHAREWOOD_API_KEY || '';
-
-    if (!provider) {
-      return response.badRequest({ error: 'Provider is required' });
-    }
 
     if (!title) {
       return response.badRequest({ error: 'Movie title is required' });
     }
 
-    if (provider === 'piratebay') {
-      try {
-        const apiResponse = await fetch(`https://apibay.org/q.php?q=${title}`);
-        
-        if (!apiResponse.ok) {
-          return response.status(apiResponse.status).json({ 
-            error: 'Failed to fetch from API' 
-          });
+    const providersMap: Record<string, string> = {
+      '1337x': `https://itorrentsearch.vercel.app/api/1337x/${title}`,
+      'yts': `https://itorrentsearch.vercel.app/api/yts/${title}`,
+      'eztv': `https://itorrentsearch.vercel.app/api/eztv/${title}`,
+      'tgx': `https://itorrentsearch.vercel.app/api/tgx/${title}`,
+      'torlock': `https://itorrentsearch.vercel.app/api/torlock/${title}`,
+      'piratebay': `https://itorrentsearch.vercel.app/api/piratebay/${title}`,
+      'nyaasi': `https://itorrentsearch.vercel.app/api/nyaasi/${title}`,
+      'rarbg': `https://itorrentsearch.vercel.app/api/rarbg/${title}`,
+      'kickass': `https://itorrentsearch.vercel.app/api/kickass/${title}`,
+      'bitsearch': `https://itorrentsearch.vercel.app/api/bitsearch/${title}`,
+      'glodls': `https://itorrentsearch.vercel.app/api/glodls/${title}`,
+      'limetorrent': `https://itorrentsearch.vercel.app/api/limetorrent/${title}`,
+      'torrentfunk': `https://itorrentsearch.vercel.app/api/torrentfunk/${title}`,
+      'torrentproject': `https://itorrentsearch.vercel.app/api/torrentproject/${title}`,
+    };
+
+    const results: Record<string, any[]> = {};
+
+    await Promise.all(
+      Object.entries(providersMap).map(async ([provider, url]) => {
+        try {
+          const apiResponse = await fetch(url);
+
+          if (apiResponse.ok) {
+            const data = await apiResponse.json();
+            results[provider] = Array.isArray(data) ? data : [data];
+          } else {
+            results[provider] = [{ error: `Failed with status ${apiResponse.status}` }];
+          }
+        } catch (error) {
+          results[provider] = [{ error: error.message }];
         }
-        
-        const data = await apiResponse.json();
-        return response.json(data);
-      } catch (error) {
-        return response.status(500).json({
-          error: 'Failed to fetch torrent data',
-          details: error.message
-        });
-      }
-    } else if (provider === 'sharewood') {
-      try {
-        //https://www.oxtorrent.co/recherche/films/cars
-        const apiResponse = await fetch(`https://itorrentsearch.vercel.app/api/1337x/${title}`);
-        
-        if (!apiResponse.ok) {
-          return response.status(apiResponse.status).json({ 
-            error: 'Failed to fetch from API' 
-          });
-        }
-        
-        const data = await apiResponse.json();
-        return response.json(data);
-      } catch (error) {
-        return response.status(500).json({
-          error: 'Failed to fetch torrent data',
-          details: error.message
-        });
-      }
-    }
+      })
+    );
+    return response.json(results);
   }
 }
   
