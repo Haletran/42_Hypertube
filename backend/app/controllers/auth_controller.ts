@@ -1,5 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { RegisterValidator, LoginValidator } from '#validators/register_user';
+import { RegisterValidator, LoginValidator, UpdateValidator } from '#validators/register_user';
 import User from '#models/user'
 import axios from 'axios'
 
@@ -7,7 +7,11 @@ export default class AuthController {
     public async register({ request }: HttpContext) {
         const data = request.all();
         const payload = await RegisterValidator.validate(data);
-        return (await User.create(payload));
+        const user = await User.create(payload);
+        user.profile_picture = '/pictures/netflix_default.jpg';
+        await user.save();
+        const token = await User.accessTokens.create(user)
+        return (token);
     }
 
     public async login({ request }: HttpContext) {
@@ -127,12 +131,14 @@ export default class AuthController {
             }
             const data = request.all();
             const userWithPassword = await User.findOrFail(request.param('id'));
+            const payload = await UpdateValidator.validate(data);
             if (data.old_password) {
                 await User.verifyCredentials(userWithPassword.email, data.old_password);
             }
             if (data.password) userWithPassword.password = data.password;
             if (data.email) userWithPassword.email = data.email;
             if (data.username) userWithPassword.username = data.username;
+            if (data.profilePicture) userWithPassword.profile_picture = data.profilePicture;
             await userWithPassword.save();
             return { message: 'User updated successfully' };
         } catch (error) {

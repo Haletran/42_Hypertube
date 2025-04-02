@@ -14,3 +14,13 @@ export const LoginValidator = vine.compile(
         password: vine.string().trim().minLength(6).maxLength(30).escape()
     })
 )
+
+export const UpdateValidator = vine.compile(
+    vine.object({
+        username: vine.string().trim().minLength(2).maxLength(12).escape().optional(),
+        email: vine.string().trim().minLength(6).email().escape().optional(),
+        password: vine.string().trim().minLength(6).maxLength(30).escape().optional(),
+        old_password: vine.string().trim().minLength(6).maxLength(30).escape().optional(),
+        profilePicture: vine.string().trim().optional()
+    })
+)

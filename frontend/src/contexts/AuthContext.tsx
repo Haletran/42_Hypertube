@@ -8,7 +8,7 @@ interface AuthContextProps {
   user: User | null;
   login: (email: string, password: string) => Promise<any>;
   setToken: (token: string) => void;
-  update: (username: string, email: string, password: string, old_password: string) => Promise<any>;
+  update: (username: string, email: string, password: string, old_password: string, profilePicture: string) => Promise<any>;
   register: (username: string, email: string, password: string) => Promise<any>;
   logout: () => void;
 }
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
 
-  const update = async (username: string, email: string, password: string, old_password: string) => {
+  const update = async (username: string, email: string, password: string, old_password: string, profilePicture: string) => {
     try {
       const userResponse = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
@@ -68,13 +68,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!username) username = userResponse.data.user.username;
       if (!email) email = userResponse.data.user.email;
       if (!password) password = userResponse.data.user.password;
-      const response = await api.patch(`/api/users/${userResponse.data.user.id}`, { username, email, password, old_password }, { headers: { Authorization: `Bearer ${Cookies.get('token')}` } });
-      setUser(userResponse.data.user);
+      const response = await api.patch(`/api/users/${userResponse.data.user.id}`, { username, email, password, old_password, profilePicture }, { headers: { Authorization: `Bearer ${Cookies.get('token')}` } });
+      const updateResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      setUser(updateResponse.data.user);
       return { success: true };
     } catch (error: any) {
       return { 
         success: false, 
-        error: error.response?.data?.errors || 'Update failed'
+        error: error.response?.data?.messages?.[0]?.message || 
+          error.response?.data?.errors || 
+          error.response?.data?.name ||  
+          error.response?.data?.messages || 
+          'Update failed'
       };
     }
   }

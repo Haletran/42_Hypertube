@@ -36,7 +36,6 @@ export function SearchBar() {
             const data = await response.json();
             setError(null);
             setMovies(data);
-            console.log(data);
             setLoading(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unknown error occurred');

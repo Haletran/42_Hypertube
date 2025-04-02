@@ -35,7 +35,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
             if (!response.ok) throw new Error(`Failed to fetch torrents: ${response.status}`);
             
             const data = await response.json();
-            console.log('API Response:', data);
+            //console.log('API Response:', data);
 
             const transformed: Record<string, Torrent[]> = {
                 all: [],
@@ -113,7 +113,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
 
             await checkDownload(movieId);
             setIsDownloading(true);
-            console.log(data);
+            //console.log(data);
             setShowTorrents(false);
         } catch (error) {
             console.error("Error starting stream:", error);
@@ -165,7 +165,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
             const available = await isAvailable(movie.id);
             if (available) {
                 setIsPlayable(true);
-                console.log(`Movie with ID ${movie.id} is available for streaming.`);
+                //console.log(`Movie with ID ${movie.id} is available for streaming.`);
             } else {
                 const isCurrentlyDownloading = await checkDownload(movie.id);
                 if (isCurrentlyDownloading || progress > 0) {
@@ -186,10 +186,10 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
             await checkDownload(movie.id);
             if (available) {
                 setIsPlayable(true);
-                console.log(`Movie with ID ${movie.id} is available for streaming.`);
+                //console.log(`Movie with ID ${movie.id} is available for streaming.`);
             } else {
                 setIsPlayable(false);
-                console.log(`Movie with ID ${movie.id} is not available for streaming.`);
+                //console.log(`Movie with ID ${movie.id} is not available for streaming.`);
             }
         }, 500);
         

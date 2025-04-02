@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useContext } from "react"
+import { useState, useContext, useEffect } from "react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
@@ -8,8 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/ta
 import { Card, CardContent } from "@/app/components/ui/card"
 import { Separator } from "@/app/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
-import { Camera, User, KeyRound, Loader2 } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/app/components/ui/dialog"
+import { Camera, User, KeyRound, Loader2, Check } from "lucide-react"
+import { Alert, AlertDescription } from "@/app/components/ui/alert"
+import api from '@/utils/api';
+import Cookies from 'js-cookie';
+
 import { AuthContext } from "@/contexts/AuthContext"
+import { set } from "react-hook-form"
 
 export default function SettingsPage() {
   const auth = useContext(AuthContext)
@@ -19,32 +25,79 @@ export default function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [avatarUrl, setAvatarUrl] = useState("/placeholder.svg?height=200&width=200")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedAvatar, setSelectedAvatar] = useState(0)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [currentProfilePicture, setProfilePicture] = useState('');
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const url = URL.createObjectURL(file)
-      setAvatarUrl(url)
-    }
+  const handleAvatarSelect = (index: number) => {
+    setSelectedAvatar(index)
   }
+  
+  const avatarOptions = [...new Set([
+    currentProfilePicture,
+    "/pictures/netflix_default.jpg",
+    "https://loremfaces.net/96/id/1.jpg",
+    "https://loremfaces.net/96/id/2.jpg",
+    "https://loremfaces.net/96/id/3.jpg",
+    "https://loremfaces.net/96/id/4.jpg",
+  ])].filter((url: string) => url)
 
   const handleSaveChanges = async () => {
     try {
         setIsLoading(true)
-        //if (!old_password) throw new Error("Old password is required")
         if (!auth) throw new Error("Auth context not found")
-        
-        await auth.update(username, email, newPassword, currentPassword)
+        const response = await auth.update(username, email, newPassword, currentPassword, avatarOptions[selectedAvatar])
         await new Promise((resolve) => setTimeout(resolve, 500))
+        if (!response.success) {
+          throw new Error(response.error);
+        }
+        setIsLoading(false)
+        window.location.reload()
+    } catch (error: any) {
+        setError(error.message || 'An error occurred')
+        setIsLoading(false)
+    }
+  }
+
+  const handlePasswordChange = async () => {
+    try {
+        setIsLoading(true)
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            throw new Error('Please fill in all fields')
+        }
+        if (newPassword !== confirmPassword) {
+            throw new Error('Passwords do not match')
+        }
+        if (!auth) throw new Error("Auth context not found")
+        const response = await auth.update(username, email, newPassword, currentPassword, avatarOptions[selectedAvatar]);
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        if (!response.success) {
+            throw new Error(response.error);
+        }
         setIsLoading(false)
     } catch (error: any) {
         setError(error.message || 'An error occurred')
         setIsLoading(false)
     }
   }
+
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+        try {
+            const token = Cookies.get('token');
+            const response = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+            setProfilePicture(response.data.user.profilePicture || '');
+            setUsername(response.data.user.username);
+            setEmail(response.data.user.email);
+        } catch (error) {
+            console.error('Failed to get user:', error);
+        }
+    };
+    fetchUserData();
+}, []);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -87,40 +140,60 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="flex items-center space-x-6">
-                      <div className="relative group">
-                        <Avatar className="h-24 w-24 border-2 border-zinc-800">
-                          <AvatarImage src={avatarUrl} alt="Profile picture" />
-                          <AvatarFallback className="bg-zinc-800 text-zinc-400 text-xl">
-                            {username.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                          <label
-                            htmlFor="avatar-upload"
-                            className="cursor-pointer p-2 rounded-full hover:bg-zinc-800/50"
-                          >
-                            <Camera className="h-5 w-5" />
-                            <span className="sr-only">Upload new picture</span>
-                          </label>
-                          <input
-                            id="avatar-upload"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleAvatarChange}
-                          />
-                        </div>
-                      </div>
+                      <Avatar className="h-24 w-24 border-2 border-zinc-800">
+                        <AvatarImage src={avatarOptions[selectedAvatar]} alt="Profile picture" />
+                        <AvatarFallback className="bg-zinc-800 text-zinc-400 text-xl">
+                          {username.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
 
                       <div>
-                        <Button
-                          variant="outline"
-                          className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-                          onClick={() => document.getElementById("avatar-upload").click()}
-                        >
-                          Change Picture
-                        </Button>
-                        <p className="text-zinc-500 text-xs mt-2">JPG, GIF or PNG. Max size of 2MB.</p>
+                        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                              Change Picture
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Choose an avatar</DialogTitle>
+                            </DialogHeader>
+                            <div className="grid grid-cols-5 gap-4 py-4">
+                              {avatarOptions.map((avatar, index) => (
+                                <div
+                                  key={index}
+                                  className={`
+                                    relative cursor-pointer rounded-md overflow-hidden
+                                    ${selectedAvatar === index ? "ring-2 ring-zinc-400" : "hover:ring-1 hover:ring-zinc-600"}
+                                  `}
+                                  onClick={() => handleAvatarSelect(index)}
+                                >
+                                  <Avatar className="h-16 w-16">
+                                    <AvatarImage src={avatar} alt={`Avatar option ${index + 1}`} />
+                                  </Avatar>
+                                  {selectedAvatar === index && (
+                                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                                      <Check className="h-6 w-6 text-white" />
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex justify-end gap-3">
+                              <Button
+                                variant="outline"
+                                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                                onClick={() => setDialogOpen(false)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button className="bg-zinc-800 hover:bg-zinc-700" onClick={() => setDialogOpen(false)}>
+                                Apply
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        <p className="text-zinc-500 text-xs mt-2">Choose from our collection of avatars.</p>
                       </div>
                     </div>
                   </CardContent>
@@ -162,6 +235,11 @@ export default function SettingsPage() {
                       </div>
 
                       <div>
+                      {error ? (
+                          <Alert variant="destructive" className="mb-4 bg-red-950 border-red-900 text-red-200">
+                            <AlertDescription >{error}</AlertDescription>
+                          </Alert>
+                        ): null}
                         <Button
                           onClick={handleSaveChanges}
                           disabled={isLoading}
@@ -231,20 +309,27 @@ export default function SettingsPage() {
                       </div>
 
                       <div>
-                        <Button
-                          onClick={handleSaveChanges}
-                          disabled={isLoading}
-                          className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100"
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Updating Password...
-                            </>
-                          ) : (
-                            "Update Password"
-                          )}
-                        </Button>
+                        <div>
+                        {error ? (
+                            <Alert variant="destructive" className="mb-4 bg-red-950 border-red-900 text-red-200">
+                              <AlertDescription >{error}</AlertDescription>
+                            </Alert>
+                          ) : null}
+                          <Button
+                            onClick={handlePasswordChange}
+                            disabled={isLoading || !currentPassword || !newPassword || !confirmPassword}
+                            className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isLoading ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Updating Password...
+                              </>
+                            ) : (
+                              "Update Password"
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
