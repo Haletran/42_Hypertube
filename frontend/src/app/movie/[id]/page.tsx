@@ -43,10 +43,10 @@ export async function getMovieTrailer(movieId: number) {
 }
 
 export default async function WatchMovie({ params }: WatchMovieParams) {
-    const movieId = params.id;
+    const awaitedParams = await params;
+    const movieId = awaitedParams.id;
     let movie: any;
     let trailer: any;
-
 
     try {
         trailer = await getMovieTrailer(movieId);
@@ -57,8 +57,8 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
 
     return (
         <div className="flex flex-col items-center justify-center p-4">
-
-            <div className="w-full max-w-6xl flex flex-col gap-3">
+            <div className="w-full max-w-4xl flex flex-col gap-3">
+                <Navbar />
                 {movie && (
                     <>
                         <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} />
@@ -67,6 +67,6 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
                     </>
                 )}
             </div>
-        </div >
+        </div>
     );
 }

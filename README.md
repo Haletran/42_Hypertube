@@ -75,18 +75,7 @@ NEXT_PUBLIC_CLIENT_ID= # add your 42 API client ID here
 NEXT_PUBLIC_GITHUB_CLIENT_ID= # add your github API client ID here
 ```
 
-```bash
-curl -X POST http://localhost:3333/api/stream/start \
-  -H "Content-Type: application/json" \
-  -d '{"magnet":"magnet:?xt=urn:btih:b7ba8edf1c2a5f80c8dd4aedf27e81e15a85fee6&tr=http://tracker.p2p-world.net:8080/2t9i8O8FwPIrgw2VHU18K4qP872rrCvj/announce", "streamId":"1190215"}'
-```
-
 ### Launch the Project
 ```bash
 make 
-```
-```bash
-curl -X POST http://localhost:3333/api/stream/start \
-  -H "Content-Type: application/json" \
-  -d '{"magnet":"magnet:?xt=urn:btih:79816060ea56d56f2a2148cd45705511079f9bca&dn=TPB.AFK.2013.720p.h264-SimonKlose&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Fopen.demonii.com%3A1337&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Fexodus.desync.com%3A6969", "streamId":"1190215"}'
 ```
