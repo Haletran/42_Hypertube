@@ -5,7 +5,6 @@ import json
 import asyncio
 import subprocess
 from pathlib import Path
-from ffprobe import FFProbe
 import aioredis
 from dotenv import load_dotenv
 import requests
@@ -28,6 +27,84 @@ DOWNLOAD_DIR = "./data"
 HLS_DIR = "./data/hls"
 REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
 
+def detect_hardware_acceleration():
+    """Détecte les capacités d'accélération matérielle disponibles"""
+    try:
+        if shutil.which('nvidia-smi'):
+            return 'nvidia'
+        if os.path.exists('/dev/dri/renderD128'):
+            return 'intel'
+        if os.path.exists('/dev/kfd'):
+            return 'amd'
+        if subprocess.check_output(['uname', '-m']).decode().strip() == 'arm64':
+            return 'apple'
+    except Exception:
+        pass
+    return 'software'
+
+def get_ffmpeg_command(input_file, output_file, hls=False):
+    """Génère la commande FFmpeg optimisée pour le hardware"""
+    hw_type = detect_hardware_acceleration()
+    
+    base_params = {
+        'nvidia': {
+            'vcodec': 'h264_nvenc',
+            'params': ['-preset', 'p6', '-cq', '23', '-rc-lookahead', '0']
+        },
+        'intel': {
+            'vcodec': 'h264_qsv',
+            'params': ['-global_quality', '23', '-look_ahead', '0']
+        },
+        'amd': {
+            'vcodec': 'h264_amf',
+            'params': ['-quality', 'speed', '-rc', 'cqp', '-qp_i', '23', '-qp_p', '23']
+        },
+        'apple': {
+            'vcodec': 'h264_videotoolbox',
+            'params': ['-q:v', '75']
+        },
+        'software': {
+            'vcodec': 'libx264' if not hls else 'libx264',
+            'params': ['-preset', 'fast', '-crf', '23'] if not hls else ['-preset', 'fast']
+        }
+    }
+
+    config = base_params.get(hw_type, base_params['software'])
+    cmd = ['ffmpeg', '-y']
+
+    if hw_type != 'software':
+        cmd += ['-hwaccel', 'auto']
+
+    cmd += ['-i', input_file]
+    
+    if not hls:
+        cmd += [
+            '-profile:v', 'main',
+            '-level', '4.0',
+            '-pix_fmt', 'yuv420p',
+            '-movflags', '+faststart',
+            '-c:s', 'mov_text'
+            
+        ]
+
+    cmd += ['-c:v', config['vcodec']] + config['params']
+    cmd += ['-c:a', 'aac', '-b:a', '128k']
+
+    if hls:
+        cmd += [
+            '-hls_time', '5',
+            '-hls_playlist_type', 'event',
+            '-hls_flags', 'independent_segments',
+            '-f', 'hls',
+            '-map', '0',
+            '-force_key_frames', 'expr:gte(t,n_forced*2)',
+            '-max_muxing_queue_size', '1024'
+        ]
+    else:
+        cmd += ['-f', 'mp4']
+
+    cmd.append(output_file)
+    return cmd
 
 async def update_progress(redis_client, stream_id, progress):
     try:
@@ -36,42 +113,33 @@ async def update_progress(redis_client, stream_id, progress):
     except Exception as e:
         logging.error(f"Erreur mise à jour progression: {str(e)}")
 
-async def extract_subtitles(video_path, output_dir, stream_id):
-    """Extraire les sous-titres intégrés avec ffmpeg"""
-    downloaded = []
-    try:
-        metadata = FFProbe(video_path)
-        subs = [stream for stream in metadata.streams if stream.is_subtitle()]
-        
-        extracted = []
-        for i, sub in enumerate(subs):
-            lang = sub.tags.get('language', 'und')
-            sub_ext = sub.codec_name
-            sub_path = os.path.join(output_dir, f"subtitles-{lang}-original.{sub_ext}")
-            
-            command = [
-                'ffmpeg',
-                '-i', video_path,
-                '-map', f'0:s:{i}',
-                '-c', 'srt',
-                sub_path
-            ]
-            
-            proc = await asyncio.create_subprocess_exec(*command)
-            await proc.wait()
-            
-            if proc.returncode == 0:
-                if sub_ext != 'webvtt':
-                    vtt_path = os.path.join(output_dir, f"subtitles-{lang}-original.vtt")
-                    await convert_subtitle(sub_path, vtt_path)
-                    extracted.append((lang, vtt_path))
+async def extract_subtitles(path, output_dir):
+    extracted = []
+    existing_files = set(os.listdir(output_dir))
+
+    logging.info(f"Recherche de fichiers de sous-titres dans {path}")
+    for root, _, files in os.walk(path):
+        for file in files:
+            if file.endswith('.srt') or file.endswith('.vtt'):
+                logging.info(f"Sous-titre trouvé: {file}")
+                count = 1
+                vtt_path = os.path.join(output_dir, f"subtitles-original-{count}.vtt")
+                while os.path.basename(vtt_path) in existing_files:
+                    count += 1
+                    vtt_path = os.path.join(output_dir, f"subtitles-original-{count}.vtt")
+                
+                if file.endswith('.srt'):
+                    logging.info(f"Conversion du fichier SRT: {file} en VTT")
+                    await convert_subtitle(os.path.join(root, file), vtt_path)
                 else:
-                    extracted.append((lang, sub_path))
-            
-        return extracted
-    except Exception as e:
-        logging.error(f"Erreur extraction sous-titres: {str(e)}")
-        return []
+                    logging.info(f"Copie du fichier VTT: {file}")
+                    shutil.copy(os.path.join(root, file), vtt_path)
+                
+                extracted.append((f"original-{count}", vtt_path))
+                existing_files.add(os.path.basename(vtt_path))
+
+    logging.info(f"Sous-titres extraits: {extracted}")
+    return extracted
 
 async def convert_subtitle(input_path, output_path):
     """Convertir un sous-titre en VTT"""
@@ -86,14 +154,10 @@ async def convert_subtitle(input_path, output_path):
     return proc.returncode == 0
 
 async def download_external_subs(imdb_id, title, stream_id):
-    """Télécharger des sous-titres depuis yts-subs.com avec curl et extraction automatique"""
     downloaded_subs = []
     try:
         BASE_URL = "https://yts-subs.com"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         movie_url = f"{BASE_URL}/movie-imdb/tt{imdb_id}"
         session = requests.Session()
         response = session.get(movie_url, headers=headers)
@@ -108,13 +172,11 @@ async def download_external_subs(imdb_id, title, stream_id):
             detail_url = f"{BASE_URL}{detail_link}"
             detail_resp = session.get(detail_url, headers=headers)
             detail_soup = BeautifulSoup(detail_resp.text, 'html.parser')
-            
             download_btn = detail_soup.select_one('#btn-download-subtitle')
             if not download_btn:
                 continue
             
             download_url = base64.b64decode(download_btn['data-link']).decode('utf-8')
-            
             save_dir = f"./data/{stream_id}/"
             os.makedirs(save_dir, exist_ok=True)
             temp_dir = tempfile.mkdtemp()
@@ -130,73 +192,72 @@ async def download_external_subs(imdb_id, title, stream_id):
             if srt_files:
                 srt_path = os.path.join(temp_dir, srt_files[0])
                 vtt_path = os.path.join(save_dir, f"subtitles-{lang}-{count}.vtt")
-                
                 await convert_subtitle(srt_path, vtt_path)
                 downloaded_subs.append((lang, vtt_path))
                 count += 1
-                
                 logging.info(f"Sous-titres convertis et enregistrés: {vtt_path}")
             
             shutil.rmtree(temp_dir)
-        
         return downloaded_subs
     except Exception as e:
         logging.error(f"Erreur téléchargement sous-titres: {str(e)}")
         return []
 
-async def convert_to_hls(input_path, output_dir, stream_id):
-    """Convertir un fichier en HLS avec ffmpeg"""
+async def convert_to_hls(input_path, output_dir, stream_id, max_retries=3, retry_delay=5):
     output_path = os.path.join(output_dir, "stream.m3u8")
+    command = get_ffmpeg_command(input_path, output_path, hls=True)
     
-    command = [
-        'ffmpeg',
-        '-i', input_path,
-        '-c:v', 'libx264',
-        '-c:a', 'aac',
-        '-hls_time', '10',
-        '-hls_playlist_type', 'event',
-        '-hls_flags', 'independent_segments',
-        '-f', 'hls',
-        '-master_pl_name', 'master.m3u8',
-        '-var_stream_map', 'v:0,a:0',
-        '-hls_subtitle_path', os.path.join(output_dir, 'subs'),
-        output_path
-    ]
+    attempt = 0
+    while attempt < max_retries:
+        attempt += 1
+        logging.info(f"Tentative {attempt}/{max_retries} pour générer le HLS pour {stream_id}")
+        try:
+            proc = await asyncio.create_subprocess_exec(*command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            stdout, stderr = await proc.communicate()
+            if proc.returncode == 0:
+                logging.info(f"HLS généré avec succès pour {stream_id}")
+                return True
+            else:
+                logging.error(f"Erreur FFmpeg (tentative {attempt}): {stderr.decode()}")
+        except Exception as e:
+            logging.error(f"Erreur lors de l'exécution de FFmpeg (tentative {attempt}): {str(e)}")
+        if attempt < max_retries:
+            logging.info(f"Réessai dans {retry_delay} secondes...")
+            await asyncio.sleep(retry_delay)
     
-    try:
-        proc = await asyncio.create_subprocess_exec(*command)
-        await proc.wait()
-        
-        if proc.returncode == 0:
-            logging.info(f"HLS généré pour {stream_id}")
-            return True
-        return False
-        
-    except Exception as e:
-        logging.error(f"Erreur conversion HLS: {str(e)}")
-        return False
-        
+    logging.error(f"Échec de la conversion HLS après {max_retries} tentatives pour {stream_id}")
+    return False
+
 async def hls_conversion_task(redis_client, stream_id, video_file, hls_path, imdb_id, name):
-    """Tâche séparée pour la conversion HLS avec accès à Redis"""
     try:
         if os.path.exists(video_file):
-            extracted_subs = await extract_subtitles(video_file, hls_path, stream_id)
             external_subs = await download_external_subs(imdb_id, name, stream_id)
-            
-            all_subs = extracted_subs + external_subs
-            logging.info(f"Sous-titres extraits: {all_subs}")
-            # for lang, sub_path in all_subs:
-            #     await redis_client.sadd(f'stream:{stream_id}:subtitles', f"/hls/{stream_id}/{os.path.basename(sub_path)}")
-            
+            logging.info(f"Sous-titres download: {external_subs}")
             success = await convert_to_hls(video_file, hls_path, stream_id)
             if success:
                 await redis_client.set(f'stream:{stream_id}:hls_started', '1')
-            #     await redis_client.set(f'stream:{stream_id}:url', f"/hls/{stream_id}/stream.m3u8")
     except Exception as e:
         logging.error(f"Erreur conversion HLS: {str(e)}")
         await redis_client.set(f'stream:{stream_id}:error', str(e))
     finally:
         await redis_client.delete(f'stream:{stream_id}:hls_processing')
+
+async def convert_to_mp4(video_file, download_path, stream_id):
+    mp4_file = os.path.join(download_path, "video.mp4")
+    convert_cmd = get_ffmpeg_command(video_file, mp4_file)
+
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *convert_cmd,
+            stderr=asyncio.subprocess.PIPE
+        )
+        _, stderr = await proc.communicate()
+        if proc.returncode != 0:
+            logging.error(f"Erreur FFmpeg: {stderr.decode()}")
+            raise Exception(f"Échec de conversion: {stderr.decode()}")
+    except Exception as e:
+        logging.error(f"Échec de conversion pour {stream_id}: {str(e)}")
+        raise
 
 async def handle_torrent(magnet: str, stream_id: str):
     response = requests.get(
@@ -244,38 +305,45 @@ async def handle_torrent(magnet: str, stream_id: str):
             raise Exception("Aucun fichier vidéo trouvé dans le torrent")
 
         hls_task = None
+        max_retries = 1800
+        retries = 0
 
-        while not handle.status().is_seeding:
+        while not handle.status().is_seeding and retries < max_retries:
             status = handle.status()
             progress = int(status.progress * 101)
-            
             asyncio.create_task(update_progress(r, stream_id, progress))
+
             if progress >= 5 and not await r.exists(f'stream:{stream_id}:hls_started'):
                 if not hls_task and video_file:
                     hls_task = asyncio.create_task(
                         hls_conversion_task(r, stream_id, video_file, hls_path, imdb_id, name)
                     )
-                    # await r.set(f'stream:{stream_id}:hls_processing', '1')
             
             await asyncio.sleep(1)
+            retries += 1
 
-        mp4_file = os.path.join(download_path, "video.mp4")
-        if not video_file.endswith('.mp4'):
-            logging.info(f"Converting {video_file} to MP4")
-            convert_cmd = [
-                'ffmpeg',
-                '-i', video_file,
-                '-c:v', 'copy',
-                '-c:a', 'copy',
-                mp4_file
-            ]
-            proc = await asyncio.create_subprocess_exec(*convert_cmd)
-            await proc.wait()
-        else:
-            shutil.copy2(video_file, mp4_file)
+        if retries >= max_retries:
+            logging.error(f"Timeout reached for torrent {stream_id}. Exiting loop.")
+
+        extracted_subs = await extract_subtitles(os.path.join(download_path, handle.get_torrent_info().name()), download_path)
+        logging.info(f"Sous-titres extraits: {extracted_subs}")
+        
+        await convert_to_mp4(video_file, download_path, stream_id)
 
         await r.set(f'stream:{stream_id}:status', 'complete')
         logging.info(f"Téléchargement complet: {stream_id}")
+        if hls_task and not hls_task.done():
+            hls_task.cancel()
+            try:
+                await asyncio.wait_for(hls_task, timeout=5)
+            except asyncio.TimeoutError:
+                logging.warning(f"HLS task for {stream_id} did not finish in time and was forcefully canceled.")
+            except asyncio.CancelledError:
+                logging.info(f"HLS task for {stream_id} was cancelled.")
+            await asyncio.sleep(1)
+        if os.path.exists(hls_path):
+            shutil.rmtree(hls_path)
+            logging.info(f"Dossier HLS supprimé pour {stream_id}")
 
     except Exception as e:
         logging.error(f"Erreur avec {stream_id}: {str(e)}")

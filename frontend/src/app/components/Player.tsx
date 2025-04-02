@@ -13,71 +13,108 @@ export default function Player({ streamId }: { streamId: string }) {
 
     async function loadSubtitles() {
       if (!video) return;
-      let trackNumber = 1;
+      let originalTrackNumber = 1;
+      let otherTrackNumber = 1;
       let consecutiveErrors = 0;
       const MAX_ERRORS = 3;
       let defaultTrackSet = false;
 
       while (consecutiveErrors < MAX_ERRORS) {
-        const enUrl = `http://localhost:3000/api/stream/${streamId}/subtitles-english-${trackNumber}.vtt`;
-        try {
-          const enResponse = await fetch(enUrl, { method: 'HEAD' });
-          if (enResponse.ok) {
-            const track = document.createElement('track');
-            track.kind = 'subtitles';
-            track.label = `English ${trackNumber}`;
-            track.srclang = 'en';
-            track.src = enUrl;
-            if (!defaultTrackSet) {
-              track.default = true;
-              defaultTrackSet = true;
-            }
-            video.appendChild(track);
-            trackNumber++;
-            consecutiveErrors = 0;
-          } else {
-            const frUrl = `http://localhost:3000/api/stream/${streamId}/subtitles-french-${trackNumber}.vtt`;
-            const frResponse = await fetch(frUrl, { method: 'HEAD' });
-            if (frResponse.ok) {
-              const track = document.createElement('track');
-              track.kind = 'subtitles';
-              track.label = `French ${trackNumber}`;
-              track.srclang = 'fr';
-              track.src = frUrl;
-              if (!defaultTrackSet) {
-                track.default = true;
-                defaultTrackSet = true;
-              }
-              video.appendChild(track);
-              trackNumber++;
-              consecutiveErrors = 0;
-            } else {
-              consecutiveErrors++;
-              trackNumber++;
-            }
-          }
-        } catch (error) {
-          console.error(`Error checking subtitle for track ${trackNumber}:`, error);
-          consecutiveErrors++;
-          trackNumber++;
+      const originalUrl = `http://localhost:3000/api/stream/${streamId}/subtitles-original-${originalTrackNumber}.vtt`;
+      try {
+        const originalResponse = await fetch(originalUrl, { method: 'HEAD' });
+        if (originalResponse.ok) {
+        const track = document.createElement('track');
+        track.kind = 'subtitles';
+        track.label = `Original ${originalTrackNumber}`;
+        track.srclang = 'original';
+        track.src = originalUrl;
+        if (!defaultTrackSet) {
+          track.default = true;
+          defaultTrackSet = true;
         }
+        video.appendChild(track);
+        originalTrackNumber++;
+        consecutiveErrors = 0;
+        continue;
+        }
+      } catch (error) {
+        console.error(`Error checking original subtitle for track ${originalTrackNumber}:`, error);
+      }
+
+      const enUrl = `http://localhost:3000/api/stream/${streamId}/subtitles-english-${otherTrackNumber}.vtt`;
+      try {
+        const enResponse = await fetch(enUrl, { method: 'HEAD' });
+        if (enResponse.ok) {
+        const track = document.createElement('track');
+        track.kind = 'subtitles';
+        track.label = `English ${otherTrackNumber}`;
+        track.srclang = 'en';
+        track.src = enUrl;
+        if (!defaultTrackSet) {
+          track.default = true;
+          defaultTrackSet = true;
+        }
+        video.appendChild(track);
+        otherTrackNumber++;
+        consecutiveErrors = 0;
+        continue;
+        }
+      } catch (error) {
+        console.error(`Error checking English subtitle for track ${otherTrackNumber}:`, error);
+      }
+
+      const frUrl = `http://localhost:3000/api/stream/${streamId}/subtitles-french-${otherTrackNumber}.vtt`;
+      try {
+        const frResponse = await fetch(frUrl, { method: 'HEAD' });
+        if (frResponse.ok) {
+        const track = document.createElement('track');
+        track.kind = 'subtitles';
+        track.label = `French ${otherTrackNumber}`;
+        track.srclang = 'fr';
+        track.src = frUrl;
+        if (!defaultTrackSet) {
+          track.default = true;
+          defaultTrackSet = true;
+        }
+        video.appendChild(track);
+        otherTrackNumber++;
+        consecutiveErrors = 0;
+        } else {
+        consecutiveErrors++;
+        otherTrackNumber++;
+        }
+      } catch (error) {
+        console.error(`Error checking French subtitle for track ${otherTrackNumber}:`, error);
+        consecutiveErrors++;
+        otherTrackNumber++;
+      }
       }
     }
 
     async function checkAndPlayMp4() {
+      const statusUrl = `http://localhost:3000/api/stream/${streamId}/status`;
       const mp4Url = `/api/stream/${streamId}/video.mp4`;
+    
       try {
-        const response = await fetch(mp4Url, { method: 'HEAD' });
-        if (response.ok && video) {
-          video.src = mp4Url;
-          await loadSubtitles();
-          return true;
+        const statusResponse = await fetch(statusUrl);
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          if (statusData.progress === "100" && statusData.status === "complete") {
+            const response = await fetch(mp4Url, { method: 'HEAD' });
+            if (response.ok && video) {
+              video.src = mp4Url;
+              await loadSubtitles();
+              return true;
+            }
+          }
         }
       } catch (error) {
-        console.error("Error checking MP4 file:", error);
+        console.error("Error checking MP4 file or status:", error);
       }
       return false;
     }
+    
 
     async function setupHls() {
       if (video && Hls.isSupported()) {
