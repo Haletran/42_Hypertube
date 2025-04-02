@@ -11,10 +11,10 @@ export function middleware(request: NextRequest) {
   );
 
   if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
-  if (request.nextUrl.pathname === '/login' && token) {
+  if (request.nextUrl.pathname === '/auth/login' && token) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 

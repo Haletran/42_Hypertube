@@ -16,30 +16,46 @@ export const AuthContext = createContext<AuthContextProps | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
-    const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const login = async (email: string, password: string) => {
-    const response = await api.post('/api/auth/login', { email, password });
-    Cookies.set('token', response.data.token, { 
-      expires: 7, // 7 days
-      path: '/'
-    });
-    const userResponse = await api.get('/api/auth/me', {
-      headers: { Authorization: `Bearer ${response.data.token}` },
-    });
-    setUser(userResponse.data);
+    try {
+      const response = await api.post('/api/auth/login', { email, password });
+      Cookies.set('token', response.data.token, { 
+        expires: 7,
+        path: '/'
+      });
+      const userResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${response.data.token}` },
+      });
+      setUser(userResponse.data);
+      return {success: true};
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.errors || 'Login failed'
+      };
+    };
   };
 
   const register = async (username: string, email: string, password: string) => {
-    const response = await api.post('/api/auth/register', { username, email, password });
-    Cookies.set('token', response.data.token, { 
-      expires: 7, // 7 days
-      path: '/'
-    });
-    const userResponse = await api.get('/api/auth/me', {
-      headers: { Authorization: `Bearer ${response.data.token}` },
-    });
-    setUser(userResponse.data);
+    try {
+      const response = await api.post('/api/auth/register', { username, email, password });
+      Cookies.set('token', response.data.token, { 
+        expires: 7,
+        path: '/'
+      });
+      const userResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${response.data.token}` },
+      });
+      setUser(userResponse.data);
+      return { success: true };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.errors || 'Registration failed'
+      };
+    }
   };
 
   const setToken = (token: string) => {
