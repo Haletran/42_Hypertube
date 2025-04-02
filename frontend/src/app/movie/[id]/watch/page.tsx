@@ -1,8 +1,6 @@
 import { BackButton } from "@/app/components/ui/backButton";
 import Player from "@/app/components/Player";
 import { WatchMovieParams } from "@/types";
-import { Navbar } from "@/app/components/ui/navbar";
-
 
 export default async function WatchMovie({ params }: WatchMovieParams) {
     const { id } = await params;

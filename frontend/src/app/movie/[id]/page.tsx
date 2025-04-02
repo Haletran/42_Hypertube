@@ -58,8 +58,7 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
     return (
         <div className="flex flex-col items-center justify-center p-4">
 
-            <div className="w-full max-w-4xl flex flex-col gap-3">
-                <Navbar />
+            <div className="w-full max-w-6xl flex flex-col gap-3">
                 {movie && (
                     <>
                         <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} />

@@ -1,6 +1,5 @@
 "use client";
 import { SearchBar } from "../components/SearchBar";
-import { Navbar } from "@/app/components/ui/navbar";
 import { useState } from "react";
 import { motion } from "framer-motion";
 
@@ -9,7 +8,6 @@ export default function SearchPage() {
 
     return (
         <div className="container mx-auto p-2">
-            <Navbar />
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isVisible ? 1 : 0 }}

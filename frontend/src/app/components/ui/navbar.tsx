@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { DownloadBar } from "../DownloadBar"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import { AuthContext } from '@/contexts/AuthContext';
-import { Search, LogOut } from "lucide-react"
+import { Search, LogOut, Settings, User } from "lucide-react"
 import api from '@/utils/api';
 import Cookies from 'js-cookie';
 
@@ -65,14 +65,43 @@ export function Navbar() {
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Portal>
                                 <DropdownMenu.Content
-                                    className="min-w-[220px] bg-card rounded-md p-1 shadow-md z-20"
-                                    sideOffset={5}
+                                    className="w-64 bg-zinc-900 border border-zinc-800 rounded-md p-1 shadow-xl z-50 animate-in fade-in-80 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2"
+                                    sideOffset={8}
                                     align="end"
+                                    alignOffset={-5}
                                 >
-                                    <DropdownMenu.Item className="flex items-center px-2 py-2 text-sm outline-none cursor-default focus:bg-accent focus:text-accent-foreground text-red-500" onClick={logout}>
-                                        <LogOut className="mr-2 h-4 w-4 " />
-                                        <span>Log out</span>
-                                    </DropdownMenu.Item>
+                                    <div className="px-3 py-2 border-b border-zinc-800">
+                                        <div className="font-medium text-sm">{name}</div>
+                                    </div>
+                                    <div className="py-1">
+                                        <DropdownMenu.Item asChild>
+                                            <Link
+                                                href="/user/profile"
+                                                className="flex items-center px-3 py-2 text-sm rounded-sm hover:bg-zinc-800 focus:bg-zinc-800 outline-none cursor-pointer"
+                                            >
+                                                <User className="mr-2 h-4 w-4 text-zinc-400" />
+                                                <span>Profile</span>
+                                            </Link>
+                                        </DropdownMenu.Item>
+                                        <DropdownMenu.Item asChild>
+                                            <Link
+                                                href="/user/settings"
+                                                className="flex items-center px-3 py-2 text-sm rounded-sm hover:bg-zinc-800 focus:bg-zinc-800 outline-none cursor-pointer"
+                                            >
+                                                <Settings className="mr-2 h-4 w-4 text-zinc-400" />
+                                                <span>Settings</span>
+                                            </Link>
+                                        </DropdownMenu.Item>
+                                    </div>
+                                    <div className="pt-1 mt-1 border-t border-zinc-800">
+                                        <DropdownMenu.Item
+                                            className="flex items-center px-3 py-2 text-sm rounded-sm text-red-400 hover:bg-red-950/50 hover:text-red-300 focus:bg-red-950/50 focus:text-red-300 outline-none cursor-pointer"
+                                            onClick={logout}
+                                        >
+                                            <LogOut className="mr-2 h-4 w-4" />
+                                            <span>Log out</span>
+                                        </DropdownMenu.Item>
+                                    </div>
                                 </DropdownMenu.Content>
                             </DropdownMenu.Portal>
                         </div>

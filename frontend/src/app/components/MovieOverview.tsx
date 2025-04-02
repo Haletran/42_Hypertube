@@ -338,9 +338,9 @@ export function MovieDetails({ movie, trailerUrl }: { movie: any; trailerUrl: st
                             ) : (
                                 <>
                                     {providersTorrents && providersTorrents[selectedProvider]?.length > 0 ? (
-                                        <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                                        <div className="space-y-2 max-h-[50vh] overflow-y-auto ">
                                             {providersTorrents[selectedProvider].map((torrent, index) => (
-                                                <div key={index} className="flex justify-between items-center p-3 rounded-md bg-background">
+                                                <div key={index} className="flex justify-between items-center p-3 rounded-md bg-zinc-900 border border-zinc-800">
                                                     <div className="flex-1 truncate">
                                                         <p className="font-medium truncate">{torrent.name}</p>
                                                         <div className="flex gap-2 text-xs text-muted-foreground mt-1">

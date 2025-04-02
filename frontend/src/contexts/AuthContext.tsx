@@ -66,8 +66,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
   const logout = () => {
+    //const token = Cookies.get('token');
+    //api.delete('/api/auth/logout', { headers: { Authorization: `Bearer ${token}` } });
     Cookies.remove('token', { path: '/' });
-    api.delete('/api/auth/logout');
     setUser(null);
   };
 

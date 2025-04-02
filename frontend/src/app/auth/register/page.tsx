@@ -4,12 +4,12 @@ import { useContext, useState } from "react"
 import { AuthContext } from "@/contexts/AuthContext"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
-
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { Alert, AlertDescription } from "@/app/components/ui/alert"
+import { BackButton } from "@/app/components/ui/backButton";
 
 export default function RegisterPage() {
   const auth = useContext(AuthContext)
@@ -49,6 +49,7 @@ export default function RegisterPage() {
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <Card className="w-full max-w-md border-zinc-800 bg-zinc-950 text-zinc-100 shadow-xl shadow-zinc-900/20">
         <CardHeader className="space-y-1 border-b border-zinc-800 pb-6">
+          <BackButton backUrl="/" />
           <CardTitle className="text-2xl font-bold text-center text-white">Create an Account</CardTitle>
           <CardDescription className="text-center text-zinc-400">
             Enter your information to create your account

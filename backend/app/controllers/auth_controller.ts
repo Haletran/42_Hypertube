@@ -59,7 +59,7 @@ export default class AuthController {
               })
             }
             const token = await User.accessTokens.create(user)
-            return response.redirect(`http://localhost:3000?token=${encodeURIComponent(JSON.stringify(token))}`)
+            return response.redirect(`http://localhost:3000/auth/login?token=${encodeURIComponent(JSON.stringify(token))}`)
         } catch (error) {
             console.error('Oauth42 failed:', error);
         }
@@ -107,7 +107,7 @@ export default class AuthController {
               })
             }
             const token = await User.accessTokens.create(user)
-            return response.redirect(`http://localhost:3000?token=${encodeURIComponent(JSON.stringify(token))}`)
+            return response.redirect(`http://localhost:3000/auth/login?token=${encodeURIComponent(JSON.stringify(token))}`)
         } catch (error) {
             console.error('Oauth42 failed:', error);
         }

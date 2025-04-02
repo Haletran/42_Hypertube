@@ -24,9 +24,14 @@ watch videos.
 - [x] Add Comments section for each movie
 - [ ] Selection of movies via bar (check discord video) (already movie or not [.mp4 | .hls])
 - [x] Fix search bar to search for movies (problem with spaces etc..., parsing)
-- [ ] Create Register / Login / Oauth2 to access the website
-- [ ] Make all the API routes work and secure them with Session token
-- [ ] On front-page, only render movies that are on the view and remove the others
+- [x] Create Register / Login / Oauth2 to access the website
+- [x] Make all the API routes work and secure them with Session token
+- [x] On front-page, only render movies that are on the view and remove the others
+- [ ] Make Profile and settings page
+- [ ] Make already watched movies page / and render in the /dashboard
+- [ ] Fix status in /movie/:id page (loading infinite if the progress is null)
+- [ ] Add a menu to see all the movies that are currently being downloaded
+- [ ] Make the comments works
 
 ## Setup the Project
 
