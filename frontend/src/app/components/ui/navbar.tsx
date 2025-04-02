@@ -1,5 +1,4 @@
 "use client"
-
 import Link from "next/link"
 import { useContext, useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
@@ -40,8 +39,7 @@ export function Navbar() {
         };
         fetchUserData();
     }, []);
-
-
+    
     return (
         <div className="container mx-auto p-4">
             <header className="sticky top-0 z-50 w-full  bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

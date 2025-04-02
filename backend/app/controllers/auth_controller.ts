@@ -119,6 +119,28 @@ export default class AuthController {
         return { message: "success" }
     }
 
+    public async update({ auth, request, response }: HttpContext) {
+        try {
+            const response = await auth.check();
+            if (!response) {
+                throw new Error('unauthorized');
+            }
+            const data = request.all();
+            const userWithPassword = await User.findOrFail(request.param('id'));
+            if (data.old_password) {
+                await User.verifyCredentials(userWithPassword.email, data.old_password);
+            }
+            if (data.password) userWithPassword.password = data.password;
+            if (data.email) userWithPassword.email = data.email;
+            if (data.username) userWithPassword.username = data.username;
+            await userWithPassword.save();
+            return { message: 'User updated successfully' };
+        } catch (error) {
+            console.error('Failed to update user:', error);
+            return response.status(400).json(error);
+        }
+    }
+
     public async me({ auth }: HttpContext) {
         await auth.check();
         return {

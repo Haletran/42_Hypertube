@@ -22,6 +22,11 @@ router.group(() => {
 }).prefix('/api/auth')
 
 router.group(() => {
+  router.patch('/:id', [AuthController, 'update'])
+}).prefix('/api/users')
+
+
+router.group(() => {
   router.get('/42', [AuthController, 'oauth42']);
   router.get('/github', [AuthController, 'oauthgithub'])
 }).prefix('/api/oauth')
