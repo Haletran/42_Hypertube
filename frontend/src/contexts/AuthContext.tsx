@@ -22,6 +22,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       const response = await api.post('/api/auth/login', { email, password });
+      if (response.status !== 200) {
+        return { 
+          success: false, 
+          error: response.data?.errors || 'Login failed'
+        };
+      }
       Cookies.set('token', response.data.token, { 
         expires: 7,
         path: '/'
@@ -29,6 +35,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userResponse = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${response.data.token}` },
       });
+      if (userResponse.status !== 200) {
+        return { 
+          success: false, 
+          error: userResponse.data?.errors || 'Login failed'
+        };
+      }
       setUser(userResponse.data.user);
       return {success: true};
     } catch (error: any) {

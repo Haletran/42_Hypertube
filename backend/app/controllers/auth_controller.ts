@@ -9,17 +9,26 @@ export default class AuthController {
         const payload = await RegisterValidator.validate(data);
         const user = await User.create(payload);
         user.profile_picture = '/pictures/netflix_default.jpg';
+        //user.language = 'en';
         await user.save();
         const token = await User.accessTokens.create(user)
         return (token);
     }
 
     public async login({ request }: HttpContext) {
-        const { email, password } = request.only(['email', 'username', 'password'])
-        const user = await User.verifyCredentials(email, password);
-        await User.findByOrFail('email', email);
-        const token = await User.accessTokens.create(user)
-        return (token)
+        try {
+            const { email, password } = request.only(['email', 'username', 'password'])
+            const user = await User.verifyCredentials(email, password);
+            if (user.auth_method !== 'local') {
+               throw new Error(`Account is link to ${user.auth_method} cannot login with password`)
+            }
+            await User.findByOrFail('email', email);
+            const token = await User.accessTokens.create(user)
+            return (token)
+        } catch (error) {
+            console.error('Login failed:', error);
+            return response.status(400).json(error);
+        }
     }
 
     public async oauth42({ request, response }: HttpContext) {
@@ -44,7 +53,6 @@ export default class AuthController {
                 throw new Error('No access token')
             }
     
-            await new Promise((resolve) => setTimeout(resolve, 500))
             const me = await axios.get('https://api.intra.42.fr/v2/me', {
                 headers: { Authorization: `Bearer ${accessToken}` },
             })
@@ -60,6 +68,8 @@ export default class AuthController {
                 username: me.data.login,
                 password: '42',
                 profile_picture: me.data.image.link,
+                auth_method: '42',
+                //language: 'en',
               })
             }
             const token = await User.accessTokens.create(user)
@@ -108,6 +118,8 @@ export default class AuthController {
                 username: me.data.login,
                 password: 'github',
                 profile_picture: me.data.avatar_url,
+                auth_method: 'github',
+                //language: 'en',
               })
             }
             const token = await User.accessTokens.create(user)
