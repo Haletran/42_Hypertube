@@ -12,7 +12,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
 
     const isAvailable = async (id: number): Promise<boolean> => {
         try {
-            const response = await fetch(`http://localhost:3333/api/stream/${id}/video`);
+            const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable`);
             return response.ok;
         } catch (error) {
             console.error('Failed to fetch movie:', error);

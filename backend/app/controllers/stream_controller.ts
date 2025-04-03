@@ -81,6 +81,27 @@ export default class StreamController {
     }
   }
 
+  public async isAvailable({ params, response }: HttpContext) {
+    const mp4Path = path.join('data', params.id, 'video.mp4');
+    const hlsPath = path.join('data', 'hls', params.id, 'stream.m3u8');
+    
+    try {
+      const mp4response = await fs.access(mp4Path);
+      if (mp4response !== undefined) {
+        const hlsResponse = await fs.access(hlsPath);
+        if (hlsResponse !== undefined) {
+          return response.json({ message: 'Video is available' });
+        }
+      }
+
+      return response.json({ message: 'Video is available' });
+    } catch (error) {
+      return response.notFound({
+        error: 'Video not ready yet',
+      });
+    }
+  }
+
   public async videoSegment({ params, response }: HttpContext) {
     const segmentPath = path.join('data', 'hls', params.streamId, `${params.segment}.ts`);
 

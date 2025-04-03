@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/app/components/ui/separator"
 import { Alert, AlertDescription } from "@/app/components/ui/alert"
 import { BackButton } from "@/app/components/ui/backButton";
+import Image from "next/image"
 
 
 export default function LoginPage() {
@@ -164,7 +165,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full bg-[#00BABC] hover:bg-[#00A3A5] text-white"
             >
-              <span className="flex items-center justify-center">42</span>
+              <Image src="/pictures/42.png" alt="42" width={40} height={40} className="mr-2" />
             </Button>
 
             <Button

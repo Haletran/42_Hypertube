@@ -8,6 +8,9 @@ export interface Movie {
     vote_average: number;
     release_date: string
     isAvailable: boolean;
+    runtime: number;
+    genres?: { id: number; name: string }[]
+    production_companies?: { id: number; name: string }[]
 }
 
 export interface MovieCardProps {
@@ -21,12 +24,15 @@ export interface MovieGridProps {
 }
 
 export interface Torrent {
-  id: string;
-  name: string;
-  seeders: number;
-  leechers: number;
-  size: string;
-  info_hash: string;
+    id: number
+    name: string
+    seeders: number
+    leechers: number
+    size: string
+    info_hash: string
+    quality?: string
+    language?: string
+    provider?: string
 }
 
 export interface LoginUser {
@@ -76,3 +82,5 @@ export interface User {
     email: string;
   
   }
+
+  
