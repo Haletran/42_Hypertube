@@ -24,28 +24,73 @@ export default class CommentsController {
     }
   }
 
-  async update({ params, request, response }: HttpContext) {
+  async update({ auth, params, request, response }: HttpContext) {
     const { id } = params
-    const { text } = request.body()
+    const { content } = request.body()
 
-    if (!text) {
+    if (!content) {
       return response.status(400).json({ error: 'Text is required' })
     }
-
-    // Update the comment in the database
-    // await Comment.query().where('id', id).update({ text })
-
-    return response.json({ message: 'Comment updated successfully' })
+    if (!id) {
+      return response.status(400).json({ error: 'ID is required' })
+    }
+    const check = await auth.check();
+    if (!check) {
+        throw new Error('unauthorized');
+    }
+    try {
+      const comment = await Comment.query().where('id', id).first()
+      if (!comment) {
+        return response.status(404).json({ error: 'Comment not found' })
+      }
+      if (comment.userId !== auth.user!.id) {
+        return response.status(403).json({ error: 'Unauthorized' })
+      }
+      comment.content = content
+      await comment.save()
+      return response.json({ message: 'Comment updated successfully' })
+    } catch (error) {
+      return response.status(500).json({ error: 'Error updating comment' })
+    }
   }
 
 
-  async delete({ params, response }: HttpContext) {
+  async delete({ auth, params, response }: HttpContext) {
     const { id } = params
 
-    // Delete the comment from the database
-    // await Comment.query().where('id', id).delete()
+    const check = await auth.check();
+    if (!check) {
+        throw new Error('unauthorized');
+    }
 
-    return response.json({ message: 'Comment deleted successfully' })
+    try {
+      const comment = await Comment.query().where('id', id).first()
+      if (comment.userId !== auth.user!.id) {
+        return response.status(403).json({ error: 'Unauthorized' })
+      }
+      comment.delete()
+      return response.json({ message: 'Comment deleted successfully' })
+    } catch (error) {
+      return response.status(500).json({ error: 'Error deleting comment' })
+    }
+  }
+
+  async getAll({ auth, params, response }: HttpContext) {
+    const { id } = params
+
+    if (!id) {
+      return response.status(400).json({ error: 'ID is required' })
+    }
+    const check = await auth.check();
+    if (!check) {
+        throw new Error('unauthorized');
+    }
+    try {
+      const comment = await Comment.query()
+      return response.json(comment);
+    } catch (error) {
+      return response.status(500).json({ error: 'Error fetching comment' })
+    }
   }
 
   async addcomments({ request, auth, response }: HttpContext) {
@@ -66,7 +111,6 @@ export default class CommentsController {
       comment.content = content
       comment.movieId = id
       comment.userId = auth.user!.id
-      comment.created_at = new Date().toISOString()
       await comment.save()
     } catch (error) {
       return response.status(500).json({ error: 'Error adding comment' })

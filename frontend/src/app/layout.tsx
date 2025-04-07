@@ -31,7 +31,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           {pathname !== "/" && pathname !== "/auth/login" && pathname !== "/auth/register" && ( 
-        <Navbar />
+          <Navbar />
           )}
         {children}
         </AuthProvider>

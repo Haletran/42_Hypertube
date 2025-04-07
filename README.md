@@ -28,7 +28,7 @@ watch videos.
 - [ ] Make already watched movies page / and render in the /dashboard
 - [ ] Fix status in /movie/:id page (loading infinite if the progress is null)
 - [ ] Add a menu to see all the movies that are currently being downloaded
-- [ ] Make the comments works
+- [x] Make the comments works (still need to implement updated_at and created_at)
 
 ## Setup the Project
 

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Loader } from 'lucide-react';
 import { MovieCard } from './MovieCard';
+import redis from '@/lib/redis';
 import { Movie, MovieGridProps } from '@/types';
 
 export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
@@ -28,6 +29,7 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
         const newMovies = data.results.filter((movie: Movie) => !existingMovieIds.has(movie.id));
         return [...prev, ...newMovies];
       });
+
       setpagenumber((prev) => prev + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -44,6 +46,7 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
 
         setFirstLoad(false);
         fetchDiscover();
+
       }
     }, 500);
     return () => clearTimeout(debounceTimeout);

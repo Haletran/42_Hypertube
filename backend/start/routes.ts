@@ -39,6 +39,7 @@ router.group(() => {
   router.patch('/:id', [CommentsController, 'update'])
   router.delete('/:id', [CommentsController, 'delete'])
   router.post('', [CommentsController, 'addcomments'])
+  router.get('', [CommentsController, 'getAll'])
 }).prefix('/api/comments')
 
 

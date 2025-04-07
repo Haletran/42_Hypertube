@@ -69,25 +69,25 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
         }
     };
     
-    // checkInitialState();
+    checkInitialState();
+    if (progress == null) return;
+    const interval = setInterval(async () => {
+        if (progress === 100) {
+            setIsPlayable(true);
+            clearInterval(interval);
+            return;
+        }
+        const available = await isAvailable(movie.id);
+        await checkDownload(movie.id);
+        if (available) {
+            setIsPlayable(true);
+            console.log("Movie is available for streaming");
+        } else {
+            setIsPlayable(false);
+        }
+    }, 500);
     
-    // const interval = setInterval(async () => {
-    //     if (progress === 100) {
-    //         setIsPlayable(true);
-    //         clearInterval(interval);
-    //         return;
-    //     }
-    //     const available = await isAvailable(movie.id);
-    //     await checkDownload(movie.id);
-    //     if (available) {
-    //         setIsPlayable(true);
-    //         console.log("Movie is available for streaming");
-    //     } else {
-    //         setIsPlayable(false);
-    //     }
-    // }, 500);
-    
-    // return () => clearInterval(interval);
+    return () => clearInterval(interval);
 }, [movie.id, progress]);
 
   const fetchTorrents = async () => {

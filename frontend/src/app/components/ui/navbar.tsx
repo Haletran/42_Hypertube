@@ -9,8 +9,6 @@ import { Search, LogOut, Settings, User, Globe } from "lucide-react"
 import api from '@/utils/api';
 import Cookies from 'js-cookie';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { set } from "react-hook-form"
-import { Cookie } from "next/font/google";
 
 
 export function Navbar() {
@@ -94,10 +92,10 @@ export function Navbar() {
                                 </Select>
                             </div>
                             <DropdownMenu.Trigger asChild>
-                                <Avatar >
-                                    <AvatarImage className="object-cover" src={profile_picture} />
-                                    <AvatarFallback>{name ? name.charAt(0).toUpperCase() : ''}</AvatarFallback>
-                                </Avatar>
+                            <Avatar>
+                                <AvatarImage className="object-cover" src={profile_picture} />
+                                <AvatarFallback>{name ? name.charAt(0).toUpperCase() : ''}</AvatarFallback>
+                            </Avatar>
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Portal>
                                 <DropdownMenu.Content

@@ -6,12 +6,12 @@ export default class Users extends BaseSchema {
   public async up () {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').primary()
-      table.string('username').nullable()
+      table.string('username').notNullable()
       table.string('email').notNullable().unique()
       table.string('password').notNullable()
-      table.string('profile_picture').notNullable()
+      table.string('profile_picture').notNullable().defaultTo('/pictures/netflix_default.jpg')
       table.string('language').notNullable().defaultTo('en')
-      table.string('auth_method').notNullable()
+      table.string('auth_method').notNullable().defaultTo('local')
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).nullable()
     })
