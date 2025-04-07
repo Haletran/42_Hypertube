@@ -1,19 +1,24 @@
-"use client"
+"use client";
 import Link from "next/link"
 import { useContext, useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { DownloadBar } from "../DownloadBar"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import { AuthContext } from '@/contexts/AuthContext';
-import { Search, LogOut, Settings, User } from "lucide-react"
+import { Search, LogOut, Settings, User, Globe } from "lucide-react"
 import api from '@/utils/api';
 import Cookies from 'js-cookie';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { set } from "react-hook-form"
+import { Cookie } from "next/font/google";
 
 
 export function Navbar() {
     const auth = useContext(AuthContext);
     const [profile_picture, setProfilePicture] = useState('');
     const [name, setName] = useState('');
+    const [id, setId] = useState('');
+    const [language, setLanguage] = useState(Cookies.get('language') || 'en');
 
 
     const logout = async () => {
@@ -25,6 +30,23 @@ export function Navbar() {
             console.error('Logout failed:', error);
         }
     }
+    const handleLanguageChange = async (value: string) => {
+        if (!auth) throw new Error('Auth context not found');
+        if (value === language) return;
+        try  {
+            const token = Cookies.get('token');
+            const response = await api.patch(`/api/users/${id}/language`, { language: value }, { headers: { Authorization: `Bearer ${token}` } });
+            if (response.status === 200) {
+                setLanguage(value);
+                Cookies.set('language', value, { expires: 7, path: '/' });
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Language change failed:', error);
+        }
+    }
+
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -33,6 +55,8 @@ export function Navbar() {
                 const response = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
                 setProfilePicture(response.data.user.profilePicture || '');
                 setName(response.data.user.username);
+                setId(response.data.user.id);
+                localStorage.setItem('language', response.data.user.language || 'en');
             } catch (error) {
                 console.error('Failed to get user:', error);
             }
@@ -55,9 +79,23 @@ export function Navbar() {
                             <Link href="/search" className="text-muted-foreground">
                                 <Search className="text-muted-foreground size-4" />
                             </Link>
+                            <div className="relative">
+                                <Select value={language} onValueChange={handleLanguageChange}>
+                                  <SelectTrigger className="w-[110px] h-9 bg-zinc-900 border-none hover:bg-zinc-800 focus:ring-0">
+                                    <div className="flex items-center gap-2">
+                                      <Globe className="h-4 w-4 text-muted-foreground" />
+                                      <SelectValue placeholder="Language" />
+                                    </div>
+                                  </SelectTrigger>
+                                  <SelectContent  className="bg-zinc-900 border border-zinc-800 rounded-md animate-in fade-in-80">
+                                    <SelectItem value="en">English</SelectItem>
+                                    <SelectItem value="fr">Français</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                            </div>
                             <DropdownMenu.Trigger asChild>
-                                <Avatar>
-                                    <AvatarImage src={profile_picture} />
+                                <Avatar >
+                                    <AvatarImage className="object-cover" src={profile_picture} />
                                     <AvatarFallback>{name ? name.charAt(0).toUpperCase() : ''}</AvatarFallback>
                                 </Avatar>
                             </DropdownMenu.Trigger>

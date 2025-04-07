@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Movie, MovieCardProps } from '@/types';
 
 
-export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadState }) => {
+export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadState, language }) => {
     const [availableMovies, setAvailableMovies] = useState<{[key: number]: boolean}>({});
 
     const isAvailable = async (id: number): Promise<boolean> => {
@@ -50,7 +50,19 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
 
                 return movie.poster_path && movie.release_date && isReleased && hasRating && (
                     <div key={movie.id} className="group cursor-pointer" >
-                        <Link key={movie.id} href={`/movie/${movie.id}`} >
+                        <Link key={movie.id} href={`/movie/${movie.id}?language=${language}`} onClick={(e) => {
+                            const target = e.currentTarget.parentElement;
+                            if (target) {
+                                const overlay = document.createElement('div');
+                                overlay.className = "absolute inset-0 flex items-center justify-center bg-black/60 rounded-md";
+                                overlay.innerHTML = '<div class="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full"></div>';
+                                
+                                const imgContainer = target.querySelector('.relative');
+                                if (imgContainer) {
+                                    imgContainer.appendChild(overlay);
+                                }
+                            }
+                        }}>
                             <div className="relative aspect-[2/3] overflow-hidden rounded-md mb-2 bg-zinc-800">
                                 <Image
                                     src={`https://image.tmdb.org/t/p/original${movie.poster_path}` || "/placeholder.svg"}

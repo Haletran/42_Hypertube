@@ -216,8 +216,8 @@ export default function Player({ streamId }: { streamId: string }) {
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-20">
         <div className="relative w-16 h-16">
-          <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-500/30 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-white/30 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-white rounded-full animate-spin"></div>
         </div>
         <p className="text-white mt-4 text-sm">Loading video...</p>
         </div>

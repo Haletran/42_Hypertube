@@ -3,11 +3,11 @@ import { MovieDetails } from "@/app/components/MovieOverview";
 import { CommentSection } from "@/app/components/CommentSection";
 import { WatchMovieParams } from "@/types";
 import { Navbar } from "@/app/components/ui/navbar";
+import Cookies from "js-cookie";
 
-
-export async function getMovieDetails(id: number) {
+export async function getMovieDetails(id: number, language: string) {
     try {
-        const response = await fetch(`http://backend:3333/api/movies/${id}?language=fr`)
+        const response = await fetch(`http://backend:3333/api/movies/${id}?language=${language}`)
 
         if (!response.ok) {
             throw new Error(`Failed to fetch movie details: ${response.status}`)
@@ -21,10 +21,10 @@ export async function getMovieDetails(id: number) {
     }
 }
 
-export async function getMovieTrailer(movieId: number) {
+export async function getMovieTrailer(movieId: number, language: string) {
     const tmdbApiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     const response = await fetch(
-        `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${tmdbApiKey}&language=fr`
+        `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${tmdbApiKey}&language=${language}`
     );
 
     if (!response.ok) {
@@ -42,15 +42,19 @@ export async function getMovieTrailer(movieId: number) {
     return trailers.length > 0 ? trailers[0] : null;
 }
 
-export default async function WatchMovie({ params }: WatchMovieParams) {
-    const awaitedParams = await params;
-    const movieId = awaitedParams.id;
+export default async function WatchMovie({ params, searchParams }: {
+    params: { id: number },
+    searchParams: { language?: string }
+    }) {
+        
+    const movieId = params.id;
+    const language = searchParams.language || Cookies.get('language') || 'en';
     let movie: any;
     let trailer: any;
 
     try {
-        trailer = await getMovieTrailer(movieId);
-        movie = await getMovieDetails(movieId);
+        trailer = await getMovieTrailer(movieId, language);
+        movie = await getMovieDetails(movieId, language);
     } catch (error) {
         return <div className="text-center p-4">Error loading movie</div>;
     }
@@ -62,7 +66,7 @@ export default async function WatchMovie({ params }: WatchMovieParams) {
                     <>
                         <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} />
                         <CastScrollableList movie={movie} />
-                        <CommentSection movie_id={movie.movie_id} />
+                        <CommentSection movie_id={movieId} />
                     </>
                 )}
             </div>

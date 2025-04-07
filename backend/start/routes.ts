@@ -12,6 +12,7 @@ import router from '@adonisjs/core/services/router'
 import MoviesController from '#controllers/movies_controller'
 import AuthController from '#controllers/auth_controller'
 import StreamController from '#controllers/stream_controller'
+import CommentsController from '#controllers/comments_controller'
 import { middleware } from './kernel.js'
 
 router.group(() => {
@@ -23,6 +24,7 @@ router.group(() => {
 
 router.group(() => {
   router.patch('/:id', [AuthController, 'update'])
+  router.patch('/:id/language', [AuthController, 'updateLanguage'])
 }).prefix('/api/users')
 
 
@@ -30,6 +32,16 @@ router.group(() => {
   router.get('/42', [AuthController, 'oauth42']);
   router.get('/github', [AuthController, 'oauthgithub'])
 }).prefix('/api/oauth')
+
+
+router.group(() => {
+  router.get('/:id', [CommentsController, 'getById'])
+  router.patch('/:id', [CommentsController, 'update'])
+  router.delete('/:id', [CommentsController, 'delete'])
+  router.post('', [CommentsController, 'addcomments'])
+}).prefix('/api/comments')
+
+
 
 router.group(() => {
 

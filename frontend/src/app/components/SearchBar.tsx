@@ -6,6 +6,7 @@ import { MovieCard } from './MovieCard';
 import { Loader } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Movie } from '@/types';
+import Cookies from 'js-cookie';
 
 
 export function SearchBar() {
@@ -13,6 +14,7 @@ export function SearchBar() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState<string>('');
+    const language = Cookies.get('language') || 'en';
     const observerRef = useRef(null);
 
 
@@ -28,7 +30,7 @@ export function SearchBar() {
             setLoading(true);
 
             const encodedSearchTerm = encodeURIComponent(searchTerm);
-            const response = await fetch(`/api/movies/search/${encodedSearchTerm}?language=fr`);
+            const response = await fetch(`/api/movies/search/${encodedSearchTerm}?language=${language}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }

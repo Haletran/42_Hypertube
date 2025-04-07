@@ -3,7 +3,7 @@ import { Loader } from 'lucide-react';
 import { MovieCard } from './MovieCard';
 import { Movie, MovieGridProps } from '@/types';
 
-export function MovieGrid({ onMovieSelect }: MovieGridProps) {
+export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   const [discover, setDiscover] = useState<Movie[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +15,7 @@ export function MovieGrid({ onMovieSelect }: MovieGridProps) {
   const fetchDiscover = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=fr`);
+      const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=${language}`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -41,6 +41,7 @@ export function MovieGrid({ onMovieSelect }: MovieGridProps) {
       fetchDiscover();
       if (firstLoad) {
         // here to fetch more movies on first load to fill the screen
+
         setFirstLoad(false);
         fetchDiscover();
       }
@@ -86,7 +87,7 @@ export function MovieGrid({ onMovieSelect }: MovieGridProps) {
       {discover.length > 0 && (
         <>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Popular Movies</h1>
-          <MovieCard movies={discover} observerRef={observerRef} loadState={loading} />
+          <MovieCard movies={discover} observerRef={observerRef} loadState={loading} language={language} />
         </>
       )
       }

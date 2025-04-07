@@ -8,14 +8,12 @@ export default class AuthController {
         const data = request.all();
         const payload = await RegisterValidator.validate(data);
         const user = await User.create(payload);
-        user.profile_picture = '/pictures/netflix_default.jpg';
-        //user.language = 'en';
         await user.save();
         const token = await User.accessTokens.create(user)
         return (token);
     }
 
-    public async login({ request }: HttpContext) {
+    public async login({ request, response }: HttpContext) {
         try {
             const { email, password } = request.only(['email', 'username', 'password'])
             const user = await User.verifyCredentials(email, password);
@@ -67,9 +65,8 @@ export default class AuthController {
                 email: me.data.email,
                 username: me.data.login,
                 password: '42',
-                profile_picture: me.data.image.link,
+                profile_picture: me.data.image.versions.small,
                 auth_method: '42',
-                //language: 'en',
               })
             }
             const token = await User.accessTokens.create(user)
@@ -119,7 +116,6 @@ export default class AuthController {
                 password: 'github',
                 profile_picture: me.data.avatar_url,
                 auth_method: 'github',
-                //language: 'en',
               })
             }
             const token = await User.accessTokens.create(user)
@@ -151,6 +147,7 @@ export default class AuthController {
             if (data.email) userWithPassword.email = data.email;
             if (data.username) userWithPassword.username = data.username;
             if (data.profilePicture) userWithPassword.profile_picture = data.profilePicture;
+            if (data.language) userWithPassword.language = data.language;
             await userWithPassword.save();
             return { message: 'User updated successfully' };
         } catch (error) {
@@ -158,6 +155,29 @@ export default class AuthController {
             return response.status(400).json(error);
         }
     }
+
+    public async updateLanguage({ auth, request, response }: HttpContext) {
+        try {
+            const response = await auth.check();
+            if (!response) {
+                throw new Error('unauthorized');
+            }
+            const data = request.all();
+            const userWithPassword = await User.findOrFail(request.param('id'));
+            const payload = await UpdateValidator.validate(data);
+            if (data.language != 'fr' && data.language != 'en') {
+                throw new Error('language not supported');
+            }
+            if (data.language) userWithPassword.language = data.language;
+            await userWithPassword.save();
+            return { message: 'User updated successfully' };
+        } catch (error) {
+            console.error('Failed to update user:', error);
+            return response.status(400).json(error);
+        }
+    }
+
+
 
     public async me({ auth }: HttpContext) {
         await auth.check();

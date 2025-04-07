@@ -69,25 +69,25 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
         }
     };
     
-    checkInitialState();
+    // checkInitialState();
     
-    const interval = setInterval(async () => {
-        if (progress === 100) {
-            setIsPlayable(true);
-            clearInterval(interval);
-            return;
-        }
-        const available = await isAvailable(movie.id);
-        await checkDownload(movie.id);
-        if (available) {
-            setIsPlayable(true);
-            console.log("Movie is available for streaming");
-        } else {
-            setIsPlayable(false);
-        }
-    }, 500);
+    // const interval = setInterval(async () => {
+    //     if (progress === 100) {
+    //         setIsPlayable(true);
+    //         clearInterval(interval);
+    //         return;
+    //     }
+    //     const available = await isAvailable(movie.id);
+    //     await checkDownload(movie.id);
+    //     if (available) {
+    //         setIsPlayable(true);
+    //         console.log("Movie is available for streaming");
+    //     } else {
+    //         setIsPlayable(false);
+    //     }
+    // }, 500);
     
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
 }, [movie.id, progress]);
 
   const fetchTorrents = async () => {
@@ -234,6 +234,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
         ? info_hash.match(/xt=urn:btih:([a-zA-Z0-9]+)/)?.[1] || info_hash
         : info_hash
 
+      localStorage.removeItem(`${movieId}`)
       const response = await fetch(`http://localhost:3333/api/stream/start`, {
         method: "POST",
         headers: {

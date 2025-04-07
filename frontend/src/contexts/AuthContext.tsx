@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, ReactNode } from 'react';
 import api from '../utils/api';
 import { User } from '@/types';
 import Cookies from 'js-cookie';
+import path from 'path';
 
 
 interface AuthContextProps {
@@ -10,6 +11,7 @@ interface AuthContextProps {
   setToken: (token: string) => void;
   update: (username: string, email: string, password: string, old_password: string, profilePicture: string) => Promise<any>;
   register: (username: string, email: string, password: string) => Promise<any>;
+  changeLanguage: (language: string) => Promise<any>;
   logout: () => void;
 }
 
@@ -61,6 +63,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userResponse = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${response.data.token}` },
       });
+      Cookies.set('language', userResponse.data.user.language, {
+        expires: 7,
+        path: '/'
+      });
       setUser(userResponse.data.user);
       return { success: true };
     } catch (error: any) {
@@ -98,6 +104,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const changeLanguage = async (language: string) => {
+    try {
+      const userResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      const response = await api.patch(`/api/users/${userResponse.data.user.id}/language`, { language }, { headers: { Authorization: `Bearer ${Cookies.get('token')}` } });
+      const updateResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      setUser(updateResponse.data.user);
+      return { success: true };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.messages?.[0]?.message || 
+          error.response?.data?.errors || 
+          error.response?.data?.name ||  
+          error.response?.data?.messages || 
+          'Update failed'
+      };
+    }
+  }
+
   const setToken = (token: string) => {
     Cookies.set('token', token, {
         expires: 7,
@@ -109,6 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     //const token = Cookies.get('token');
     //api.delete('/api/auth/logout', { headers: { Authorization: `Bearer ${token}` } });
     Cookies.remove('token', { path: '/' });
+    Cookies.remove('language', { path: '/' });
     setUser(null);
   };
 
@@ -122,7 +152,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [])
   
   return (
-    <AuthContext.Provider value={{ user, login, register,  setToken, update, logout }}>
+    <AuthContext.Provider value={{ user, login, register,  setToken, update, logout, changeLanguage }}>
       {children}
     </AuthContext.Provider>
   );

@@ -17,10 +17,12 @@ export interface MovieCardProps {
     movies: Movie[];
     observerRef: React.RefObject<null>;
     loadState: boolean;
+    language: string;
 }
 
 export interface MovieGridProps {
     onMovieSelect?: (movie: Movie) => void;
+    language: string;
 }
 
 export interface Torrent {
@@ -54,6 +56,9 @@ export interface WatchMovieParams {
     params: {
         id: number;
     };
+    request: {
+        language: string;
+    }
 }
 
 
