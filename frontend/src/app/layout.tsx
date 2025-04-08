@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Navbar } from "@/app/components/ui/navbar";
 import { usePathname } from "next/navigation"
+import useAuthCheck from "@/hooks/useAuthCheck";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,6 +16,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
 
 
 export default function RootLayout({
@@ -29,8 +32,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+          <AuthCheckWrapper />
           {pathname !== "/" && pathname !== "/auth/login" && pathname !== "/auth/register" && ( 
-          <Navbar />
+              <Navbar />
           )}
         {children}
         </AuthProvider>
@@ -38,3 +42,8 @@ export default function RootLayout({
     </html >
   );
 }
+
+const AuthCheckWrapper = () => {
+  useAuthCheck();
+  return null;
+};

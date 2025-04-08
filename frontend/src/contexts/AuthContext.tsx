@@ -9,6 +9,7 @@ interface AuthContextProps {
   newEmail: string;
   newUsername: string;
   error: string;
+  isAuthenticated: () => Promise<boolean>;
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
   login: (email: string, password: string) => Promise<any>;
@@ -22,7 +23,6 @@ interface AuthContextProps {
 }
 
 export const AuthContext = createContext<AuthContextProps | null>(null);
-
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
@@ -138,6 +138,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+
+  const isAuthenticated = async () => {
+    const token = Cookies.get('token');
+    if (!token) return false;
+    try {
+      const response = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+      if (response.status === 200) {
+        return true;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+
   const setToken = (token: string) => {
     Cookies.set('token', token, {
         expires: 7,
@@ -152,7 +166,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     Cookies.remove('language', { path: '/' });
     setUser(null);
   };
-  
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -165,7 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   
   return (
-    <AuthContext.Provider value={{ user, login, newEmail, error, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
+    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
       {children}
     </AuthContext.Provider>
   );

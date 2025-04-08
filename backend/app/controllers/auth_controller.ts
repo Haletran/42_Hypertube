@@ -177,10 +177,20 @@ export default class AuthController {
         }
     }
 
-    public async me({ auth }: HttpContext) {
-        await auth.check();
-        return {
-            user: auth.user,
+    public async me({ auth, response }: HttpContext) {
+        try {
+            const check = await auth.check();
+            if (!check) {
+                throw new Error('unauthorized');
+            }
+            const user = auth.user!;
+            if (!user) {
+                throw new Error('unauthorized');
+            }
+            return { user }
+        } catch (error) {
+            console.error('Failed to get user:', error);
+            return response.status(400).json(error);
         }
     }
 }
