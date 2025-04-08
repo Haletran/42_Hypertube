@@ -247,15 +247,14 @@ export default function Player({ streamId }: { streamId: string }) {
         controls
         className="w-full h-full"
         onLoadedData={() => {
-          setIsLoading(false)
-          if (videoRef.current) {
-            if (localStorage.getItem(`${streamId}-time`)) {
-                videoRef.current.currentTime = parseFloat(localStorage.getItem(`${streamId}-time`))
-              }
-            else {
-              videoRef.current.currentTime = 0
-              videoRef.current.play().catch((err) => console.error("Autoplay failed:", err))
-            }
+          const video = videoRef.current;
+          if (!video) return;
+
+          const savedTime = localStorage.getItem(`${streamId}-time`);
+          video.currentTime = savedTime ? parseFloat(savedTime) : 0;
+          
+          if (!savedTime) {
+           video.play().catch(err => console.error("Autoplay failed:", err));
           }
         }}
         onPlaying={() => setIsLoading(false)}

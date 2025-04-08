@@ -32,9 +32,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <AuthCheckWrapper />
           {pathname !== "/" && pathname !== "/auth/login" && pathname !== "/auth/register" && ( 
               <Navbar />
+          )}
+          {pathname !== "/" &&  pathname !== "/auth/login" && pathname !== "/auth/register" && (
+          <AuthCheckWrapper />
           )}
         {children}
         </AuthProvider>
