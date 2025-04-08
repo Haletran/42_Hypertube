@@ -1,14 +1,20 @@
-import { createContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 import api from '../utils/api';
 import { User } from '@/types';
 import Cookies from 'js-cookie';
-import path from 'path';
-
 
 interface AuthContextProps {
   user: User | null;
+  loading: boolean;
+  newEmail: string;
+  newUsername: string;
+  error: string;
+  setError: (error: string | null) => void;
+  setLoading: (loading: boolean) => void;
   login: (email: string, password: string) => Promise<any>;
   setToken: (token: string) => void;
+  setEmail: (email: string) => void;
+  setUsername: (username: string) => void;
   update: (username: string, email: string, password: string, old_password: string, profilePicture: string) => Promise<any>;
   register: (username: string, email: string, password: string) => Promise<any>;
   changeLanguage: (language: string) => Promise<any>;
@@ -17,9 +23,14 @@ interface AuthContextProps {
 
 export const AuthContext = createContext<AuthContextProps | null>(null);
 
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [newEmail, setEmail] = useState('');
+  const [newUsername, setUsername] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const login = async (email: string, password: string) => {
     try {
@@ -141,6 +152,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     Cookies.remove('language', { path: '/' });
     setUser(null);
   };
+  
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -151,10 +163,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
   
+  
   return (
-    <AuthContext.Provider value={{ user, login, register,  setToken, update, logout, changeLanguage }}>
+    <AuthContext.Provider value={{ user, login, newEmail, error, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
       {children}
     </AuthContext.Provider>
   );
 
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

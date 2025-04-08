@@ -1,13 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
 import { Loader } from 'lucide-react';
 import { MovieCard } from './MovieCard';
+import { useAuth } from '@/contexts/AuthContext';
 import redis from '@/lib/redis';
 import { Movie, MovieGridProps } from '@/types';
 
 export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
+  const { error, setError, loading, setLoading } = useAuth();
   const [discover, setDiscover] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [pagenumber, setpagenumber] = useState<number>(1);
   const [firstLoad, setFirstLoad] = useState<boolean>(true);
   const observerRef = useRef(null);

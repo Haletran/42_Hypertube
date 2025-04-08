@@ -1,6 +1,5 @@
 "use client"
-
-import { useState, useContext, useEffect } from "react"
+import { useState, useContext } from "react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
@@ -11,32 +10,27 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/app/components/ui/dialog"
 import { Camera, User, KeyRound, Loader2, Check } from "lucide-react"
 import { Alert, AlertDescription } from "@/app/components/ui/alert"
-import api from '@/utils/api';
-import Cookies from 'js-cookie';
-
 import { AuthContext } from "@/contexts/AuthContext"
-import { set } from "react-hook-form"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function SettingsPage() {
   const auth = useContext(AuthContext)
   const [activeTab, setActiveTab] = useState("profile")
-  const [username, setUsername] = useState("")
-  const [email, setEmail] = useState("")
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [selectedAvatar, setSelectedAvatar] = useState(0)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [currentProfilePicture, setProfilePicture] = useState('');
+  const { user, newEmail, newUsername, setEmail, setUsername, error, setError } = useAuth();
+  const {username = '', email = '', profilePicture = ''} = user?.user || {}
 
   const handleAvatarSelect = (index: number) => {
     setSelectedAvatar(index)
   }
   
   const avatarOptions = [...new Set([
-    currentProfilePicture,
+    profilePicture,
     "/pictures/netflix_default.jpg",
     "https://loremfaces.net/96/id/1.jpg",
     "https://loremfaces.net/96/id/2.jpg",
@@ -44,11 +38,17 @@ export default function SettingsPage() {
     "https://loremfaces.net/96/id/4.jpg",
   ])].filter((url: string) => url)
 
+
+
+  const handleActiveTabChange = (value: string) => {
+    setError(null)
+    setActiveTab(value)
+  }
   const handleSaveChanges = async () => {
     try {
         setIsLoading(true)
         if (!auth) throw new Error("Auth context not found")
-        const response = await auth.update(username, email, newPassword, currentPassword, avatarOptions[selectedAvatar])
+        const response = await auth.update(newUsername, newEmail, newPassword, currentPassword, avatarOptions[selectedAvatar])
         await new Promise((resolve) => setTimeout(resolve, 500))
         if (!response.success) {
           throw new Error(response.error);
@@ -71,7 +71,7 @@ export default function SettingsPage() {
             throw new Error('Passwords do not match')
         }
         if (!auth) throw new Error("Auth context not found")
-        const response = await auth.update(username, email, newPassword, currentPassword, avatarOptions[selectedAvatar]);
+        const response = await auth.update(newUsername, newEmail, newPassword, currentPassword, avatarOptions[selectedAvatar]);
         await new Promise((resolve) => setTimeout(resolve, 500))
         if (!response.success) {
             throw new Error(response.error);
@@ -82,22 +82,6 @@ export default function SettingsPage() {
         setIsLoading(false)
     }
   }
-
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-        try {
-            const token = Cookies.get('token');
-            const response = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
-            setProfilePicture(response.data.user.profilePicture || '');
-            setUsername(response.data.user.username);
-            setEmail(response.data.user.email);
-        } catch (error) {
-            console.error('Failed to get user:', error);
-        }
-    };
-    fetchUserData();
-}, []);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -110,7 +94,7 @@ export default function SettingsPage() {
         <Separator className="my-6 bg-zinc-800" />
 
         <div className="flex flex-col space-y-8">
-          <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs defaultValue="profile" value={activeTab} onValueChange={handleActiveTabChange} className="w-full">
             <TabsList className="bg-zinc-900 border border-zinc-800 p-1 w-fit">
               <TabsTrigger
                 value="profile"
@@ -141,7 +125,7 @@ export default function SettingsPage() {
 
                     <div className="flex items-center space-x-6">
                       <Avatar className="h-24 w-24 border-2 border-zinc-800">
-                        <AvatarImage src={avatarOptions[selectedAvatar]} alt="Profile picture" />
+                        <AvatarImage src={avatarOptions[selectedAvatar]} alt="Profile picture" className="object-cover"/>
                         <AvatarFallback className="bg-zinc-800 text-zinc-400 text-xl">
                           {username.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
@@ -213,7 +197,8 @@ export default function SettingsPage() {
                         </Label>
                         <Input
                           id="username"
-                          value={username}
+                          value={newUsername}
+                          placeholder={username}
                           onChange={(e) => setUsername(e.target.value)}
                           className="bg-zinc-950 border-zinc-800 text-zinc-100 focus-visible:ring-zinc-700"
                         />
@@ -227,7 +212,8 @@ export default function SettingsPage() {
                         <Input
                           id="email"
                           type="email"
-                          value={email}
+                          value={newEmail}
+                          placeholder={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="bg-zinc-950 border-zinc-800 text-zinc-100 focus-visible:ring-zinc-700"
                         />

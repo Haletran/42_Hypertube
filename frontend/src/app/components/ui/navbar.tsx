@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link"
-import { useContext, useEffect, useState } from "react"
+import { use, useContext, useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { DownloadBar } from "../DownloadBar"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
-import { AuthContext } from '@/contexts/AuthContext';
+import { AuthContext, useAuth } from '@/contexts/AuthContext';
 import { Search, LogOut, Settings, User, Globe } from "lucide-react"
 import api from '@/utils/api';
 import Cookies from 'js-cookie';
@@ -13,16 +13,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export function Navbar() {
     const auth = useContext(AuthContext);
-    const [profile_picture, setProfilePicture] = useState('');
-    const [name, setName] = useState('');
-    const [id, setId] = useState('');
-    const [language, setLanguage] = useState(Cookies.get('language') || 'en');
-
+    const { user } = useAuth();
+    const [language, setLanguage] = useState<string>(Cookies.get('language') || 'en');
 
     const logout = async () => {
         try {
             if (!auth) throw new Error('Auth context not found');
-            await auth.logout();
+            auth.logout();
             window.location.href = '/';
         } catch (error) {
             console.error('Logout failed:', error);
@@ -33,7 +30,7 @@ export function Navbar() {
         if (value === language) return;
         try  {
             const token = Cookies.get('token');
-            const response = await api.patch(`/api/users/${id}/language`, { language: value }, { headers: { Authorization: `Bearer ${token}` } });
+            const response = await api.patch(`/api/users/${user?.user?.id}/language`, { language: value }, { headers: { Authorization: `Bearer ${token}` } });
             if (response.status === 200) {
                 setLanguage(value);
                 Cookies.set('language', value, { expires: 7, path: '/' });
@@ -43,24 +40,6 @@ export function Navbar() {
             console.error('Language change failed:', error);
         }
     }
-
-
-
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const token = Cookies.get('token');
-                const response = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
-                setProfilePicture(response.data.user.profilePicture || '');
-                setName(response.data.user.username);
-                setId(response.data.user.id);
-                localStorage.setItem('language', response.data.user.language || 'en');
-            } catch (error) {
-                console.error('Failed to get user:', error);
-            }
-        };
-        fetchUserData();
-    }, []);
     
     return (
         <div className="container mx-auto p-4">
@@ -93,8 +72,8 @@ export function Navbar() {
                             </div>
                             <DropdownMenu.Trigger asChild>
                             <Avatar>
-                                <AvatarImage className="object-cover" src={profile_picture} />
-                                <AvatarFallback>{name ? name.charAt(0).toUpperCase() : ''}</AvatarFallback>
+                                <AvatarImage className="object-cover" src={user?.user?.profilePicture} />
+                                <AvatarFallback>{user?.user?.username ? user?.user?.username.charAt(0).toUpperCase() : ''}</AvatarFallback>
                             </Avatar>
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Portal>
@@ -105,7 +84,7 @@ export function Navbar() {
                                     alignOffset={-5}
                                 >
                                     <div className="px-3 py-2 border-b border-zinc-800">
-                                        <div className="font-medium text-sm">{name}</div>
+                                        <div className="font-medium text-sm">{user?.user?.username}</div>
                                     </div>
                                     <div className="py-1">
                                         <DropdownMenu.Item asChild>

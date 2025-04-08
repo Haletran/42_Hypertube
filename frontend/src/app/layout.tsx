@@ -4,7 +4,6 @@ import "./globals.css";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Navbar } from "@/app/components/ui/navbar";
 import { usePathname } from "next/navigation"
-import path from "path";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

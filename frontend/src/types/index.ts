@@ -61,31 +61,35 @@ export interface WatchMovieParams {
     }
 }
 
+export interface User {
+    user: {
+        id: number;
+        username: string;
+        email: string;
+        profilePicture: string;
+        language: string;
+    }
+}
+
+
+export interface LoginResponse {
+    token: string;
+}
+
+
+export interface RegisterResponse {
+    id: number;
+    email: string;
+
+}
+
 
 export interface Comment {
-    id: number;
-    author: string;
+    id: string;
     content: string;
-    date: string;
+    movieId: string;
+    userId: number;
+    updated_at: string;
+    user: User;
 }
 
-export interface User {
-    id: number;
-    username: string;
-    email: string;
-    profilePicture: string;
-}
-  
-  
-  export interface LoginResponse {
-    token: string;
-  }
-  
-  
-  export interface RegisterResponse {
-    id: number;
-    email: string;
-  
-  }
-
-  

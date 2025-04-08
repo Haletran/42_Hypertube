@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { Film } from "lucide-react"
 
 export default function LandingPage() {
   return (
@@ -9,7 +8,7 @@ export default function LandingPage() {
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">Hypertube</h1>
         </div>
 
-        <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-md mx-auto">Stream any video instantly</p>
+        <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-md mx-auto">Stream any Movies</p>
 
         <Link
           href="/auth/register"

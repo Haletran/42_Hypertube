@@ -177,8 +177,6 @@ export default class AuthController {
         }
     }
 
-
-
     public async me({ auth }: HttpContext) {
         await auth.check();
         return {

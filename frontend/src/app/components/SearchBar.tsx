@@ -6,17 +6,16 @@ import { MovieCard } from './MovieCard';
 import { Loader } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Movie } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 import Cookies from 'js-cookie';
 
 
 export function SearchBar() {
+    const { user, error, setError, loading, setLoading } = useAuth();
     const [movies, setMovies] = useState<Movie[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState<string>('');
-    const language = Cookies.get('language') || 'en';
+    const language = user?.user?.language || Cookies.get('language') || 'en';
     const observerRef = useRef(null);
-
 
     const fetchMovie = async (searchTerm: string) => {
         if (!searchTerm) {

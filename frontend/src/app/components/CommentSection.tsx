@@ -3,7 +3,7 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button"
 import Cookies from "js-cookie";
-import { Comment } from "@/types";
+import { Comment, User } from "@/types";
 import api from '@/utils/api';
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { Edit2, Check, X, Trash } from "lucide-react";
@@ -18,38 +18,17 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/app/components/ui/alert-dialog";
-
-
-interface User {
-    id: number;
-    username: string;
-    email: string;
-    profilePicture: string;
-    language: string;
-    authMethod: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-interface Comment {
-    id: string;
-    content: string;
-    movieId: string;
-    userId: number;
-    updated_at: string;
-    user: User;
-}
+import { useAuth } from "@/contexts/AuthContext";
 
 
 export const CommentSection = ({ movie_id }: { movie_id: number }) => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState<string>('');
-    const [loading, setLoading] = useState(true)
-    const [confirmationOpen, setConfirmationOpen] = useState(false)
     const [commentLoading, setCommentLoading] = useState(false)
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
     const [editedContent, setEditedContent] = useState("")
-    const [username, setUsername] = useState<string>("")
+    const { user } = useAuth()
+    const { username } = user?.user || {}
 
     const handleEditComment = (commentId: string, content: string) => {
         setEditingCommentId(commentId)
@@ -101,19 +80,8 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
         }
     }
 
-    const fetchUserData = async () => {
-        try {
-            const token = Cookies.get('token');
-            const response = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
-            setUsername(response.data.user.username);
-        } catch (error) {
-            console.error('Failed to get user:', error);
-        }
-    };
-
     useEffect(() => {
         (async () => {
-            await fetchUserData();
             await fetchComments(movie_id);
         })();
     }, [movie_id]);
@@ -228,7 +196,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                     <div className="flex items-center justify-between">
                                         <p className="font-medium">{comment?.user?.username || "User"}</p>
                                         <div className="flex items-center gap-2">
-                                            {comment.user.username === username && comment.id && editingCommentId !== comment.id && (
+                                            {comment.user?.username === user?.user?.username && comment.id && editingCommentId !== comment.id && (
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
@@ -239,7 +207,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                                     <span className="sr-only">Edit</span>
                                                 </Button>
                                             )}
-                                            {comment.user.username === username && comment.id && (
+                                            {comment.user?.username === username && comment.id && (
                                                 <>
                                                     <AlertDialog >
                                                         <AlertDialogTrigger>
@@ -270,7 +238,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                         </div>
                                     </div>
 
-                                    {comment.user.username === username && comment.id && editingCommentId === comment.id ? (
+                                    {comment.user?.username === username && comment.id && editingCommentId === comment.id ? (
                                         <div className="space-y-2">
                                             <Textarea
                                                 value={editedContent}
