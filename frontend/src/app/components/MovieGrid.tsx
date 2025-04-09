@@ -46,7 +46,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
 
     const test = async () => {
       const check = await fetchUserMovies(user?.user?.id);
-      console.log('check', check);
       setWatchedMovies(check);
     }
     const debounceTimeout = setTimeout(() => {
@@ -100,14 +99,22 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
       }
       {watchedMovies.length > 0 && (
         <>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Currently watching</h1>
+          {language === 'en' ? (
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Continue watching</h1>
+          ) : language === 'fr' && (
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Continuer la lecture</h1>
+          )}
           <WatchCard movie={watchedMovies} language={language}/>
           <br></br>
         </>
         )}
       {discover.length > 0 && (
         <>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Popular Movies</h1>
+          {language === 'en' ? (
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Discover Movies</h1>
+          ) : language === 'fr' && (
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Découvrir des films</h1>
+          )}
           <MovieCard movies={discover} observerRef={observerRef} loadState={loading} language={language} />
         </>
       )

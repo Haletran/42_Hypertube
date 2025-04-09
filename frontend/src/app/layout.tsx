@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { MovieProvider } from "@/contexts/MovieContext";
 import { Navbar } from "@/app/components/ui/navbar";
 import { usePathname } from "next/navigation"
+import { Footer } from "@/app/components/ui/footer";
 import useAuthCheck from "@/hooks/useAuthCheck";
 
 const geistSans = Geist({
@@ -38,8 +39,11 @@ export default function RootLayout({
           )}
         <MovieProvider>
           {children}
+          {pathname !== "/dashboard" && (
+            <Footer />
+          )}
         </MovieProvider>
-        </AuthProvider>
+          </AuthProvider>
       </body>
     </html >
   );

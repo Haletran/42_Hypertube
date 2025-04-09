@@ -140,7 +140,7 @@ export const MovieProvider = ({ children }: { children: ReactNode }) => {
             })
 
             if (!response.ok) {
-                throw new Error("Failed to save current time")
+                return []
             }
             const data = await response.json()
             return data;

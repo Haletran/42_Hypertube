@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export function Navbar() {
     const auth = useContext(AuthContext);
     const { user } = useAuth();
-    const [language, setLanguage] = useState<string>(Cookies.get('language') || 'en');
+    const [language, setLanguage] = useState<string>(user?.user?.language || Cookies.get('language') || 'en');
 
     const logout = async () => {
         try {
@@ -34,6 +34,11 @@ export function Navbar() {
             if (response.status === 200) {
                 setLanguage(value);
                 Cookies.set('language', value, { expires: 7, path: '/' });
+                const url = new URL(window.location.href);
+                if (url.searchParams.has('language')) {
+                    url.searchParams.set('language', value);
+                    window.history.replaceState({}, '', url.toString());
+                }
                 window.location.reload();
             }
         } catch (error) {
