@@ -2,10 +2,10 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from '@/contexts/AuthContext';
+import { MovieProvider } from "@/contexts/MovieContext";
 import { Navbar } from "@/app/components/ui/navbar";
 import { usePathname } from "next/navigation"
 import useAuthCheck from "@/hooks/useAuthCheck";
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,8 +16,6 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-
-
 
 export default function RootLayout({
   children,
@@ -38,7 +36,9 @@ export default function RootLayout({
           {pathname !== "/" &&  pathname !== "/auth/login" && pathname !== "/auth/register" && (
           <AuthCheckWrapper />
           )}
-        {children}
+        <MovieProvider>
+          {children}
+        </MovieProvider>
         </AuthProvider>
       </body>
     </html >

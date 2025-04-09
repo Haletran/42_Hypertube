@@ -2,6 +2,9 @@
 
 import { use, useEffect, useRef, useState } from "react"
 import Hls from "hls.js"
+import { set } from "react-hook-form"
+import Cookies from "js-cookie"
+import { useMovieContext } from "@/contexts/MovieContext"
 
 type SubtitleTrack = {
   kind: string
@@ -13,9 +16,32 @@ type SubtitleTrack = {
 
 export default function Player({ streamId }: { streamId: string }) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { getMovieTimecode, movie, loading, setLoading } = useMovieContext()
+  const [timecode, setTimecode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const hlsRef = useRef<Hls | null>(null)
+
+
+  async function getCurrentTime() {
+    try {
+      const response = await fetch(`http://localhost:3333/api/library/${streamId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to save current time")
+      }
+      const data = await response.json()
+      console.log("Current time:", data[0].watchedTimecode)
+      setTimecode(data[0].watchedTimecode)
+    } catch (error) {
+      console.error("Error saving current time:", error)
+    }
+  }
 
   useEffect(() => {
     const video = videoRef.current
@@ -27,12 +53,11 @@ export default function Player({ streamId }: { streamId: string }) {
         hlsRef.current = null
       }
     }
-
+    getCurrentTime()
     const loadVideo = async () => {
       try {
-        setIsLoading(true)
+        setLoading(true)
         setError(null)
-
         const mp4Available = await checkAndPlayMp4()
         if (!mp4Available) {
           await setupHls()
@@ -40,7 +65,7 @@ export default function Player({ streamId }: { streamId: string }) {
       } catch (err) {
         console.error("Failed to load video:", err)
         setError("Failed to load video. Please try again later.")
-        setIsLoading(false)
+        setLoading(false)
       }
     }
 
@@ -48,13 +73,34 @@ export default function Player({ streamId }: { streamId: string }) {
     return cleanup
   }, [streamId])
 
+  const saveCurrentTime = async (id:string, current_time: number) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/library/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+        body: JSON.stringify({ watched_timecode: current_time  }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to save current time")
+      }
+      return response.json()
+    } catch (error) {
+      console.error("Error saving current time:", error)
+    }
+  }
+
+
   useEffect(() => {
     const interval = setInterval(() => {
       const video = videoRef.current
       if (!video) return
-      localStorage.setItem(`${streamId}-time`, video.currentTime.toString())
+      const currentTime = video.currentTime
+      saveCurrentTime(streamId, currentTime)
     }, 10000)
-
     return () => clearInterval(interval)
   }, [streamId])
 
@@ -213,7 +259,7 @@ export default function Player({ streamId }: { streamId: string }) {
 
   return (
     <div className="relative w-full aspect-video bg-black">
-      {isLoading && (
+      {loading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-20">
         <div className="relative w-16 h-16">
           <div className="absolute top-0 left-0 w-full h-full border-4 border-white/30 rounded-full"></div>
@@ -231,7 +277,7 @@ export default function Player({ streamId }: { streamId: string }) {
             <button
               onClick={() => {
                 setError(null)
-                setIsLoading(true)
+                setLoading(true)
                 setupHls()
               }}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
@@ -246,20 +292,21 @@ export default function Player({ streamId }: { streamId: string }) {
         ref={videoRef}
         controls
         className="w-full h-full"
+        preload="auto"
+        onLoadedMetadata={() => {
+          const video = videoRef.current;
+          if (!video) return;
+          video.currentTime = timecode ? parseFloat(timecode) : 0;
+          console.log(timecode, video.currentTime);
+        }}
         onLoadedData={() => {
           const video = videoRef.current;
           if (!video) return;
-
-          const savedTime = localStorage.getItem(`${streamId}-time`);
-          video.currentTime = savedTime ? parseFloat(savedTime) : 0;
-          
-          if (!savedTime) {
-           video.play().catch(err => console.error("Autoplay failed:", err));
-          }
+          video.play().catch(err => console.error("Autoplay failed:", err));
         }}
-        onPlaying={() => setIsLoading(false)}
+        onPlaying={() => setLoading(false)}
         onError={() => {
-          setIsLoading(false)
+          setLoading(false)
           setError("Video playback error. Please try again later.")
         }}
         autoPlay

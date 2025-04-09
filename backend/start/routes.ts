@@ -13,6 +13,7 @@ import MoviesController from '#controllers/movies_controller'
 import AuthController from '#controllers/auth_controller'
 import StreamController from '#controllers/stream_controller'
 import CommentsController from '#controllers/comments_controller'
+import LibrariesController from '#controllers/libraries_controller'
 import { middleware } from './kernel.js'
 
 router.group(() => {
@@ -68,8 +69,17 @@ router.group(() => {
     })
   router.get('/watch/:id', [MoviesController, 'watch'])
   router.get('/search/:name', [MoviesController, 'search'])
-
 }).prefix('/api/movies')
+
+
+
+router.group(() => {
+  router.get('/user/:id', [LibrariesController, 'getAllUserMovies'])
+  router.get('/:id', [LibrariesController, 'getUserMovie'])
+  router.post('/:id', [LibrariesController, 'addUserMovie'])
+  router.patch('/:id', [LibrariesController, 'updateUserMovie'])
+}).prefix('/api/library')
+
 
 
 

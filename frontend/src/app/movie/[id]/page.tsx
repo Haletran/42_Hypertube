@@ -1,8 +1,7 @@
 import { CastScrollableList } from "@/app/components/CastScrollableList"
 import { MovieDetails } from "@/app/components/MovieOverview";
 import { CommentSection } from "@/app/components/CommentSection";
-import { WatchMovieParams } from "@/types";
-import { Navbar } from "@/app/components/ui/navbar";
+import { MovieContext } from "@/contexts/MovieContext";
 import Cookies from "js-cookie";
 
 export async function getMovieDetails(id: number, language: string) {

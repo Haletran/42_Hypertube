@@ -74,7 +74,6 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
             }
             setComments(response.data);
             setCommentLoading(false)
-            console.log(response.data)
         } catch (error) {
             console.error("Failed to fetch comments:", error);
         }

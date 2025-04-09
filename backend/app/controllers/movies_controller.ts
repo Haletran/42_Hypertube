@@ -1,4 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import User from '#models/user'
+
 
 export default class MoviesController {
     async search({ params, request, response }: HttpContext) {
@@ -54,6 +56,7 @@ export default class MoviesController {
         }
         return (embedUrl);
     }
+
     async getByTmdbById({ params, response, request }: HttpContext) {
         const apiKey = process.env.TMDB_API_KEY || '';
         const defaultLanguage = "en-US";

@@ -1,7 +1,7 @@
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 
-import Movie from './movie.js'
+import Movie from './movie_user.js'
 import User from './user.js'
 
 export default class Comment extends BaseModel {

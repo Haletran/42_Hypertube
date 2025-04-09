@@ -11,6 +11,8 @@ export interface Movie {
     runtime: number;
     genres?: { id: number; name: string }[]
     production_companies?: { id: number; name: string }[]
+    watched_timecode: string | null;
+    user_id: number | null;
 }
 
 export interface MovieCardProps {
@@ -68,6 +70,7 @@ export interface User {
         email: string;
         profilePicture: string;
         language: string;
+        createdAt: string; 
     }
 }
 
@@ -93,3 +96,12 @@ export interface Comment {
     user: User;
 }
 
+export interface WatchedMovie {
+    id: number
+    title: string
+    userId: number
+    movieId: number
+    watchedTimecode: string
+    originalTimecode: number
+    movie: Movie
+  }

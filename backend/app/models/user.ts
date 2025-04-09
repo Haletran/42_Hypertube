@@ -6,7 +6,7 @@ import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 
-import Movie from './movie.js'
+import Movie from './movie_user.js'
 
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {

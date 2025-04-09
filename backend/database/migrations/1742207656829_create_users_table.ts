@@ -15,9 +15,18 @@ export default class Users extends BaseSchema {
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).nullable()
     })
+
+    this.schema.createTable('movie_user', (table) => {
+      table.increments('id').primary()
+      table.integer('user_id').notNullable()
+      table.integer('movie_id').notNullable()
+      table.string('watched_timecode').nullable()
+      table.string('original_timecode').notNullable()
+    })
   }
 
   public async down () {
+    this.schema.dropTable('movie_user')
     this.schema.dropTable(this.tableName)
   }
 }

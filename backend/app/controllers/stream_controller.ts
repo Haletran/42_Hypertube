@@ -86,12 +86,19 @@ export default class StreamController {
     const hlsPath = path.join('data', 'hls', params.id, 'stream.m3u8');
     
     try {
-      const mp4response = await fs.access(mp4Path);
-      if (mp4response !== undefined) {
-        const hlsResponse = await fs.access(hlsPath);
-        if (hlsResponse !== undefined) {
-          return response.json({ message: 'Video is available' });
-        }
+      const mp4Exists = await fs.access(mp4Path).then(() => true).catch(() => false);
+      const hlsExists = await fs.access(hlsPath).then(() => true).catch(() => false);
+
+      if (mp4Exists && hlsExists) {
+        return response.json({ message: 'Video is available' });
+      } else {
+        return response.notFound({
+          error: 'Video not ready yet',
+          missing: {
+            mp4: !mp4Exists,
+            hls: !hlsExists,
+          },
+        });
       }
 
       return response.json({ message: 'Video is available' });

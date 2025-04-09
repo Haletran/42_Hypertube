@@ -8,6 +8,7 @@ import { Button } from "@/app/components/ui/button"
 import { Progress } from "@/app/components/ui/progress"
 import { TorrentModal } from "@/app/components/Torrent_modal"
 import { Movie, Torrent } from '@/types';
+import { useMovieContext } from "@/contexts/MovieContext";
 
 
 export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: string }) {
@@ -19,6 +20,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
   const [isFetching, setIsFetching] = useState(false)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | undefined>()
+  const { addMovie } = useMovieContext()
 
   const posterUrl = movie?.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -70,7 +72,6 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
     };
     
     checkInitialState();
-    if (progress == null) return;
     const interval = setInterval(async () => {
         if (progress === 100) {
             setIsPlayable(true);
@@ -245,11 +246,12 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
           streamId: movieId.toString(),
         }),
       })
-
       if (!response.ok) {
         throw new Error(`Failed to start stream: ${response.status}`)
       }
 
+      localStorage.removeItem(`${movieId}`)
+      await addMovie(movie);
       await checkDownload(movieId)
       setIsDownloading(true)
       setShowTorrents(false)
