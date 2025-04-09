@@ -42,6 +42,17 @@ export default class StreamController {
     const mp4Path = path.join('data', params.id, 'video.mp4');
     try {
       await fs.access(mp4Path);
+      const stats = await fs.stat(mp4Path);
+      const fileSize = stats.size;
+
+      const previousSize = await Redis.get(`file:${params.id}:size`);
+      await Redis.set(`file:${params.id}:size`, fileSize);
+
+      if (previousSize && parseInt(previousSize) < fileSize) {
+        await Redis.set(`file:${params.id}:downloading`, 'true');
+        await Redis.expire(`file:${params.id}:downloading`, 10);
+        throw new Error('File is still downloading');
+      }
 
       response.header('Content-Type', 'video/mp4');
       response.header('Cache-Control', 'no-cache');

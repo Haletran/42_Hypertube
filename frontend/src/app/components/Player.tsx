@@ -59,6 +59,7 @@ export default function Player({ streamId }: { streamId: string }) {
         setLoading(true)
         setError(null)
         const mp4Available = await checkAndPlayMp4()
+        console.log("MP4 available:", mp4Available)
         if (!mp4Available) {
           await setupHls()
         }
@@ -118,7 +119,7 @@ export default function Player({ streamId }: { streamId: string }) {
 
 
       const statusData = await statusResponse.json()
-      if (statusData.progress === "100" || statusData.status === "complete") {
+      if (statusData.progress === "100" || statusData.status === "complete") { // problem with mp4 
         const response = await fetch(mp4Url, { method: "HEAD" })
         if (response.ok) {
           video.src = mp4Url

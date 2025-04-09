@@ -20,7 +20,7 @@ export const WatchCard: React.FC<WatchedMovie> = ({ movie, language }) => {
                 const hasRating = movieData.vote_average > 0;
                 const watchedPercentage = Math.min(100, (Number.parseFloat(watchedMovie.watchedTimecode) / (watchedMovie.originalTimecode * 60)) * 100);
 
-                if (watchedPercentage >= 90 ) 
+                if (watchedPercentage >= 90 || watchedMovie.watchedTimecode === '0')
                     return ;
 
                 return isReleased && hasRating && (
