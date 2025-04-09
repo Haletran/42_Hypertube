@@ -9,6 +9,8 @@ interface MovieContextProps {
     movie: Movie | null;
     loading: boolean;
     error: string | null;
+    watchedMovies: WatchedMovie[];
+    setWatchedMovies: (movies: WatchedMovie[]) => void;
     addMovie: (movie: Movie) => Promise<void>;
     fetchUserMovies: (id: number) => Promise<any[] | undefined>;
     getMovie: (id: string) => Promise<any>;
@@ -23,6 +25,7 @@ export const MovieContext = createContext<MovieContextProps | null>(null);
 
 export const MovieProvider = ({ children }: { children: ReactNode }) => {
     const [movie, setMovie] = useState<Movie | null>(null);
+    const [watchedMovies, setWatchedMovies] = useState<WatchedMovie[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const token = Cookies.get('token');
@@ -148,7 +151,7 @@ export const MovieProvider = ({ children }: { children: ReactNode }) => {
 
 
     return (
-        <MovieContext.Provider value={{ movie, loading, error, getMovie, addMovie, fetchUserMovies, saveCurrentTime, getMovieTimecode, setError, getAllUserMovies, setLoading }}>
+        <MovieContext.Provider value={{ movie, loading, error, getMovie, addMovie, fetchUserMovies, watchedMovies, setWatchedMovies ,saveCurrentTime, getMovieTimecode, setError, getAllUserMovies, setLoading }}>
             {children}
         </MovieContext.Provider>
     );

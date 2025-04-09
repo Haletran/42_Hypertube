@@ -104,4 +104,5 @@ export interface WatchedMovie {
     watchedTimecode: string
     originalTimecode: number
     movie: Movie
+    language: string
   }

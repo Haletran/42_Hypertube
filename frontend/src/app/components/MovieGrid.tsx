@@ -4,8 +4,12 @@ import { MovieCard } from './MovieCard';
 import { useAuth } from '@/contexts/AuthContext';
 import redis from '@/lib/redis';
 import { Movie, MovieGridProps } from '@/types';
+import { useMovieContext } from '@/contexts/MovieContext';
+import { WatchCard } from './WatchCard';
 
 export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
+  const { user } = useAuth();
+  const { fetchUserMovies, watchedMovies, setWatchedMovies } = useMovieContext();
   const { error, setError, loading, setLoading } = useAuth();
   const [discover, setDiscover] = useState<Movie[]>([]);
   const [pagenumber, setpagenumber] = useState<number>(1);
@@ -39,6 +43,12 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   }
 
   useEffect(() => {
+
+    const test = async () => {
+      const check = await fetchUserMovies(user?.user?.id);
+      console.log('check', check);
+      setWatchedMovies(check);
+    }
     const debounceTimeout = setTimeout(() => {
       fetchDiscover();
       if (firstLoad) {
@@ -49,6 +59,7 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
 
       }
     }, 500);
+    test();
     return () => clearTimeout(debounceTimeout);
   }, [onMovieSelect]);
 
@@ -87,6 +98,13 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
           </div>
         )
       }
+      {watchedMovies.length > 0 && (
+        <>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Currently watching</h1>
+          <WatchCard movie={watchedMovies} language={language}/>
+          <br></br>
+        </>
+        )}
       {discover.length > 0 && (
         <>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Popular Movies</h1>

@@ -116,8 +116,9 @@ export default function Player({ streamId }: { streamId: string }) {
       const statusResponse = await fetch(statusUrl)
       if (!statusResponse.ok) return false
 
+
       const statusData = await statusResponse.json()
-      if (statusData.progress === "100" && statusData.status === "complete") {
+      if (statusData.progress === "100" || statusData.status === "complete") {
         const response = await fetch(mp4Url, { method: "HEAD" })
         if (response.ok) {
           video.src = mp4Url
@@ -297,7 +298,6 @@ export default function Player({ streamId }: { streamId: string }) {
           const video = videoRef.current;
           if (!video) return;
           video.currentTime = timecode ? parseFloat(timecode) : 0;
-          console.log(timecode, video.currentTime);
         }}
         onLoadedData={() => {
           const video = videoRef.current;
