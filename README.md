@@ -24,11 +24,12 @@ watch videos.
 - [x] Create Register / Login / Oauth2 to access the website
 - [x] Make all the API routes work and secure them with Session token
 - [x] On front-page, only render movies that are on the view and remove the others
-- [ ] Make Profile and settings page
-- [ ] Make already watched movies page / and render in the /dashboard
+- [x] Make Profile and settings page
+- [x] Make already watched movies page / and render in the /dashboard
 - [ ] Fix status in /movie/:id page (loading infinite if the progress is null)
 - [ ] Add a menu to see all the movies that are currently being downloaded
 - [x] Make the comments works (still need to implement updated_at and created_at)
+- [ ] Add filter for dashboard page (by date, by rating, by genre)
 
 ## Setup the Project
 
