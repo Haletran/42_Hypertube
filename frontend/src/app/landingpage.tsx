@@ -11,7 +11,7 @@ export default function LandingPage() {
         <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-md mx-auto">Stream any Movies</p>
 
         <Link
-          href="/auth/register"
+          href="/auth/login"
           className="inline-flex items-center justify-center px-6 py-4 text-lg font-medium text-black bg-white rounded-md hover:bg-gray-300 transition-colors duration-300 shadow-lg shadow-black/30"
         >
           Start Watching Now

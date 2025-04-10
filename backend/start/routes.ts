@@ -21,6 +21,8 @@ router.group(() => {
   router.post('/login', [AuthController, 'login']);
   router.delete('/logout', [AuthController, 'logout']).use(middleware.auth());
   router.get('/me', [AuthController, 'me']);
+  router.post('/forgot-password', [AuthController, 'forgotPassword']);
+  router.post('/reset-password', [AuthController, 'resetPassword']);
 }).prefix('/api/auth')
 
 router.group(() => {

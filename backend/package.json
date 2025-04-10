@@ -55,10 +55,12 @@
     "@adonisjs/core": "^6.17.2",
     "@adonisjs/cors": "^2.2.1",
     "@adonisjs/lucid": "^21.6.1",
+    "@adonisjs/mail": "^9.2.2",
     "@adonisjs/redis": "^9.2.0",
     "@adonisjs/session": "^7.5.1",
     "@vinejs/vine": "^3.0.0",
     "axios": "^1.8.4",
+    "edge.js": "^6.2.1",
     "luxon": "^3.5.0",
     "pg": "^8.14.0",
     "reflect-metadata": "^0.2.2"

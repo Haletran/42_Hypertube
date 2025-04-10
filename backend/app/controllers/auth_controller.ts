@@ -2,8 +2,119 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { RegisterValidator, LoginValidator, UpdateValidator } from '#validators/register_user';
 import User from '#models/user'
 import axios from 'axios'
+import { randomBytes } from 'crypto'
+import mail from '@adonisjs/mail/services/main'
+import { DateTime } from 'luxon';
 
 export default class AuthController {
+    public async forgotPassword({ request, response }: HttpContext) {
+        const email = request.input('email')
+        const user = await User.findBy('email', email)
+    
+        if (!user) {
+          return response.status(404).send({ message: 'Utilisateur non trouvé' })
+        }
+    
+        const token = randomBytes(32).toString('hex')
+
+        const expiresAt = DateTime.fromJSDate(new Date(Date.now() + 60 * 60 * 1000));
+    
+        user.merge({
+            reset_token: token,
+            reset_token_expires: expiresAt,
+        })
+        await user.save()
+    
+        const resetLink = `http://localhost:3000/auth/reset-password?token=${token}&email=${email}`
+    
+        await mail.send((message) => {
+            message
+              .from(process.env.SMTP_USER)
+              .to(email)
+              .subject('Hypertube - Reset Your Password')
+              .html(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <meta charset="utf-8">
+                  <title>Reset Your Password</title>
+                  <style>
+                    body {
+                      font-family: Arial, sans-serif;
+                      line-height: 1.6;
+                      color: #333;
+                      max-width: 600px;
+                      margin: 0 auto;
+                      padding: 20px;
+                    }
+                    .button {
+                      display: inline-block;
+                      background-color: #4f46e5;
+                      color: white;
+                      text-decoration: none;
+                      padding: 10px 20px;
+                      border-radius: 4px;
+                      margin: 20px 0;
+                    }
+                    .footer {
+                      margin-top: 30px;
+                      font-size: 12px;
+                      color: #666;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <h1>Password Reset Request</h1>
+                  <p>Hello ${user.username},</p>
+                  <p>We received a request to reset your password. Click the button below to create a new password:</p>
+                  
+                  <a href="${resetLink}" class="button">Reset Password</a>
+                  
+                  <p>If you didn't request this password reset, please ignore this email or contact support if you have concerns.</p>
+                  
+                  <p>This link will expire in 1 hour.</p>
+                  
+                  <div class="footer">
+                    <p>If the button doesn't work, copy and paste this URL into your browser:</p>
+                    <p>${resetLink}</p>
+                  </div>
+                </body>
+                </html>
+              `)
+          })
+    
+        return response.ok({ message: 'Lien de réinitialisation envoyé' })
+      }
+
+    public async resetPassword({ request, response}: HttpContext) {
+        const token = request.input('token')
+        const email = request.input('email')
+
+
+        console.log('email', email)
+        const user = await User.findBy('email', email)
+        if (!user) {
+            return response.status(404).send({ message: 'Utilisateur non trouvé' })
+        }
+        if (user.reset_token !== token) {
+            return response.status(400).send({ message: 'Token invalide' })
+        }
+
+        const now = DateTime.now()
+        if (user.reset_token_expires && user.reset_token_expires < now) {
+            return response.status(400).send({ message: 'Token expiré' })
+        }
+        const password = request.input('password')
+        if (!password) {
+            return response.status(400).send({ message: 'Mot de passe requis' })
+        }
+        user.password = password
+        user.reset_token = null
+        user.reset_token_expires = null
+        await user.save()
+        return response.ok({ message: 'Mot de passe réinitialisé avec succès' })
+    }
+
     public async register({ request }: HttpContext) {
         const data = request.all();
         const payload = await RegisterValidator.validate(data);
