@@ -16,11 +16,10 @@ type SubtitleTrack = {
 
 export default function Player({ streamId }: { streamId: string }) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const { getMovieTimecode, movie, loading, setLoading, addMovie } = useMovieContext()
+  const { getMovieTimecode, movie, loading, setLoading, addMovie, getMovie } = useMovieContext()
   const [timecode, setTimecode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const hlsRef = useRef<Hls | null>(null)
-
 
   async function getCurrentTime() {
     try {
@@ -103,7 +102,7 @@ export default function Player({ streamId }: { streamId: string }) {
       saveCurrentTime(streamId, currentTime)
     }, 10000)
     return () => clearInterval(interval)
-  }, [streamId])
+  }, [streamId, movie])
 
 
   const checkAndPlayMp4 = async (): Promise<boolean> => {
@@ -259,11 +258,15 @@ export default function Player({ streamId }: { streamId: string }) {
     return Promise.resolve()
   }
 
+  // used if the user is not the one that downloaded the movie
   useEffect(() => {
-    const test = async () => {
-      await addMovie(movie);
+    const fix = async () => {
+      if (!movie?.id) {
+        const wtf = await getMovie(streamId)
+        await addMovie(wtf)
+      }
     }
-    test()
+    fix()
   }, [])
 
   return (

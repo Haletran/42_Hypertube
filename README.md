@@ -31,6 +31,7 @@ watch videos.
 - [x] Make the comments works (still need to implement updated_at and created_at)
 - [ ] Add filter for dashboard page (by date, by rating, by genre)
 - [ ] Forget password mail
+- [ ] Do websocket for comments section and currently watching movies (update in real time)
 
 ## Setup the Project
 
