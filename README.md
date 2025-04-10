@@ -30,6 +30,7 @@ watch videos.
 - [ ] Add a menu to see all the movies that are currently being downloaded
 - [x] Make the comments works (still need to implement updated_at and created_at)
 - [ ] Add filter for dashboard page (by date, by rating, by genre)
+- [ ] Forget password mail
 
 ## Setup the Project
 

@@ -16,7 +16,7 @@ type SubtitleTrack = {
 
 export default function Player({ streamId }: { streamId: string }) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const { getMovieTimecode, movie, loading, setLoading } = useMovieContext()
+  const { getMovieTimecode, movie, loading, setLoading, addMovie } = useMovieContext()
   const [timecode, setTimecode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const hlsRef = useRef<Hls | null>(null)
@@ -258,6 +258,13 @@ export default function Player({ streamId }: { streamId: string }) {
 
     return Promise.resolve()
   }
+
+  useEffect(() => {
+    const test = async () => {
+      await addMovie(movie);
+    }
+    test()
+  }, [])
 
   return (
     <div className="relative w-full aspect-video bg-black">

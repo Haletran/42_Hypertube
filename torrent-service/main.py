@@ -103,7 +103,7 @@ def get_ffmpeg_command(input_file, output_file, hls=False):
     else:
         cmd += ['-f', 'mp4']
 
-    cmd += ['-threads', '7']
+    #cmd += ['-threads', '7']
     cmd.append(output_file)
     return cmd
 

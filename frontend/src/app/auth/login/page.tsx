@@ -15,7 +15,7 @@ import Image from "next/image"
 
 export default function LoginPage() {
   const auth = useContext(AuthContext)
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string[]>([])
@@ -39,7 +39,7 @@ export default function LoginPage() {
 
       if (!auth) throw new Error("Auth context not found")
 
-      response = await auth.login(email, password)
+      response = await auth.login(username, password)
       await new Promise((resolve) => setTimeout(resolve, 500))
       if (!response.success)
         throw response.error;
@@ -91,14 +91,14 @@ export default function LoginPage() {
         <CardContent className="space-y-4 pt-6">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-zinc-300">
-              Email
+              Username
             </Label>
             <Input
               id="email"
               type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="johndoe42"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               disabled={isLoading}
               className="border-zinc-800 bg-zinc-900 text-zinc-100 focus-visible:ring-zinc-700 placeholder:text-zinc-500"
             />

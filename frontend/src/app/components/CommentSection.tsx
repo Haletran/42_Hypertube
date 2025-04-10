@@ -19,6 +19,7 @@ import {
     AlertDialogTrigger,
 } from "@/app/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
 
 
 export const CommentSection = ({ movie_id }: { movie_id: number }) => {
@@ -187,9 +188,11 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                             className="bg-zinc-800/80 p-5 rounded-lg border border-zinc-700 transition-all hover:border-zinc-600"
                         >
                             <div className="flex items-start gap-4">
+                                <Link href={`/users/${comment?.user?.id}`}>
                                 <Avatar className="h-10 w-10 border border-zinc-700">
                                     <AvatarImage src={comment?.user?.profilePicture} alt={comment?.user?.username || "User"} />
                                 </Avatar>
+                                </Link>
 
                                 <div className="flex-1 space-y-2">
                                     <div className="flex items-center justify-between">
