@@ -48,7 +48,7 @@ export function Navbar() {
     
     return (
         <div className="container mx-auto p-4">
-            <header className="sticky top-0 z-50 w-full  bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <header className="top-0 z-50 w-full  bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container flex h-16 items-center justify-between">
                     <Link href="/dashboard" className="flex items-center" onClick={(e) => {
                         e.preventDefault();

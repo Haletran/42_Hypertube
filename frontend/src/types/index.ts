@@ -75,6 +75,15 @@ export interface User {
 }
 
 
+export interface UserProfile {
+    id: number;
+    username: string;
+    profile_picture: string;
+    language: string;
+    created_at: string;
+}
+
+
 export interface LoginResponse {
     token: string;
 }

@@ -1,7 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Comment from '#models/comments'
 
-
 export default class CommentsController {
 
   async getById({ auth, params, response }: HttpContext) {

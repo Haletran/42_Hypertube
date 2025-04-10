@@ -14,7 +14,9 @@ import AuthController from '#controllers/auth_controller'
 import StreamController from '#controllers/stream_controller'
 import CommentsController from '#controllers/comments_controller'
 import LibrariesController from '#controllers/libraries_controller'
+import UsersController from '#controllers/users_controller'
 import { middleware } from './kernel.js'
+import User from '#models/user'
 
 router.group(() => {
   router.post('/register', [AuthController, 'register']);
@@ -26,8 +28,9 @@ router.group(() => {
 }).prefix('/api/auth')
 
 router.group(() => {
-  router.patch('/:id', [AuthController, 'update'])
-  router.patch('/:id/language', [AuthController, 'updateLanguage'])
+  router.patch('/:id', [UsersController, 'update'])
+  router.patch('/:id/language', [UsersController, 'updateLanguage'])
+  router.get('/:id', [UsersController, 'getById'])
 }).prefix('/api/users')
 
 

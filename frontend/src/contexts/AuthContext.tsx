@@ -12,10 +12,11 @@ interface AuthContextProps {
   isAuthenticated: () => Promise<boolean>;
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
-  login: (email: string, password: string) => Promise<any>;
+  login: (username: string, password: string) => Promise<any>;
   setToken: (token: string) => void;
   setEmail: (email: string) => void;
   setUsername: (username: string) => void;
+  getById: (id: number) => Promise<any>;
   update: (username: string, email: string, password: string, old_password: string, profilePicture: string) => Promise<any>;
   register: (username: string, email: string, password: string) => Promise<any>;
   changeLanguage: (language: string) => Promise<any>;
@@ -32,9 +33,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [newUsername, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     try {
-      const response = await api.post('/api/auth/login', { email, password });
+      const response = await api.post('/api/auth/login', { username, password });
       if (response.status !== 200) {
         return { 
           success: false, 
@@ -152,6 +153,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const getById = async (id: number) => {
+    try {
+      const response = await api.get(`/api/users/${id}`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      if (response.status !== 200) {
+        return { 
+          success: false, 
+          error: response.data?.errors || 'User not found'
+        };
+      }
+      return response.data;
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.errors || 'User not found'
+      };
+    }
+  }
+
   const setToken = (token: string) => {
     Cookies.set('token', token, {
         expires: 7,
@@ -178,7 +199,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   
   return (
-    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
+    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, getById, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
       {children}
     </AuthContext.Provider>
   );

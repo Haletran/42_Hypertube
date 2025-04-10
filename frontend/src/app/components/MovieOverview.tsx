@@ -58,18 +58,19 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
     }
   }, [])
 
-  useEffect(() => {
-    const test = async () => {
-      await addMovie(movie);
-    }
-    test()
-  }, [])
+  // useEffect(() => {
+  //   const test = async () => {
+  //     await addMovie(movie);
+  //   }
+  //   test()
+  // }, [])
 
   useEffect(() => {
     const checkInitialState = async () => {
         const available = await isAvailable(movie.id);
         if (available) {
             setIsPlayable(true);
+            await addMovie(movie);
         } else {
             const isCurrentlyDownloading = await checkDownload(movie.id);
             if (isCurrentlyDownloading || progress > 0) {
@@ -258,6 +259,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
       }
 
       localStorage.removeItem(`${movieId}`)
+      await addMovie(movie);
       await checkDownload(movieId)
       setIsDownloading(true)
       setShowTorrents(false)
