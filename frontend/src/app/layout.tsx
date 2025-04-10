@@ -7,6 +7,7 @@ import { Navbar } from "@/app/components/ui/navbar";
 import { usePathname } from "next/navigation"
 import { Footer } from "@/app/components/ui/footer";
 import useAuthCheck from "@/hooks/useAuthCheck";
+import path from "path";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,10 +32,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          {pathname !== "/" && pathname !== "/auth/login" && pathname !== "/auth/register" && ( 
+          {pathname !== "/" && pathname !== "/auth/login" && pathname !== "/auth/register" && pathname  !== "/auth/forgot-password" && pathname !== "/auth/reset-password" && (
               <Navbar />
           )}
-          {pathname !== "/" &&  pathname !== "/auth/login" && pathname !== "/auth/register" && (
+          {pathname !== "/" &&  pathname !== "/auth/login" && pathname !== "/auth/register" &&  pathname  !== "/auth/forgot-password" && pathname !== "/auth/reset-password" && (
           <AuthCheckWrapper />
           )}
         <MovieProvider>

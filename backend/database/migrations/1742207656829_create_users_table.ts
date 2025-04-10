@@ -14,6 +14,9 @@ export default class Users extends BaseSchema {
       table.string('auth_method').notNullable().defaultTo('local')
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).nullable()
+      table.string('reset_token').nullable()
+      table.timestamp('reset_token_expires', { useTz: true }).nullable()
+
     })
 
     this.schema.createTable('movie_user', (table) => {
