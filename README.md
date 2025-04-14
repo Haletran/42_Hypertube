@@ -32,7 +32,7 @@ watch videos.
 - [ ] Add filter for dashboard page (by date, by rating, by genre)
 - [x] Forget password mail
 - [ ] Do websocket for comments section and currently watching movies (update in real time)
-- [ ] Add cronjob to delete old torrents (1 months old)
+- [x] Add cronjob to delete old torrents (1 months old)
 
 ## Setup the Project
 

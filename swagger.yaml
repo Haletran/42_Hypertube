@@ -1,0 +1,445 @@
+openapi: 3.0.3
+info:
+  title: Hypertube REST API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3333/api
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: user@example.com
+                password: secret
+      responses:
+        '200':
+          description: Registered successfully
+
+  /auth/login:
+    post:
+      summary: Login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: user@example.com
+                password: secret
+      responses:
+        '200':
+          description: Logged in successfully
+
+  /auth/logout:
+    delete:
+      summary: Logout
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out
+
+  /auth/me:
+    get:
+      summary: Get current user
+      tags: [Auth]
+      responses:
+        '200':
+          description: User info
+
+  /auth/forgot-password:
+    post:
+      summary: Request password reset
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: user@example.com
+      responses:
+        '200':
+          description: Email sent
+
+  /auth/reset-password:
+    post:
+      summary: Reset password
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                token: reset_token
+                password: newpassword
+      responses:
+        '200':
+          description: Password reset
+
+  /oauth/42:
+    get:
+      summary: OAuth login with 42
+      tags: [OAuth]
+      responses:
+        '200':
+          description: OAuth 42
+
+  /oauth/github:
+    get:
+      summary: OAuth login with GitHub
+      tags: [OAuth]
+      responses:
+        '200':
+          description: OAuth GitHub
+
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User found
+
+    patch:
+      summary: Update user
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User updated
+
+  /users/{id}/language:
+    patch:
+      summary: Update user language
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Language updated
+
+  /comments:
+    get:
+      summary: Get all comments
+      tags: [Comments]
+      responses:
+        '200':
+          description: List of comments
+
+    post:
+      summary: Add comment
+      tags: [Comments]
+      responses:
+        '200':
+          description: Comment added
+
+  /comments/{id}:
+    get:
+      summary: Get comment by ID
+      tags: [Comments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment found
+
+    patch:
+      summary: Update comment
+      tags: [Comments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment updated
+
+    delete:
+      summary: Delete comment
+      tags: [Comments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment deleted
+
+  /stream/start:
+    post:
+      summary: Start the download of the movie
+      tags: [Stream]
+      responses:
+        '200':
+          description: Stream started
+
+  /stream/{id}/status:
+    get:
+      summary: Get download status
+      tags: [Stream]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stream status
+
+  /stream/{id}/video:
+    get:
+      summary: Get stream video
+      tags: [Stream]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stream video
+
+  /stream/{id}/video/isAvailable:
+    get:
+      summary: Check if video is available on the server
+      tags: [Stream]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Availability checked
+
+  /stream/{id}/video.mp4:
+    get:
+      summary: Stream the video file in mp4
+      tags: [Stream]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: MP4 file
+
+  /stream/{streamId}/{segment}.ts:
+    get:
+      summary: Get video segment
+      tags: [Stream]
+      parameters:
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: segment
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Segment file
+
+  /stream/{streamId}/subtitles:
+    get:
+      summary: Get subtitles
+      tags: [Stream]
+      parameters:
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subtitles
+
+  /stream/{streamId}/{file}:
+    get:
+      summary: Get subtitle file
+      tags: [Stream]
+      parameters:
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: file
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subtitle file
+
+  /stream/{title}/download:
+    get:
+      summary: Get torrents list
+      tags: [Stream]
+      parameters:
+        - name: title
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Torrents
+
+  /movies/popular:
+    get:
+      summary: Get popular movies
+      tags: [Movies]
+      responses:
+        '200':
+          description: List of popular movies
+
+  /movies/{id}:
+    get:
+      summary: Get movie by TMDB ID
+      tags: [Movies]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Movie info
+
+  /movies/watch/{id}:
+    get:
+      summary: Watch movie
+      tags: [Movies]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Watch data
+
+  /movies/search/{name}:
+    get:
+      summary: Search movie
+      tags: [Movies]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search result
+
+  /library/user/{id}:
+    get:
+      summary: Get all user movies
+      tags: [Library]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User library
+
+  /library/{id}:
+    get:
+      summary: Get user movie
+      tags: [Library]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Movie in library
+
+    post:
+      summary: Add movie to User library
+      tags: [Library]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Added
+
+    patch:
+      summary: Update movie in User library
+      tags: [Library]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Updated
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
