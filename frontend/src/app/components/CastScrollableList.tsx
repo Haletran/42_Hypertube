@@ -1,4 +1,5 @@
 import { Separator } from "@/app/components/ui/separator";
+import Link from "next/link";
 
 function removeDuplicates(arr: any, key: any) {
     return [...new Map(arr.map((item: any) => [key(item), item])).values()];
@@ -17,6 +18,7 @@ export function CastScrollableList({ movie }: { movie: any }) {
                 <div className="relative">
                     <div className="flex overflow-x-auto pb-2 scrollbar-hide snap-x space-x-4">
                         {movie.credits.cast.slice(0, 10).map((actor: any) => (
+                            <Link href={`https://www.themoviedb.org/person/${actor.id}`} key={actor.id} target="_blank" className="flex-shrink-0 w-24 snap-start">
                             <div
                                 key={actor.id}
                                 className="flex-shrink-0 w-24 snap-start"
@@ -41,6 +43,7 @@ export function CastScrollableList({ movie }: { movie: any }) {
                                     </p>
                                 </div>
                             </div>
+                            </Link>
                         ))}
                         <Separator orientation="vertical" />
                         {movie.credits.crew.slice(0, 10).map((crew: any) => (

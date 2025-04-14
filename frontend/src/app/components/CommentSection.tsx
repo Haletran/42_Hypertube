@@ -157,7 +157,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
     }
 
     return (
-        <div className="mt-5 w-full mx-auto">
+        <div className="mt-5 w-full mx-auto pb-24">
             <h2 className="text-xl font-semibold mb-4">Comments</h2>
 
             <div className="mb-6 space-y-3">

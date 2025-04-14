@@ -38,7 +38,7 @@ export default class StreamController {
     return response.json(status);
   }
 
-  public async videomp4({ params, response }: HttpContext) {
+  public async videomp4({ params, response, request }: HttpContext) {
     const mp4Path = path.join('data', params.id, 'video.mp4');
     try {
       await fs.access(mp4Path);
@@ -49,12 +49,30 @@ export default class StreamController {
       await Redis.set(`file:${params.id}:size`, fileSize);
 
       if (previousSize && parseInt(previousSize) < fileSize) {
-        await Redis.set(`file:${params.id}:downloading`, 'true');
-        await Redis.expire(`file:${params.id}:downloading`, 10);
-        throw new Error('File is still downloading');
+      await Redis.set(`file:${params.id}:downloading`, 'true');
+      await Redis.expire(`file:${params.id}:downloading`, 10);
+      throw new Error('File is still downloading');
+      }
+
+      const range = request.header('range');
+      if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunkSize = (end - start) + 1;
+      
+      response.header('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+      response.header('Accept-Ranges', 'bytes');
+      response.header('Content-Length', chunkSize.toString());
+      response.header('Content-Type', 'video/mp4');
+      response.status(206);
+      
+      const fileStream = createReadStream(mp4Path, { start, end });
+        return response.stream(fileStream);
       }
 
       response.header('Content-Type', 'video/mp4');
+      response.header('Content-Length', fileSize.toString());
       response.header('Cache-Control', 'no-cache');
       response.header('Access-Control-Allow-Origin', '*');
       response.header('Accept-Ranges', 'bytes');
@@ -100,14 +118,14 @@ export default class StreamController {
       const mp4Exists = await fs.access(mp4Path).then(() => true).catch(() => false);
       const hlsExists = await fs.access(hlsPath).then(() => true).catch(() => false);
 
-      if (mp4Exists && hlsExists) {
+      if (mp4Exists ||  hlsExists) {
         return response.json({ message: 'Video is available' });
       } else {
         return response.notFound({
           error: 'Video not ready yet',
           missing: {
             mp4: !mp4Exists,
-            hls: !hlsExists,
+            hls: !hlsExists,     
           },
         });
       }

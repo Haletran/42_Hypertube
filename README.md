@@ -19,7 +19,7 @@ watch videos.
 - [x] Torrent downloader and viewer
 - [x] Torrent fetcher (PirateBay or PrivateTracker)
 - [x] Add Comments section for each movie
-- [ ] Selection of movies via bar (check discord video) (already movie or not [.mp4 | .hls])
+- [x] Selection of movies via bar (check discord video) (already movie or not [.mp4 | .hls])
 - [x] Fix search bar to search for movies (problem with spaces etc..., parsing)
 - [x] Create Register / Login / Oauth2 to access the website
 - [x] Make all the API routes work and secure them with Session token
@@ -30,8 +30,9 @@ watch videos.
 - [ ] Add a menu to see all the movies that are currently being downloaded
 - [x] Make the comments works (still need to implement updated_at and created_at)
 - [ ] Add filter for dashboard page (by date, by rating, by genre)
-- [ ] Forget password mail
+- [x] Forget password mail
 - [ ] Do websocket for comments section and currently watching movies (update in real time)
+- [ ] Add cronjob to delete old torrents (1 months old)
 
 ## Setup the Project
 

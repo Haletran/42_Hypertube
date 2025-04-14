@@ -8,7 +8,7 @@ export function Footer({ companyName = "Hypertube" }: FooterProps) {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="w-full border-t border-zinc-800 bg-zinc-950 py-6 px-4 md:px-6">
+    <footer className="w-full border-t border-zinc-800 bg-zinc-950 py-6 px-4 md:px-6 fixed bottom-0">
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
         <div className="text-zinc-400 text-sm mb-4 sm:mb-0">
           Made by{" "}

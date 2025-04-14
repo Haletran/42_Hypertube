@@ -40,9 +40,7 @@ export default function RootLayout({
           )}
         <MovieProvider>
           {children}
-          {pathname !== "/dashboard" && (
-            <Footer />
-          )}
+          <Footer />
         </MovieProvider>
           </AuthProvider>
       </body>

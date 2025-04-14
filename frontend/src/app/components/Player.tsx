@@ -39,6 +39,24 @@ export default function Player({ streamId }: { streamId: string }) {
       setTimecode(data[0].watchedTimecode)
     } catch (error) {
       console.error("Error saving current time:", error)
+      setTimecode("0")
+    }
+  }
+
+  const loadVideo = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const mp4Available = await checkAndPlayMp4()
+      console.log("MP4 available:", mp4Available)
+      if (mp4Available === false) {
+        console.log("MP4 not available, setting up HLS")
+        await setupHls()
+      }
+    } catch (err) {
+      console.error("Failed to load video:", err)
+      setError("Failed to load video. Please try again later.")
+      setLoading(false)
     }
   }
 
@@ -53,22 +71,6 @@ export default function Player({ streamId }: { streamId: string }) {
       }
     }
     getCurrentTime()
-    const loadVideo = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const mp4Available = await checkAndPlayMp4()
-        console.log("MP4 available:", mp4Available)
-        if (!mp4Available) {
-          await setupHls()
-        }
-      } catch (err) {
-        console.error("Failed to load video:", err)
-        setError("Failed to load video. Please try again later.")
-        setLoading(false)
-      }
-    }
-
     loadVideo()
     return cleanup
   }, [streamId])
@@ -118,9 +120,10 @@ export default function Player({ streamId }: { streamId: string }) {
 
 
       const statusData = await statusResponse.json()
-      if (statusData.progress === "100" || statusData.status === "complete") { // problem with mp4 
+      if (statusData.progress === "100" || statusData.status === "complete") { // problem with mp4 if ||
         const response = await fetch(mp4Url, { method: "HEAD" })
         if (response.ok) {
+          console.log("MP4 file is available")
           video.src = mp4Url
           await loadSubtitles()
           return true
@@ -290,7 +293,7 @@ export default function Player({ streamId }: { streamId: string }) {
               onClick={() => {
                 setError(null)
                 setLoading(true)
-                setupHls()
+                loadVideo();
               }}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
             >
