@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import redis from '@/lib/redis';
 import { Movie, MovieGridProps } from '@/types';
 import { useMovieContext } from '@/contexts/MovieContext';
+import Cookies from "js-cookie"
 import { WatchCard } from './WatchCard';
 
 export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
@@ -16,11 +17,16 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   const [firstLoad, setFirstLoad] = useState<boolean>(true);
   const observerRef = useRef(null);
 
-
   const fetchDiscover = async () => {
+  
     try {
       setLoading(true);
-      const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=${language}`);
+      const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=${language}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }

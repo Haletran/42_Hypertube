@@ -2,11 +2,18 @@ import { CastScrollableList } from "@/app/components/CastScrollableList"
 import { MovieDetails } from "@/app/components/MovieOverview";
 import { CommentSection } from "@/app/components/CommentSection";
 import { MovieContext } from "@/contexts/MovieContext";
-import Cookies from "js-cookie";
+import { cookies } from 'next/headers';
 
 export async function getMovieDetails(id: number, language: string) {
     try {
-        const response = await fetch(`http://backend:3333/api/movies/${id}?language=${language}`)
+        const cookieStore = cookies();
+        const token = cookieStore.get('token')?.value;
+        const response = await fetch(`http://backend:3333/api/movies/${id}?language=${language}`, {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        })
 
         if (!response.ok) {
             throw new Error(`Failed to fetch movie details: ${response.status}`)
@@ -44,10 +51,11 @@ export async function getMovieTrailer(movieId: number, language: string) {
 export default async function WatchMovie({ params, searchParams }: {
     params: { id: number },
     searchParams: { language?: string }
-    }) {
-        
+}) {
+
     const movieId = params.id;
-    const language = searchParams.language || Cookies.get('language') || 'en';
+    const cookieStore = cookies();
+    const language = searchParams.language || cookieStore.get('language')?.value || 'en';
     let movie: any;
     let trailer: any;
 

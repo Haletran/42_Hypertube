@@ -7,26 +7,41 @@ import { request } from 'http'
 import { ALL } from 'dns'
 
 export default class StreamController {
-  public async start({ request, response }: HttpContext) {
+  public async start({ request, response, auth }: HttpContext) {
     const { magnet, streamId } = request.only(['magnet', 'streamId'])
 
     // let magnet = "magnet:?xt=urn:btih:79816060ea56d56f2a2148cd45705511079f9bca&dn=TPB.AFK.2013.720p.h264-SimonKlose&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Fopen.demonii.com%3A1337&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Fexodus.desync.com%3A6969"
     // let streamId = "50275"
-    await Redis.publish('torrent:start', JSON.stringify({
-      streamId,
-      magnet
-    }))
-
-    return response.json({
-      id: streamId,
-      statusUrl: `/stream/${streamId}/status`
-    })
+    try {
+      const check = await auth.check();
+      if (!check) {
+          throw new Error('unauthorized');
+      }
+      await Redis.publish('torrent:start', JSON.stringify({
+        streamId,
+        magnet
+      }))
+  
+      return response.json({
+        id: streamId,
+        statusUrl: `/stream/${streamId}/status`
+      })
+    } catch (error) {
+      return response.status(500).json({
+        error: 'Error starting download'
+      })
+    }
   }
 
-  public async status({ params, response }: HttpContext) {
+  public async status({ params, response, auth }: HttpContext) {
     const streamId = params.id;
     
-    const status = {
+    try {
+      const check = await auth.check();
+      if (!check) {
+          throw new Error('unauthorized');
+      }
+      const status = {
       progress: await Redis.get(`progress:${streamId}`),
       // hls_started: await Redis.get(`stream:${streamId}:hls_started`),
       // hls_processing: await Redis.get(`stream:${streamId}:hls_processing`),
@@ -34,13 +49,21 @@ export default class StreamController {
       // subtitles: await Redis.smembers(`stream:${streamId}:subtitles`),
       status: await Redis.get(`stream:${streamId}:status`)
     };
-  
     return response.json(status);
+    } catch (error) {
+      return response.status(500).json({
+        error: 'Error fetching stream status'
+      });
+    }
   }
 
-  public async videomp4({ params, response, request }: HttpContext) {
+  public async videomp4({ params, response, request, auth }: HttpContext) {
     const mp4Path = path.join('data', params.id, 'video.mp4');
     try {
+      // const check = await auth.check();
+      // if (!check) {
+      //     throw new Error('unauthorized');
+      // }
       await fs.access(mp4Path);
       const stats = await fs.stat(mp4Path);
       const fileSize = stats.size;
@@ -90,10 +113,14 @@ export default class StreamController {
 
 
 
-  public async video({ params, response }: HttpContext) {
+  public async video({ params, response, auth }: HttpContext) {
     const streamPath = path.join('data', 'hls', params.id, 'stream.m3u8');
 
     try {
+      // const check = await auth.check();
+      // if (!check) {
+      //     throw new Error('unauthorized');
+      // }
       await fs.access(streamPath); 
 
       response.header('Content-Type', 'application/vnd.apple.mpegurl');
@@ -110,11 +137,15 @@ export default class StreamController {
     }
   }
 
-  public async isAvailable({ params, response }: HttpContext) {
+  public async isAvailable({ params, response, auth }: HttpContext) {
     const mp4Path = path.join('data', params.id, 'video.mp4');
     const hlsPath = path.join('data', 'hls', params.id, 'stream.m3u8');
     
     try {
+      const check = await auth.check();
+      if (!check) {
+          throw new Error('unauthorized');
+      }
       const mp4Exists = await fs.access(mp4Path).then(() => true).catch(() => false);
       const hlsExists = await fs.access(hlsPath).then(() => true).catch(() => false);
 
@@ -138,10 +169,14 @@ export default class StreamController {
     }
   }
 
-  public async videoSegment({ params, response }: HttpContext) {
+  public async videoSegment({ params, response, auth }: HttpContext) {
     const segmentPath = path.join('data', 'hls', params.streamId, `${params.segment}.ts`);
 
     try {
+      // const check = await auth.check();
+      // if (!check) {
+      //     throw new Error('unauthorized');
+      // }
       await fs.access(segmentPath);
       response.header('Content-Type', 'video/MP2T');
       response.header('Cache-Control', 'no-cache');
@@ -156,10 +191,14 @@ export default class StreamController {
     }
   }
 
-  public async subtitles({ params, response }: HttpContext) {
+  public async subtitles({ params, response, auth }: HttpContext) {
     const subtitlesPath = path.join('data', 'hls', params.streamId, 'subtlist-en.m3u8');
   
     try {
+      const check = await auth.check();
+      if (!check) {
+          throw new Error('unauthorized');
+      }
       await fs.access(subtitlesPath); 
   
       response.header('Content-Type', 'application/vnd.apple.mpegurl');
@@ -175,11 +214,15 @@ export default class StreamController {
     }
   }
 
-  public async subtitlesFile({ params, response }: HttpContext) {
+  public async subtitlesFile({ params, response, auth }: HttpContext) {
 
     const vttPath = path.join('data', params.streamId, params.file);
   
     try {
+      const check = await auth.check();
+      if (!check) {
+          throw new Error('unauthorized');
+      }
       await fs.access(vttPath);
       response.header('Content-Type', 'text/vtt');
       response.header('Cache-Control', 'no-cache');
@@ -192,7 +235,7 @@ export default class StreamController {
     }
   }
   
-  public async getTorrentsList({ params, response }: HttpContext) {
+  public async getTorrentsList({ params, response, auth }: HttpContext) {
     const title = params.title;
 
     if (!title) {
@@ -218,6 +261,10 @@ export default class StreamController {
 
     const results: Record<string, any[]> = {};
 
+    const check = await auth.check();
+    if (!check) {
+        throw new Error('unauthorized');
+    }
     await Promise.all(
       Object.entries(providersMap).map(async ([provider, url]) => {
         try {

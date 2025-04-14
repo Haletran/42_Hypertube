@@ -33,7 +33,12 @@ export const MovieProvider = ({ children }: { children: ReactNode }) => {
     const getMovie = async (id: string) => {
         try {
             setLoading(true);
-            const response = await api.get(`/api/movies/${id}`);
+            const response = await api.get(`/api/movies/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
             if (response.status !== 200) {
                 setError('Failed to fetch movie');
                 return null;

@@ -29,7 +29,12 @@ export function SearchBar() {
             setLoading(true);
 
             const encodedSearchTerm = encodeURIComponent(searchTerm);
-            const response = await fetch(`/api/movies/search/${encodedSearchTerm}?language=${language}`);
+            const response = await fetch(`/api/movies/search/${encodedSearchTerm}?language=${language}`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${Cookies.get("token")}`,
+                },
+              });
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }

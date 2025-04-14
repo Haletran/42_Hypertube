@@ -115,13 +115,23 @@ export default function Player({ streamId }: { streamId: string }) {
     const mp4Url = `/api/stream/${streamId}/video.mp4`
 
     try {
-      const statusResponse = await fetch(statusUrl)
+      const statusResponse = await fetch(statusUrl, { 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      })
       if (!statusResponse.ok) return false
 
 
       const statusData = await statusResponse.json()
       if (statusData.progress === "100" || statusData.status === "complete") { // problem with mp4 if ||
-        const response = await fetch(mp4Url, { method: "HEAD" })
+        const response = await fetch(mp4Url, { method: "HEAD", 
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        })
         if (response.ok) {
           console.log("MP4 file is available")
           video.src = mp4Url
@@ -130,7 +140,11 @@ export default function Player({ streamId }: { streamId: string }) {
         }
       }
       else if (statusData.progress === null || statusData.status === null) {
-        const response = await fetch(mp4Url, { method: "HEAD" })
+        const response = await fetch(mp4Url, { method: "HEAD",           
+          headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        }, })
         if (response.ok) {
           console.log("MP4 file is available")
           video.src = mp4Url
@@ -229,7 +243,11 @@ export default function Player({ streamId }: { streamId: string }) {
         const url = `http://localhost:3000/api/stream/${streamId}/subtitles-${type}-${trackNumber}.vtt`
 
         try {
-          const response = await fetch(url, { method: "HEAD" })
+          const response = await fetch(url, { method: "HEAD",           
+            headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },})
 
           if (response.ok) {
             tracksToAdd.push({
