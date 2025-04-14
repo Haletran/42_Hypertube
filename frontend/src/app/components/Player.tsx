@@ -129,6 +129,15 @@ export default function Player({ streamId }: { streamId: string }) {
           return true
         }
       }
+      else if (statusData.progress === null || statusData.status === null) {
+        const response = await fetch(mp4Url, { method: "HEAD" })
+        if (response.ok) {
+          console.log("MP4 file is available")
+          video.src = mp4Url
+          await loadSubtitles()
+          return true
+        }
+      }
     } catch (error) {
       console.error("Error checking MP4 file or status:", error)
     }
