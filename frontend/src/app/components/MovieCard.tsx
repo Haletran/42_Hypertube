@@ -5,6 +5,7 @@ import { Loader } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Movie, MovieCardProps } from '@/types';
+import Cookies from "js-cookie"
 
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadState, language }) => {
@@ -12,7 +13,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
 
     const isAvailable = async (id: number): Promise<boolean> => {
         try {
-            const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable`);
+            const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${Cookies.get("token")}`,
+                },
+              });
             return response.ok;
         } catch (error) {
             return false;

@@ -9,6 +9,8 @@ import { Progress } from "@/app/components/ui/progress"
 import { TorrentModal } from "@/app/components/Torrent_modal"
 import { Movie, Torrent } from '@/types';
 import { useMovieContext } from "@/contexts/MovieContext";
+import Cookies from "js-cookie"
+
 
 
 export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: string }) {
@@ -28,7 +30,12 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
 
   const isAvailable = useCallback(async (id: number): Promise<boolean> => {
     try {
-      const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable`)
+      const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable` , {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
       return response.ok
     } catch (error) {
       console.error("Failed to fetch movie:", error)
@@ -38,7 +45,12 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
 
   const checkDownload = useCallback(async (id: any): Promise<boolean> => {
     try {
-      const response = await fetch(`http://localhost:3333/api/stream/${id}/status`)
+      const response = await fetch(`http://localhost:3333/api/stream/${id}/status`  , {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      })
       if (!response.ok) {
         throw new Error(`Failed to fetch movie status: ${response.status}`)
       }
@@ -112,7 +124,12 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
     }
 
     try {
-      const response = await fetch(`http://localhost:3333/api/stream/${movie.original_title}/download`)
+      const response = await fetch(`http://localhost:3333/api/stream/${movie.original_title}/download`  , {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      })
 
       if (!response.ok) {
         throw new Error(`Failed to fetch torrents: ${response.status}`)
@@ -241,6 +258,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
         },
         body: JSON.stringify({
           magnet: `magnet:?xt=urn:btih:${hashValue}`,

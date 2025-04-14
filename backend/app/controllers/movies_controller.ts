@@ -3,13 +3,16 @@ import User from '#models/user'
 
 
 export default class MoviesController {
-    async search({ params, request, response }: HttpContext) {
+    async search({ params, request, response, auth }: HttpContext) {
         const name = params.name;
         const apiKey = process.env.TMDB_API_KEY || '';
         const defaultLanguage = "en-US";
         const language = request.input('language', defaultLanguage);
-
         try {
+            const check = await auth.check();
+            if (!check) {
+                throw new Error('unauthorized');
+            }
             const first = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${name}&language=${language}`);
 
             const test = await first.json() as { results: { id: number }[] };
@@ -27,14 +30,17 @@ export default class MoviesController {
             });
         }
     }
-    async popular({ request, response }: HttpContext) {
+    async popular({ request, response, auth }: HttpContext) {
         const apiKey = process.env.TMDB_API_KEY || '';
         const defaultLanguage = "en-US";
         const defaultpage = 1;
         const language = request.input('language', defaultLanguage);
         const page = request.input('page', defaultpage);
-
         try {
+            const check = await auth.check();
+            if (!check) {
+                throw new Error('unauthorized');
+            }
             const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`);
 
             const data = await res.json();
@@ -46,24 +52,28 @@ export default class MoviesController {
         }
     }
 
-    async watch({ params, response }: HttpContext) {
-        const embedUrl = `https://vidsrc.to/embed/movie/${params.id}`;
+    // async watch({ params, response }: HttpContext) {
+    //     const embedUrl = `https://vidsrc.to/embed/movie/${params.id}`;
 
-        if (!params.id) {
-            return response.status(400).json({
-                error: 'Missing movie ID'
-            });
-        }
-        return (embedUrl);
-    }
+    //     if (!params.id) {
+    //         return response.status(400).json({
+    //             error: 'Missing movie ID'
+    //         });
+    //     }
+    //     return (embedUrl);
+    // }
 
-    async getByTmdbById({ params, response, request }: HttpContext) {
+    async getByTmdbById({ params, response, request, auth }: HttpContext) {
         const apiKey = process.env.TMDB_API_KEY || '';
         const defaultLanguage = "en-US";
         const language = request.input('language', defaultLanguage);
         const id = params.id;
 
         try {
+            const check = await auth.check();
+            if (!check) {
+                throw new Error('unauthorized');
+            }
             const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&append_to_response=credits&language=${language}`);
 
             const data = await res.json();
