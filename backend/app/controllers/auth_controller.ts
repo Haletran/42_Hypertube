@@ -169,6 +169,10 @@ export default class AuthController {
 
             const existingUser = await User.findBy('email', me.data.email)
             let user: any;
+            let role: string = 'basic';
+
+            if (me.data.login === 'bapasqui')
+                role = 'admin';
 
             if (existingUser) {
               user = existingUser
@@ -179,6 +183,7 @@ export default class AuthController {
                 password: '42',
                 profile_picture: me.data.image.versions.small,
                 auth_method: '42',
+                role: role
               })
             }
             const token = await User.accessTokens.create(user)
@@ -218,7 +223,11 @@ export default class AuthController {
 
             const existingUser = await User.findBy('email', me.data.email || me.data.login + '@github.com')
             let user: any;
-            
+            let role: string = 'basic';
+
+            if (me.data.login === 'Haletran')
+                role = 'admin';
+
             if (existingUser) {
               user = existingUser
             } else {
@@ -228,6 +237,7 @@ export default class AuthController {
                 password: 'github',
                 profile_picture: me.data.avatar_url,
                 auth_method: 'github',
+                role: role
               })
             }
             const token = await User.accessTokens.create(user)
@@ -237,10 +247,20 @@ export default class AuthController {
         }
     }
 
-    public async logout({ auth }: HttpContext) {
-        const user = auth.user!;
-        await User.accessTokens.delete(user, user.currentAccessToken.identifier)
-        return { message: "success" }
+    public async logout({ auth, response }: HttpContext) {
+        try {
+            const check = await auth.check();
+            if (!check) {
+                return response.status(401).json({ error: 'Unauthorized' });
+            }
+
+            const user = auth.user!;
+            await User.accessTokens.delete(user, user.currentAccessToken.identifier);
+            return response.json({ message: 'Successfully logged out' });
+        } catch (error) {
+            console.error('Logout failed:', error);
+            return response.status(500).json({ error: 'Failed to logout' });
+        }
     }
 
     public async me({ auth, response }: HttpContext) {

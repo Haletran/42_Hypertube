@@ -31,6 +31,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare profile_picture: string;
 
   @column()
+  declare role: string;
+
+  @column()
   declare language: string;
 
   @hasMany(() => Movie)

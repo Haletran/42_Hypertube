@@ -1,5 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
+import fs from 'fs/promises'
+import path from 'path'
 
 
 export default class MoviesController {
@@ -81,6 +83,62 @@ export default class MoviesController {
         } catch (error) {
             return response.status(500).json({
                 error: 'Error fetching movie data'
+            });
+        }
+    }
+
+
+    async deleteMovie({ params, response, auth }: HttpContext) {
+        const movieId = params.id;
+        const mp4Path = path.join('data', params.id);
+        const hlsPath = path.join('data', 'hls', params.id);
+
+        const deleteFolder = async (folderPath: string) => {
+            try {
+            const files = await fs.readdir(folderPath);
+            await Promise.all(files.map(async (file) => {
+                const filePath = path.join(folderPath, file);
+                const stat = await fs.stat(filePath);
+                if (stat.isDirectory()) {
+                await deleteFolder(filePath);
+                } else {
+                await fs.unlink(filePath);
+                }
+            }));
+            await fs.rmdir(folderPath);
+            } catch (error) {
+            if (error.code !== 'ENOENT') {
+                throw error;
+            }
+            }
+        };
+
+        // might need to check if a user is currently watching the movie
+        try {
+            const check = await auth.check();
+            if (!check) {
+                throw new Error('unauthorized');
+            }
+            const user = await User.findOrFail(auth.user!.id);
+            if (user.role !== 'admin') {
+                return response.status(403).json({ error: 'Unauthorized' });
+            }
+            const mp4Exists = await fs.access(mp4Path).then(() => true).catch(() => false);
+            const hlsExists = await fs.access(hlsPath).then(() => true).catch(() => false);
+
+            if (!mp4Exists && !hlsExists) {
+                return response.status(404).json({ error: 'Movie not found' });
+            }
+            if (mp4Exists) {
+                await deleteFolder(mp4Path);
+            }
+            if (hlsExists) {
+                await deleteFolder(hlsPath);
+            }
+            return response.status(200).json({ message: 'Movie deleted successfully' });
+        } catch (error) {
+            return response.status(500).json({
+                error: 'Error deleting movie'
             });
         }
     }

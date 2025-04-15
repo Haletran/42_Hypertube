@@ -8,12 +8,12 @@ import type { WatchedMovie } from "@/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { Badge } from "@/app/components/ui/badge"
 import { Separator } from "@/app/components/ui/separator"
-import { Clock, Calendar, Mail, Globe, User } from "lucide-react"
+import { Clock, Calendar, Mail, Globe, User, BookUser } from "lucide-react"
 
 export default function SettingsPage() {
   const { user } = useAuth()
   const { fetchUserMovies } = useMovieContext()
-  const { id, username, email, language, createdAt, profilePicture } = user?.user || {}
+  const { id, username, email, language, createdAt, profilePicture, role } = user?.user || {}
   const [movies, setMovies] = useState<WatchedMovie[]>([])
 
   const convertTimecode = (timecode: string) => {
@@ -97,11 +97,11 @@ export default function SettingsPage() {
 
               <div className="flex items-center space-x-3 text-zinc-300 group">
                 <div className="p-2 rounded-full bg-zinc-800/50 group-hover:bg-zinc-800 transition-colors">
-                  <Globe className="h-5 w-5 text-zinc-500 group-hover:text-zinc-400" />
+                  <BookUser className="h-5 w-5 text-zinc-500 group-hover:text-zinc-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Language</p>
-                  <p className="text-sm font-medium text-zinc-300">{language}</p>
+                  <p className="text-xs text-zinc-500">Role</p>
+                  <p className="text-sm font-medium text-zinc-300">{role}</p>
                 </div>
               </div>
 

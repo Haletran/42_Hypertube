@@ -13,6 +13,7 @@ interface MovieContextProps {
     setWatchedMovies: (movies: WatchedMovie[]) => void;
     addMovie: (movie: Movie) => Promise<void>;
     fetchUserMovies: (id: number) => Promise<any[] | undefined>;
+    deleteMovie: (id: number) => Promise<void>;
     getMovie: (id: string) => Promise<any>;
     getMovieTimecode: (id: string) => Promise<void>;
     saveCurrentTime: (id: string, current_time: number) => Promise<void>;
@@ -154,9 +155,28 @@ export const MovieProvider = ({ children }: { children: ReactNode }) => {
         }
     }
 
+    const deleteMovie = async (id: number) => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/movies/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to delete movie")
+            }
+            return response.json()
+        } catch (error) {
+            console.error("Error deleting movie:", error)
+        }
+    }
+
 
     return (
-        <MovieContext.Provider value={{ movie, loading, error, getMovie, addMovie, fetchUserMovies, watchedMovies, setWatchedMovies ,saveCurrentTime, getMovieTimecode, setError, getAllUserMovies, setLoading }}>
+        <MovieContext.Provider value={{ movie, loading, error, getMovie, addMovie, fetchUserMovies, deleteMovie, watchedMovies, setWatchedMovies ,saveCurrentTime, getMovieTimecode, setError, getAllUserMovies, setLoading }}>
             {children}
         </MovieContext.Provider>
     );

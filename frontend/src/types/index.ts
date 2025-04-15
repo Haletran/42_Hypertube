@@ -70,7 +70,8 @@ export interface User {
         email: string;
         profilePicture: string;
         language: string;
-        createdAt: string; 
+        createdAt: string;
+        role: string;
     }
 }
 

@@ -8,7 +8,7 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/front
-    command: [ "sh", "-c", "cd /front && rm -rf .next && npm install && npm run dev" ]
+    command: [ "sh", "-c", "cd /front && rm -rf nodes_modules && rm -rf .next && npm install && npm run dev" ]
     networks:
       - hypertube-network
     restart: always

@@ -15,13 +15,15 @@ import StreamController from '#controllers/stream_controller'
 import CommentsController from '#controllers/comments_controller'
 import LibrariesController from '#controllers/libraries_controller'
 import UsersController from '#controllers/users_controller'
-import { middleware } from './kernel.js'
+import transmit from '@adonisjs/transmit/services/main'
 import User from '#models/user'
+
+transmit.registerRoutes()
 
 router.group(() => {
   router.post('/register', [AuthController, 'register']);
   router.post('/login', [AuthController, 'login']);
-  router.delete('/logout', [AuthController, 'logout']).use(middleware.auth());
+  router.delete('/logout', [AuthController, 'logout'])
   router.get('/me', [AuthController, 'me']);
   router.post('/forgot-password', [AuthController, 'forgotPassword']);
   router.post('/reset-password', [AuthController, 'resetPassword']);
@@ -33,12 +35,10 @@ router.group(() => {
   router.get('/:id', [UsersController, 'getById'])
 }).prefix('/api/users')
 
-
 router.group(() => {
   router.get('/42', [AuthController, 'oauth42']);
   router.get('/github', [AuthController, 'oauthgithub'])
 }).prefix('/api/oauth')
-
 
 router.group(() => {
   router.get('/:id', [CommentsController, 'getById'])
@@ -47,8 +47,6 @@ router.group(() => {
   router.post('', [CommentsController, 'addcomments'])
   router.get('', [CommentsController, 'getAll'])
 }).prefix('/api/comments')
-
-
 
 router.group(() => {
 
@@ -64,7 +62,6 @@ router.group(() => {
 
 }).prefix('/api/stream')
 
-
 router.group(() => {
 
   router.get('/popular', [MoviesController, 'popular'])
@@ -74,9 +71,8 @@ router.group(() => {
     })
   router.get('/watch/:id', [MoviesController, 'watch'])
   router.get('/search/:name', [MoviesController, 'search'])
+  router.delete('/:id', [MoviesController, 'deleteMovie'])
 }).prefix('/api/movies')
-
-
 
 router.group(() => {
   router.get('/user/:id', [LibrariesController, 'getAllUserMovies'])
@@ -84,9 +80,6 @@ router.group(() => {
   router.post('/:id', [LibrariesController, 'addUserMovie'])
   router.patch('/:id', [LibrariesController, 'updateUserMovie'])
 }).prefix('/api/library')
-
-
-
 
 // GET /api/users
 // GET /api/users/:id
