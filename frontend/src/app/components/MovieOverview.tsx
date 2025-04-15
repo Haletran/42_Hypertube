@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Star, Calendar, Clock, Download, Clapperboard, Play, Loader } from "lucide-react"
+import { Star, Calendar, Clock, Download, Clapperboard, Play, Loader, Trash } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/app/components/ui/badge"
 import { Button } from "@/app/components/ui/button"
@@ -9,7 +9,9 @@ import { Progress } from "@/app/components/ui/progress"
 import { TorrentModal } from "@/app/components/Torrent_modal"
 import { Movie, Torrent } from '@/types';
 import { useMovieContext } from "@/contexts/MovieContext";
+import { useAuth } from "@/contexts/AuthContext";
 import Cookies from "js-cookie"
+import { set } from "react-hook-form"
 
 
 
@@ -22,7 +24,8 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
   const [isFetching, setIsFetching] = useState(false)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | undefined>()
-  const { addMovie } = useMovieContext()
+  const { addMovie, deleteMovie } = useMovieContext()
+  const { user } = useAuth()
 
   const posterUrl = movie?.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -36,6 +39,9 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
+      if (response.status !== 200) {
+        return false;
+      }
       return response.ok
     } catch (error) {
       console.error("Failed to fetch movie:", error)
@@ -70,14 +76,28 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
     }
   }, [])
 
+
+  const deleteM = async (id: number) => {
+    try {
+      setIsLoading(true)
+      await new Promise((resolve) => setTimeout(resolve, 200))
+      await deleteMovie(id)
+      setIsLoading(false)
+      setIsDownloading(false)
+    } catch (error) {
+      console.error("Error deleting movie:", error)
+      setError("Failed to delete movie")
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
     const checkInitialState = async () => {
         const available = await isAvailable(movie.id);
+        const isCurrentlyDownloading = await checkDownload(movie.id);
         if (available) {
             setIsPlayable(true);
-            await addMovie(movie);
-        } else {
-            const isCurrentlyDownloading = await checkDownload(movie.id);
+        } else if (isCurrentlyDownloading) {
             if (isCurrentlyDownloading || progress > 0) {
                 setIsDownloading(true);
             }
@@ -373,7 +393,25 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
                             </>
                         )}
                     </Button>
-                    
+                    {/* {user && user?.user && user.user.role === "admin" && isPlayable && (
+                      <Button
+                      className="flex-grow gap-1 bg-red-500 text-white border-none hover:bg-red-600 cursor-pointer"
+                      onClick={() => deleteM(movie.id)}
+                      disabled={isLoading || isDownloading}
+                      >
+                      {isLoading ? (
+                      <>
+                        <Loader className="h-4 w-4 mr-2 animate-spin" />
+                        Deleting...
+                      </>
+                      ) : (
+                      <>
+                        <Trash className="h-4 w-4 mr-2" />
+                        Delete
+                      </>
+                      )}
+                      </Button> 
+                    )} */}
                     {trailerUrl && (
                         <Link href={`https://www.youtube.com/embed/${trailerUrl}`} target="_blank" className="w-1/3">
                             <Button

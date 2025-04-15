@@ -22,6 +22,11 @@ export const WatchCard: React.FC<WatchedMovie> = ({ movie, language }) => {
 
                 if (watchedPercentage >= 90 || watchedMovie.watchedTimecode === '0')
                     return ;
+                {language === 'en' ? (
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Continue watching</h1>
+                  ) : language === 'fr' && (
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Continuer la lecture</h1>
+                  )}
 
                 return isReleased && hasRating && (
                     <div key={watchedMovie.id} className="group cursor-pointer">

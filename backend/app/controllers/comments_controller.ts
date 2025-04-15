@@ -64,7 +64,7 @@ export default class CommentsController {
 
     try {
       const comment = await Comment.query().where('id', id).first()
-      if (comment.userId !== auth.user!.id) {
+      if (comment.userId !== auth.user!.id && auth.user!.role !== 'admin') {
         return response.status(403).json({ error: 'Unauthorized' })
       }
       comment.delete()

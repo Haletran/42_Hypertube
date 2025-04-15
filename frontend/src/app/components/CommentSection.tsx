@@ -29,7 +29,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
     const [editedContent, setEditedContent] = useState("")
     const { user } = useAuth()
-    const { username } = user?.user || {}
+    const { username, role } = user?.user || {}
 
     const handleEditComment = (commentId: string, content: string) => {
         setEditingCommentId(commentId)
@@ -114,7 +114,6 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
         }
     }
 
-
     const handleDeleteComment = async (commentId: string) => {
         setCommentLoading(true)
 
@@ -137,9 +136,6 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
             setCommentLoading(false)
         }
     }
-
-
-
 
     const formatDate = (dateString?: string) => {
         if (!dateString) return ""
@@ -227,7 +223,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                                     <span className="sr-only">Edit</span>
                                                 </Button>
                                             )}
-                                            {comment.user?.username === username && comment.id && (
+                                            {(comment.user?.username === username || role == 'admin') && comment.id && (
                                                 <>
                                                     <AlertDialog >
                                                         <AlertDialogTrigger>
