@@ -20,7 +20,11 @@ import {
 } from "@/app/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
+import { Transmit } from '@adonisjs/transmit-client'
 
+const transmit = new Transmit({
+    baseUrl: 'http://localhost:3333'
+})
 
 export const CommentSection = ({ movie_id }: { movie_id: number }) => {
     const [comments, setComments] = useState<Comment[]>([]);
@@ -46,15 +50,13 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                 }
             });
             if (response.status !== 200) {
-                throw new Error("Failed to fetch comments");
+                throw new Error("Failed to update comment");
             }
             setEditingCommentId(null)
             setEditedContent("")
-            fetchComments(movie_id);
         } catch (error) {
-            console.error("Failed to fetch comments:", error);
+            console.error("Failed to update comment:", error);
         }
-
     }
 
     const handleCancelEdit = () => {
@@ -80,7 +82,53 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
         }
     }
 
+    useEffect(() => {
+        const subscription = transmit.subscription(`movie:${movie_id}`)
+        subscription.create()
+        
+        const stopListening = subscription.onMessage((data: any) => {
+            console.log('Received message:', data)
+            const { type } = data
+            
+            switch (type) {
+                case 'newComment':
+                    console.log('New comment event received')
+                    if (data.comment) {
+                        setComments(prev => [...prev, data.comment])
+                    } else {
+                        fetchComments(movie_id)
+                    }
+                    break
+                    
+                case 'updateComment':
+                    console.log('Update comment event received')
+                    if (data.comment) {
+                        setComments(prev => prev.map(c => c.id === data.comment.id ? data.comment : c))
+                    } else {
+                        fetchComments(movie_id)
+                    }
+                    break
+                    
+                case 'deleteComment':
+                    console.log('Delete comment event received')
+                    if (data.id) {
+                        setComments(prev => prev.filter(c => c.id !== data.id))
+                    } else {
+                        fetchComments(movie_id)
+                    }
+                    break
+                    
+                default:
+                    fetchComments(movie_id)
+            }
+        })
 
+        return () => {
+            console.log('Cleaning up subscription')
+            stopListening()
+            subscription.delete()
+        }
+    }, [movie_id])
 
     useEffect(() => {
         (async () => {
@@ -105,8 +153,8 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
             if (!response.ok) {
                 throw new Error("Failed to add comment");
             }
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            fetchComments(movie_id);
+            
+            setNewComment('')
         } catch (error) {
             console.error("Failed to add comment:", error)
         } finally {
@@ -128,8 +176,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
             if (!response.ok) {
                 throw new Error("Failed to delete comment");
             }
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            fetchComments(movie_id);
+            
         } catch (error) {
             console.error("Failed to delete comment:", error)
         } finally {

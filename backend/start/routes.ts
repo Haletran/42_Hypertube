@@ -15,7 +15,10 @@ import StreamController from '#controllers/stream_controller'
 import CommentsController from '#controllers/comments_controller'
 import LibrariesController from '#controllers/libraries_controller'
 import UsersController from '#controllers/users_controller'
+import transmit from '@adonisjs/transmit/services/main'
 import User from '#models/user'
+
+transmit.registerRoutes()
 
 router.group(() => {
   router.post('/register', [AuthController, 'register']);
@@ -77,9 +80,6 @@ router.group(() => {
   router.post('/:id', [LibrariesController, 'addUserMovie'])
   router.patch('/:id', [LibrariesController, 'updateUserMovie'])
 }).prefix('/api/library')
-
-
-
 
 // GET /api/users
 // GET /api/users/:id

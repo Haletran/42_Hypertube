@@ -31,9 +31,9 @@ watch videos.
 - [x] Make the comments works (still need to implement updated_at and created_at)
 - [ ] Add filter for dashboard page (by date, by rating, by genre)
 - [x] Forget password mail
-- [ ] Do websocket for comments section and currently watching movies (update in real time)
+- [x] Do websocket for comments section and currently watching movies (update in real time)
 - [x] Add cronjob to delete old torrents (1 months old)
-- [ ] Setup frontend validation with Zod (to add multiple validators backend and frontend)
+- [x] Setup frontend validation with Zod (to add multiple validators backend and frontend)
 
 ## Setup the Project
 

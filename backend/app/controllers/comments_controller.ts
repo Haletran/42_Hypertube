@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Comment from '#models/comments'
+import transmit from '@adonisjs/transmit/services/main'
 
 export default class CommentsController {
 
@@ -47,6 +48,12 @@ export default class CommentsController {
       }
       comment.content = content
       await comment.save()
+      await comment.load('user')
+      
+      transmit.broadcast(`movie:${comment.movieId}`, 'message', {
+        type: 'updateComment',
+        comment: comment.toJSON()
+      })
       return response.json({ message: 'Comment updated successfully' })
     } catch (error) {
       return response.status(500).json({ error: 'Error updating comment' })
@@ -64,10 +71,19 @@ export default class CommentsController {
 
     try {
       const comment = await Comment.query().where('id', id).first()
+      if (!comment) {
+        return response.status(404).json({ error: 'Comment not found' })
+      }
       if (comment.userId !== auth.user!.id && auth.user!.role !== 'admin') {
         return response.status(403).json({ error: 'Unauthorized' })
       }
-      comment.delete()
+      const movieId = comment.movieId
+      await comment.delete()
+      
+      transmit.broadcast(`movie:${movieId}`, 'message', { 
+        type: 'deleteComment',
+        id: id 
+      })
       return response.json({ message: 'Comment deleted successfully' })
     } catch (error) {
       return response.status(500).json({ error: 'Error deleting comment' })
@@ -111,6 +127,12 @@ export default class CommentsController {
       comment.movieId = id
       comment.userId = auth.user!.id
       await comment.save()
+      
+      await comment.load('user')
+      transmit.broadcast(`movie:${id}`, 'message', { 
+        type: 'newComment',
+        comment: comment.toJSON()
+      })
     } catch (error) {
       return response.status(500).json({ error: 'Error adding comment' })
     }
