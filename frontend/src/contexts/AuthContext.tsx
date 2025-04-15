@@ -2,13 +2,53 @@ import { createContext, useState, useEffect, ReactNode, useContext } from 'react
 import api from '../utils/api';
 import { User } from '@/types';
 import Cookies from 'js-cookie';
+import { z } from 'zod';
+
+const registerSchema = z.object({
+  username: z.string()
+    .min(3, { message: "Username must be at least 3 characters long" })
+    .max(20, { message: "Username must be at most 20 characters long" })
+    .regex(/^[a-zA-Z0-9_]+$/, { message: "Username can only contain letters, numbers, and underscores" }),
+  email: z.string()
+    .email({ message: "Invalid email address" }),
+  password: z.string()
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/, 
+      { message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character" })
+});
+
+const updateSchema = z.object({
+  username: z.string()
+    .min(3, { message: "Username must be at least 3 characters long" })
+    .max(20, { message: "Username must be at most 20 characters long" })
+    .regex(/^[a-zA-Z0-9_]+$/, { message: "Username can only contain letters, numbers, and underscores" }),
+  email: z.string()
+    .email({ message: "Invalid email address" }),
+})
+
+const loginSchema = z.object({
+  username: z.string()
+    .min(3, { message: "Username must be at least 3 characters long" })
+    .max(20, { message: "Username must be at most 20 characters long" })
+    .regex(/^[a-zA-Z0-9_]+$/, { message: "Username can only contain letters, numbers, and underscores" }),
+  password: z.string()
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/, 
+      { message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character" })
+});
+
+
+
+type RegisterData = z.infer<typeof registerSchema>;
+type UpdateData = z.infer<typeof updateSchema>;
+type LoginData = z.infer<typeof loginSchema>;
 
 interface AuthContextProps {
   user: User | null;
   loading: boolean;
   newEmail: string;
   newUsername: string;
-  error: string;
+  error: string | null;
   isAuthenticated: () => Promise<boolean>;
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
@@ -35,6 +75,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (username: string, password: string) => {
     try {
+      const validationResult = loginSchema.safeParse({ username, password });
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(err => err.message).join(', ');
+        return { 
+          success: false, 
+          error: errors
+        };
+      }
+
       const response = await api.post('/api/auth/login', { username, password });
       if (response.status !== 200) {
         return { 
@@ -67,6 +116,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async (username: string, email: string, password: string) => {
     try {
+      const validationResult = registerSchema.safeParse({ username, email, password });
+      
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(err => err.message).join(', ');
+        return { 
+          success: false, 
+          error: errors
+        };
+      }
+
       const response = await api.post('/api/auth/register', { username, email, password });
       Cookies.set('token', response.data.token, { 
         expires: 7,
@@ -95,9 +154,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userResponse = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
       });
+
       if (!username) username = userResponse.data.user.username;
       if (!email) email = userResponse.data.user.email;
       if (!password) password = userResponse.data.user.password;
+
+      const validationResult = updateSchema.safeParse({ username, email });
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(err => err.message).join(', ');
+        return { 
+          success: false, 
+          error: errors
+        };
+      }
       const response = await api.patch(`/api/users/${userResponse.data.user.id}`, { username, email, password, old_password, profilePicture }, { headers: { Authorization: `Bearer ${Cookies.get('token')}` } });
       const updateResponse = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
@@ -140,7 +209,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
 
-  const isAuthenticated = async () => {
+  const isAuthenticated = async (): Promise<boolean> => {
     const token = Cookies.get('token');
     if (!token) return false;
     try {
@@ -148,6 +217,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.status === 200) {
         return true;
       }
+      return false;
     } catch (error) {
       return false;
     }
@@ -180,12 +250,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     };
 
-  const logout = () => {
-    //const token = Cookies.get('token');
-    //api.delete('/api/auth/logout', { headers: { Authorization: `Bearer ${token}` } });
-    Cookies.remove('token', { path: '/' });
-    Cookies.remove('language', { path: '/' });
-    setUser(null);
+  const logout = async () => {
+    const token = Cookies.get('token');
+    try {
+      await api.delete('/api/auth/logout', { headers: { Authorization: `Bearer ${token}` } });
+      Cookies.remove('token', { path: '/' });
+      Cookies.remove('language', { path: '/' });
+      setUser(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   useEffect(() => {

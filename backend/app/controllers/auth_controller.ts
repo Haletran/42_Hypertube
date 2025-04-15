@@ -247,10 +247,20 @@ export default class AuthController {
         }
     }
 
-    public async logout({ auth }: HttpContext) {
-        const user = auth.user!;
-        await User.accessTokens.delete(user, user.currentAccessToken.identifier)
-        return { message: "success" }
+    public async logout({ auth, response }: HttpContext) {
+        try {
+            const check = await auth.check();
+            if (!check) {
+                return response.status(401).json({ error: 'Unauthorized' });
+            }
+
+            const user = auth.user!;
+            await User.accessTokens.delete(user, user.currentAccessToken.identifier);
+            return response.json({ message: 'Successfully logged out' });
+        } catch (error) {
+            console.error('Logout failed:', error);
+            return response.status(500).json({ error: 'Failed to logout' });
+        }
     }
 
     public async me({ auth, response }: HttpContext) {
