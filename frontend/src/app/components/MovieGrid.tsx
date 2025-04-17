@@ -1,12 +1,12 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback, use } from 'react';
 import { Loader } from 'lucide-react';
 import { MovieCard } from './MovieCard';
 import { useAuth } from '@/contexts/AuthContext';
-import redis from '@/lib/redis';
 import { Movie, MovieGridProps } from '@/types';
 import { useMovieContext } from '@/contexts/MovieContext';
 import Cookies from "js-cookie"
 import { WatchCard } from './WatchCard';
+import { Slider } from '@/app/components/ui/slider';
 
 export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   const { user } = useAuth();
@@ -15,13 +15,16 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   const [discover, setDiscover] = useState<Movie[]>([]);
   const [pagenumber, setpagenumber] = useState<number>(1);
   const [firstLoad, setFirstLoad] = useState<boolean>(true);
+  const [filter, setFilter] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<number>(2025);
   const observerRef = useRef(null);
 
   const fetchDiscover = async () => {
-  
     try {
       setLoading(true);
-      const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=${language}`, {
+      const filterQuery = filter ? `&filter=${encodeURIComponent(filter)}` : '';
+      console.log('Fetching movies with filter:', filter);
+      const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=${language}${filterQuery}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
@@ -30,16 +33,23 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
       const data = await response.json();
+      console.log('Received movies data:', data, filterQuery, pagenumber);
 
-      // this is dumb but fix duplication issue that shouldn't happen in the first place
-      setDiscover((prev) => {
-        const existingMovieIds = new Set(prev.map((movie) => movie.id));
-        const newMovies = data.results.filter((movie: Movie) => !existingMovieIds.has(movie.id));
-        return [...prev, ...newMovies];
-      });
-
+      if (data.results.length === 0) {
+        console.log('No more movies to load');
+        return;
+      }
+      if (pagenumber === 1) {
+        setDiscover(data.results);
+      }
+      else { 
+        setDiscover((prev) => {
+          const existingMovieIds = new Set(prev.map((movie) => movie.id));
+          const newMovies = data.results.filter((movie: Movie) => !existingMovieIds.has(movie.id));
+          return [...prev, ...newMovies];
+        });
+      }
       setpagenumber((prev) => prev + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -48,8 +58,21 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     }
   }
 
-  useEffect(() => {
+  const handleYearChange = (value: number[]) => {
+    console.log('Year changed:', value);
+    const year = value[0];
+    setSelectedYear(year);
+    setFilter(`&primary_release_year=${year}`);
+    setDiscover([]);
+    setpagenumber(1);
+    console.log('Fetching movies with new year filter:', `&year=${year}`);
+  }
 
+  useEffect(() => {
+      fetchDiscover();
+  }, [filter]);
+
+  useEffect(() => {
     const test = async () => {
       const check = await fetchUserMovies(user?.user?.id);
       setWatchedMovies(check);
@@ -57,11 +80,8 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     const debounceTimeout = setTimeout(() => {
       fetchDiscover();
       if (firstLoad) {
-        // here to fetch more movies on first load to fill the screen
-
         setFirstLoad(false);
         fetchDiscover();
-
       }
     }, 500);
     test();
@@ -88,21 +108,35 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     return () => observer.disconnect();
   }, [discover]);
 
+
   return (
     <div className="container mx-auto p-4">
+            <div className="flex justify-between items-center mb-4">
+        <p className="text-lg font-bold text-gray-900 dark:text-white">
+          {language === 'en' ? 'Year' : language === 'fr' && 'Année'}: {selectedYear}
+        </p>
+        <Slider
+          className="w-1/2"
+          defaultValue={[2025]}
+          value={[selectedYear]}
+          min={1920}
+          max={2025}
+          step={1}
+          onValueChange={(value) => setSelectedYear(value[0])}
+          onValueCommit={(value) => handleYearChange(value)}
+        />
+      </div>
       {discover.length === 0 && !error && (
         <div className="flex justify-center items-center mt-4" >
           <Loader className="animate-spin h-8 w-8" />
         </div>
-      )
-      }
-      {
-        error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            Error: {error}
-          </div>
-        )
-      }
+      )}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          Error: {error}
+        </div>
+      )}
+
       {watchedMovies.length > 0 && (
         <>
           <WatchCard movie={watchedMovies} language={language}/>

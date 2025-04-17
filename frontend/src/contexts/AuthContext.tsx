@@ -267,7 +267,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
       .then((response: any) => setUser(response.data))
-      .catch(() => logout());
+      .catch(() => console.error('Failed to fetch user data'));
     }
   }, [])
   
