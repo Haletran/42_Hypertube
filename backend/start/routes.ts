@@ -49,13 +49,13 @@ router.group(() => {
 }).prefix('/api/comments')
 
 router.group(() => {
-
   router.post('/start', [StreamController, 'start'])
   router.get('/:id/status', [StreamController, 'status'])
   router.get('/:id/video', [StreamController, 'video'])
   router.get('/:id/video/isAvailable', [StreamController, 'isAvailable'])
   router.get('/:id/video.mp4', [StreamController, 'videomp4'])
   router.get('/:streamId/:segment.ts', [StreamController, 'videoSegment'])
+  router.get('/:streamId/sub_list', [StreamController, 'subtitlesList'])
   router.get('/:streamId/subtitles', [StreamController, 'subtitles'])
   router.get('/:title/download', [StreamController, 'getTorrentsList'])
   router.get('/:streamId/:file', [StreamController, 'subtitlesFile'])

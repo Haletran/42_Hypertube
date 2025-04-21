@@ -21,6 +21,7 @@ export default function Player({ streamId }: { streamId: string }) {
   const [timecode, setTimecode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const hlsRef = useRef<Hls | null>(null)
+  const language = Cookies.get("language") || "en"
 
   async function getCurrentTime() {
     try {
@@ -226,52 +227,44 @@ export default function Player({ streamId }: { streamId: string }) {
       video.removeChild(video.firstChild)
     }
 
-    const subtitleTypes = [
-      { type: "original", lang: "original" },
-      { type: "english", lang: "en" },
-      { type: "french", lang: "fr" },
-    ]
-
     let defaultTrackSet = false
     const tracksToAdd: SubtitleTrack[] = []
 
-    for (const { type, lang } of subtitleTypes) {
-      let trackNumber = 1
-      let consecutiveErrors = 0
-      const MAX_ERRORS = 3
-
-      while (consecutiveErrors < MAX_ERRORS) {
-        const url = `http://localhost:3000/api/stream/${streamId}/subtitles-${type}-${trackNumber}.vtt`
-
-        try {
-          const response = await fetch(url, { method: "HEAD",           
-            headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${Cookies.get("token")}`,
-          },})
-
-          if (response.ok) {
+    try { 
+      const response = await fetch(`http://localhost:3000/api/stream/${streamId}/sub_list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      })
+      const data = await response.json()
+      let number: number = 0;
+      if (data.subtitles && Array.isArray(data.subtitles)) {
+        for (const subtitle of data.subtitles) {
+          const parts = subtitle.split('-');
+          if (parts.length >= 2) {
+            const language = parts[1];
+            const url = `http://localhost:3000/api/stream/${streamId}/${subtitle}`
             tracksToAdd.push({
               kind: "subtitles",
-              label: `${type.charAt(0).toUpperCase() + type.slice(1)} ${trackNumber}`,
-              srclang: lang,
+              label: language.charAt(0).toUpperCase() + language.slice(1) + "-" + number,
+              srclang: language,
               src: url,
             })
-            trackNumber++
-            consecutiveErrors = 0
-          } else {
-            consecutiveErrors++
-            trackNumber++
+            number += 1;
           }
-        } catch (error) {
-          console.error(`Error checking ${type} subtitle for track ${trackNumber}:`, error)
-          consecutiveErrors++
-          trackNumber++
         }
       }
+    } catch (error) {
+      console.error("Error fetching subtitles list:", error)
     }
 
-    tracksToAdd.forEach((trackData, index) => {
+    if (!tracksToAdd.length) {
+      console.warn("No subtitles found")
+      return Promise.resolve()
+    }
+    tracksToAdd.forEach((trackData) => {
       const track = document.createElement("track")
       track.kind = trackData.kind
       track.label = trackData.label
@@ -285,8 +278,26 @@ export default function Player({ streamId }: { streamId: string }) {
 
       video.appendChild(track)
     })
-
     return Promise.resolve()
+  }
+
+
+  const setSubtitleTrack = (video: HTMLVideoElement, language: string) => {
+    if (!video) return
+    if (language === 'fr') {
+      const tracks = video.textTracks;
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        if (track.language === 'fr' || track.label.toLowerCase().includes('fr')) {
+          for (let j = 0; j < tracks.length; j++) {
+            tracks[j].mode = 'disabled';
+          }
+          track.mode = 'showing';
+          console.log('Selected French subtitle track:', track.label);
+          break;
+        }
+      }
+    }
   }
 
   // used if the user is not the one that downloaded the movie
@@ -339,6 +350,7 @@ export default function Player({ streamId }: { streamId: string }) {
         onLoadedMetadata={() => {
           const video = videoRef.current;
           if (!video) return;
+          setSubtitleTrack(video, language)
           video.currentTime = timecode ? parseFloat(timecode) : 0;
         }}
         onLoadedData={() => {
