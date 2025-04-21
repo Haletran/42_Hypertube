@@ -36,6 +36,7 @@ export default class MoviesController {
         const apiKey = process.env.TMDB_API_KEY || '';
         const defaultLanguage = "en-US";
         const defaultpage = 1;
+        const filter = request.input('filter', '');
         const language = request.input('language', defaultLanguage);
         const page = request.input('page', defaultpage);
         try {
@@ -43,9 +44,15 @@ export default class MoviesController {
             if (!check) {
                 throw new Error('unauthorized');
             }
-            const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`);
-
-            const data = await res.json();
+            console.error(request.input);
+            console.error("filter : ", filter );
+            let res;
+            if (filter === '') {
+                res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`);
+            } else {
+                res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&include_adult=false&sort_by=popularity.desc&page=${page}${filter}`);
+            }
+            const data = await res.json()
             return response.json(data);
         } catch (error) {
             return response.status(500).json({

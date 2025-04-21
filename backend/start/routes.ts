@@ -59,7 +59,7 @@ router.group(() => {
   router.get('/:streamId/subtitles', [StreamController, 'subtitles'])
   router.get('/:title/download', [StreamController, 'getTorrentsList'])
   router.get('/:streamId/:file', [StreamController, 'subtitlesFile'])
-
+  router.get('/current_download', [StreamController, 'getAllStreams'])
 }).prefix('/api/stream')
 
 router.group(() => {

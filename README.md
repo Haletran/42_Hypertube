@@ -27,13 +27,15 @@ watch videos.
 - [x] Make Profile and settings page
 - [x] Make already watched movies page / and render in the /dashboard
 - [ ] Fix status in /movie/:id page (loading infinite if the progress is null)
-- [ ] Add a menu to see all the movies that are currently being downloaded
+- [x] Add a menu to see all the movies that are currently being downloaded
 - [x] Make the comments works (still need to implement updated_at and created_at)
-- [ ] Add filter for dashboard page (by date, by rating, by genre)
+- [x] Add filter for dashboard page (by date, by rating, by genre)
 - [x] Forget password mail
 - [x] Do websocket for comments section and currently watching movies (update in real time)
 - [x] Add cronjob to delete old torrents (1 months old)
 - [x] Setup frontend validation with Zod (to add multiple validators backend and frontend)
+- [ ] Add first_name and last_name to the user
+- [ ] Add show nsfw content option
 
 ## Setup the Project
 

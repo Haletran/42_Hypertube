@@ -32,13 +32,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+        <MovieProvider>
           {pathname !== "/" && pathname !== "/auth/login" && pathname !== "/auth/register" && pathname  !== "/auth/forgot-password" && pathname !== "/auth/reset-password" && (
               <Navbar />
           )}
           {pathname !== "/" &&  pathname !== "/auth/login" && pathname !== "/auth/register" &&  pathname  !== "/auth/forgot-password" && pathname !== "/auth/reset-password" && (
           <AuthCheckWrapper />
           )}
-        <MovieProvider>
           {children}
           <Footer />
         </MovieProvider>
