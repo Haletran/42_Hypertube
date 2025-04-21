@@ -50,7 +50,7 @@ export default class MoviesController {
             if (filter === '') {
                 res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`);
             } else {
-                res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&page=${page}${filter}`);
+                res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&include_adult=false&sort_by=popularity.desc&page=${page}${filter}`);
             }
             const data = await res.json()
             return response.json(data);
