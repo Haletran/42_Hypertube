@@ -21,8 +21,6 @@ import {
 } from "@/app/components/ui/sheet"
 import { Button } from "@/app/components/ui/button"
 import { Badge } from "@/app/components/ui/badge"
-import { Separator } from "@/app/components/ui/separator"
-import { set } from "zod"
 
 export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   const { user } = useAuth()
@@ -354,7 +352,7 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
 
       {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: {error}</div>}
 
-      {watchedMovies.length > 0 && (
+      {!filter && watchedMovies.length > 0 && (
         <>
           <WatchCard movie={watchedMovies} language={language} />
           <br></br>
