@@ -57,6 +57,37 @@ export default class StreamController {
     }
   }
 
+  public async getAllStreams({ response, auth }: HttpContext) {
+    try {
+      const check = await auth.check();
+      if (!check) {
+        throw new Error('unauthorized');
+      }
+      const keys = await Redis.keys('stream:*:status');
+      
+      const streamIds = keys.map(key => {
+        const parts = key.split(':');
+        return parts.length > 1 ? parts[1] : null;
+      }).filter(id => id !== null);
+      
+      const streams = await Promise.all(
+        streamIds.map(async (id) => {
+          return {
+            id,
+            progress: await Redis.get(`progress:${id}`),
+            status: await Redis.get(`stream:${id}:status`),
+          };
+        })
+      );
+      
+      return response.json({ streams });
+    } catch (error) {
+      return response.status(500).json({
+        error: 'Error fetching all streams'
+      });
+    }
+  }
+
   public async videomp4({ params, response, request, auth }: HttpContext) {
     const mp4Path = path.join('data', params.id, 'video.mp4');
     try {

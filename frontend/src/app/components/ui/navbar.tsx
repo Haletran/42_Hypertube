@@ -2,13 +2,13 @@
 import Link from "next/link"
 import { use, useContext, useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
-import { DownloadBar } from "../DownloadBar"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import { AuthContext, useAuth } from '@/contexts/AuthContext';
 import { Search, LogOut, Settings, User, Globe } from "lucide-react"
 import api from '@/utils/api';
 import Cookies from 'js-cookie';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { DownloadsDropdown } from "@/app/components/DownloadsMenu"
 
 
 export function Navbar() {
@@ -61,6 +61,7 @@ export function Navbar() {
                             <Link href="/search" className="text-muted-foreground">
                                 <Search className="text-muted-foreground size-4" />
                             </Link>
+                            <DownloadsDropdown />
                             <div className="relative">
                                 <Select value={language} onValueChange={handleLanguageChange}>
                                   <SelectTrigger className="w-[110px] h-9 bg-zinc-900 border-none hover:bg-zinc-800 focus:ring-0">
