@@ -6,10 +6,12 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Movie, MovieCardProps } from '@/types';
 import Cookies from "js-cookie"
-
+import { useMovieContext  } from '@/contexts/MovieContext';
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadState, language }) => {
     const [availableMovies, setAvailableMovies] = useState<{[key: number]: boolean}>({});
+    const [watchedMovies, setWatchedMovies] = useState<{[key: number]: boolean}>({});
+    const { fetchUserMovies } = useMovieContext();
 
     const isAvailable = async (id: number): Promise<boolean> => {
         try {
@@ -25,6 +27,33 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
         }
     }
 
+    const convertTimecode = (timecode: string) => {
+        const seconds = Number.parseFloat(timecode)
+        const minutes = Math.floor(seconds / 60)
+        const remainingSeconds = Math.floor(seconds % 60)
+        return `${minutes}`
+      }
+
+    const isWatched = async (id: number): Promise<boolean> => {
+        try {
+            const response = await fetchUserMovies(id);
+            if (response && Array.isArray(response)) {
+                const watchedMovie = response.find((movie) => movie.movieId === id);
+                if (watchedMovie) {
+                    const currentTime = convertTimecode(watchedMovie.watchedTimecode);
+                    const totalTime = watchedMovie.originalTimecode;
+                    if (currentTime && totalTime) {
+                        return parseInt(currentTime) * 1.1 >= parseInt(totalTime) ? true : false;
+                    }
+                }
+            }
+        }
+        catch (error) {
+            return false;
+        }
+    }
+
+
     useEffect(() => {
         const checkAvailability = async () => {
             const availabilityMap: {[key: number]: boolean} = {};
@@ -33,8 +62,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                 movies.map(async (movie) => {
                     try {
                         availabilityMap[movie.id] = await isAvailable(movie.id);
+                        watchedMovies[movie.id] = await isWatched(movie.id);
                     } catch {
                         availabilityMap[movie.id] = false;
+                        watchedMovies[movie.id] = false;
                     }
                 })
             );
@@ -76,6 +107,14 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                                     loading='lazy'
                                     className="object-cover transition-transform duration-300 group-hover:scale-105 group-hover:opacity-75"
                                 />
+                                {watchedMovies[movie.id] && (
+                                    <div className="absolute top-2 right-2 bg-green-600/80 backdrop-blur-sm text-white text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md">
+                                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                        <span>Watched</span>
+                                    </div>
+                                )}
                                 {availableMovies[movie.id] && (
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
                                     <Button
