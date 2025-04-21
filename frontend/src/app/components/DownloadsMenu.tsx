@@ -86,7 +86,7 @@ useEffect(() => {
   }
 
   return (
-    <DropdownMenu onOpenChange={() => setIsOpen(true)}>
+    <DropdownMenu onOpenChange={(open) => setIsOpen(open)}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Download className="h-5 w-5" />
