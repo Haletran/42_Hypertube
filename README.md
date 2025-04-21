@@ -36,6 +36,7 @@ watch videos.
 - [x] Setup frontend validation with Zod (to add multiple validators backend and frontend)
 - [ ] Add first_name and last_name to the user
 - [ ] Add show nsfw content option
+- [ ] Make the frontend rules for password and everything else the same in the backend
 
 ## Setup the Project
 

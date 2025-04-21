@@ -60,8 +60,6 @@ export function DownloadsDropdown() {
       }
     }
     fetchDownloads()
-    const intervalId = setInterval(fetchDownloads, 3000)
-    return () => clearInterval(intervalId)
   }, [])
 
   const getStatusColor = (status: DownloadItem["status"]) => {

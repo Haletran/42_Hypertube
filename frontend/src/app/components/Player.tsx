@@ -16,7 +16,8 @@ type SubtitleTrack = {
 
 export default function Player({ streamId }: { streamId: string }) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const { getMovieTimecode, movie, loading, setLoading, addMovie, getMovie } = useMovieContext()
+  const { getMovieTimecode, movie, addMovie, getMovie } = useMovieContext()
+  const [loading, setLoading] = useState(true)
   const [timecode, setTimecode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const hlsRef = useRef<Hls | null>(null)
