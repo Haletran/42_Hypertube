@@ -30,8 +30,8 @@ export const RegisterValidator = vine.compile(
             .trim()
             .minLength(8)
             .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
+            .notIn(['bonjour', 'maison', 'soleil', 'amour', 'voiture', 'chat', 'chien', 'merci', 'salut', 'travail', 'azerty', 'qwerty', 'abc', ])
             .escape()
-        
     })
 )
 
