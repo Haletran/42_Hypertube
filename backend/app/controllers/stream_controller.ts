@@ -43,10 +43,6 @@ export default class StreamController {
       }
       const status = {
       progress: await Redis.get(`progress:${streamId}`),
-      // hls_started: await Redis.get(`stream:${streamId}:hls_started`),
-      // hls_processing: await Redis.get(`stream:${streamId}:hls_processing`),
-      // url: await Redis.get(`stream:${streamId}:url`),
-      // subtitles: await Redis.smembers(`stream:${streamId}:subtitles`),
       status: await Redis.get(`stream:${streamId}:status`)
     };
     return response.json(status);
