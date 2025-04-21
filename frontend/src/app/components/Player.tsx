@@ -278,6 +278,7 @@ export default function Player({ streamId }: { streamId: string }) {
 
       video.appendChild(track)
     })
+    setSubtitleTrack(video, language)
     return Promise.resolve()
   }
 
@@ -350,7 +351,6 @@ export default function Player({ streamId }: { streamId: string }) {
         onLoadedMetadata={() => {
           const video = videoRef.current;
           if (!video) return;
-          setSubtitleTrack(video, language)
           video.currentTime = timecode ? parseFloat(timecode) : 0;
         }}
         onLoadedData={() => {
