@@ -26,41 +26,49 @@ export function DownloadsDropdown() {
   const [downloads, setDownloads] = useState<DownloadItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const { getMovie } = useMovieContext()
+  const [isOpen, setIsOpen] = useState(false)
   const token = Cookies.get('token');
 
-  useEffect(() => {
+useEffect(() => {
     const fetchDownloads = async () => {
-      try {
-        const response = await fetch("http://localhost:3333/api/stream/current_download", { 
-          headers: { 
-            Authorization: `Bearer ${token}` 
-          } 
-        })
-        if (!response.ok) throw new Error("Failed to fetch downloads")
-        const data = await response.json()
-        const mappedData = await Promise.all((data.streams || []).map(async (stream) => {
-            try {
-                const movieDetails = await getMovie(stream.id);
-                return {
-                    ...stream,
-                    name: movieDetails?.original_title || stream.id,
-                    progress: stream.progress || 0,
-                    status: stream.status || "unknown",
-                };
-            } catch (error) {
-                console.error(`Error getting movie name for ${stream.id}:`, error);
-                return stream;
-            }
-        }));
-        setDownloads(mappedData || []);
-        setIsLoading(false)
-      } catch (error) {
-        console.error("Error fetching downloads:", error)
-        setIsLoading(false)
-      }
+        try {
+            const response = await fetch("http://localhost:3333/api/stream/current_download", { 
+                headers: { 
+                    Authorization: `Bearer ${token}` 
+                } 
+            })
+            if (!response.ok) throw new Error("Failed to fetch downloads")
+            const data = await response.json()
+            const mappedData = await Promise.all((data.streams || []).map(async (stream) => {
+                    try {
+                    const movieDetails = await getMovie(stream.id);
+                    return {
+                            ...stream,
+                            name: movieDetails?.original_title || stream.id,
+                            progress: stream.progress || 0,
+                            status: stream.status || "unknown",
+                    };
+                    } catch (error) {
+                    console.error(`Error getting movie name for ${stream.id}:`, error);
+                    return stream;
+                    }
+            }));
+            const filteredData = mappedData.filter(movie => movie.status !== "complete");
+            setDownloads(filteredData || []);
+            setIsLoading(false)
+        } catch (error) {
+            console.error("Error fetching downloads:", error)
+            setIsLoading(false)
+        }
     }
     fetchDownloads()
-  }, [])
+    if (isOpen) {
+        const interval = setInterval(() => {
+            fetchDownloads()
+        }, 5000)
+        return () => clearInterval(interval)
+    }
+}, [isOpen])
 
   const getStatusColor = (status: DownloadItem["status"]) => {
     switch (status) {
@@ -78,7 +86,7 @@ export function DownloadsDropdown() {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={(open) => setIsOpen(open)}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Download className="h-5 w-5" />
