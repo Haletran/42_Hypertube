@@ -278,7 +278,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     return genre ? genre.name : ""
   }
 
-  // Count only explicitly selected filters
   const activeFilterCount =
     (activeFilterTypes.year && appliedFilters.year !== DEFAULT_YEAR ? 1 : 0) +
     (activeFilterTypes.rating && appliedFilters.rating !== DEFAULT_RATING ? 1 : 0) +
@@ -298,6 +297,9 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
 
       {!filter && watchedMovies.length > 0 && (
         <>
+          <h1 className="text-2xl font-bold text-white mb-6">
+            {language === "en" ? "Currently watching" : "En cours"}
+          </h1>
           <WatchCard movie={watchedMovies} language={language} />
           <br></br>
         </>

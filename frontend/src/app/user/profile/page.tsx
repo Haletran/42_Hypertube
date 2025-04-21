@@ -13,7 +13,7 @@ import { Clock, Calendar, Mail, Globe, User, BookUser } from "lucide-react"
 export default function SettingsPage() {
   const { user } = useAuth()
   const { fetchUserMovies } = useMovieContext()
-  const { id, username, email, language, createdAt, profilePicture, role } = user?.user || {}
+  const { id, username, email, language, createdAt, profilePicture, role, firstName, lastName } = user?.user || {}
   const [movies, setMovies] = useState<WatchedMovie[]>([])
 
   const convertTimecode = (timecode: string) => {
@@ -63,6 +63,7 @@ export default function SettingsPage() {
               </Avatar>
               <div className="text-center sm:text-left space-y-1">
                 <h2 className="text-2xl font-bold text-white">{username}</h2>
+                <p className="text-zinc-500">{`${firstName} ${lastName}`}</p>
                 <p className="text-zinc-400">{email}</p>
                 <Badge variant="outline" className="mt-2 border-zinc-700 text-zinc-300">
                   {language}

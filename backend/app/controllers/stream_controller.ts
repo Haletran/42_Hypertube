@@ -222,10 +222,10 @@ export default class StreamController {
     const subtitlesPath = path.join('data', 'hls', params.streamId, 'subtlist-en.m3u8');
   
     try {
-      const check = await auth.check();
-      if (!check) {
-          throw new Error('unauthorized');
-      }
+      // const check = await auth.check();
+      // if (!check) {
+      //     throw new Error('unauthorized');
+      // }
       await fs.access(subtitlesPath); 
   
       response.header('Content-Type', 'application/vnd.apple.mpegurl');
@@ -241,15 +241,16 @@ export default class StreamController {
     }
   }
 
+
   public async subtitlesFile({ params, response, auth }: HttpContext) {
 
     const vttPath = path.join('data', params.streamId, params.file);
   
     try {
-      const check = await auth.check();
-      if (!check) {
-          throw new Error('unauthorized');
-      }
+      // const check = await auth.check();
+      // if (!check) {
+      //     throw new Error('unauthorized');
+      // }
       await fs.access(vttPath);
       response.header('Content-Type', 'text/vtt');
       response.header('Cache-Control', 'no-cache');
@@ -261,7 +262,28 @@ export default class StreamController {
       });
     }
   }
+
+  public async subtitlesList({ params, response, auth }: HttpContext) {
+    const subtitlesDir = path.join('data', params.streamId);
+    
+    try {
+      const check = await auth.check();
+      if (!check) {
+          throw new Error('unauthorized');
+      }
+      await fs.access(subtitlesDir); 
+      const files = await fs.readdir(subtitlesDir);
+      const subtitlesArray = files.filter(file => file.endsWith('.vtt'));
   
+      return response.json({ subtitles: subtitlesArray });
+    } catch (error) {
+      return response.notFound({
+        error: 'Subtitles directory not found',
+      });
+    }
+  }
+
+
   public async getTorrentsList({ params, response, auth }: HttpContext) {
     const title = params.title;
 

@@ -34,9 +34,10 @@ watch videos.
 - [x] Do websocket for comments section and currently watching movies (update in real time)
 - [x] Add cronjob to delete old torrents (1 months old)
 - [x] Setup frontend validation with Zod (to add multiple validators backend and frontend)
-- [ ] Add first_name and last_name to the user
+- [x] Add first_name and last_name to the user
 - [ ] Add show nsfw content option
 - [x] Make the frontend rules for password and everything else the same in the backend
+- [ ] Make the traduction for every page
 
 ## Setup the Project
 

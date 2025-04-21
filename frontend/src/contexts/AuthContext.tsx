@@ -58,7 +58,7 @@ interface AuthContextProps {
   setUsername: (username: string) => void;
   getById: (id: number) => Promise<any>;
   update: (username: string, email: string, password: string, old_password: string, profilePicture: string) => Promise<any>;
-  register: (username: string, email: string, password: string) => Promise<any>;
+  register: (username: string, email: string, first_name: string, last_name: string, password: string) => Promise<any>;
   changeLanguage: (language: string) => Promise<any>;
   logout: () => void;
 }
@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   };
 
-  const register = async (username: string, email: string, password: string) => {
+  const register = async (username: string, email: string, first_name: string, last_name: string, password: string) => {
     try {
       const validationResult = registerSchema.safeParse({ username, email, password });
       
@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
       }
 
-      const response = await api.post('/api/auth/register', { username, email, password });
+      const response = await api.post('/api/auth/register', { username, email, first_name, last_name, password });
       Cookies.set('token', response.data.token, { 
         expires: 7,
         path: '/'
