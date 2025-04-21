@@ -17,6 +17,8 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [first_name, setFirstName] = useState("")
+  const [last_name, setLastName] = useState("")
   const [error, setError] = useState<string[]>([])
 
   const handleRegister = async () => {
@@ -26,7 +28,7 @@ export default function RegisterPage() {
       setError([])
 
       if (!auth) throw new Error("Auth context not found")
-      response = await auth.register(username, email, password)
+      response = await auth.register(username, email, first_name, last_name, password)
       await new Promise((resolve) => setTimeout(resolve, 500))
       if (!response.success)
         throw response.error;
@@ -57,6 +59,39 @@ export default function RegisterPage() {
         </CardHeader>
 
         <CardContent className="space-y-4 pt-6">
+
+        <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="first_name" className="text-zinc-300">
+                First Name
+              </Label>
+              <Input
+                id="first_name"
+                type="text"
+                placeholder="John"
+                value={first_name}
+                onChange={(e) => setFirstName(e.target.value)}
+                disabled={isLoading}
+                className="border-zinc-800 bg-zinc-900 text-zinc-100 focus-visible:ring-zinc-700 placeholder:text-zinc-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="last_name" className="text-zinc-300">
+                Last Name
+              </Label>
+              <Input
+                id="last_name"
+                type="text"
+                placeholder="Doe"
+                value={last_name}
+                onChange={(e) => setLastName(e.target.value)}
+                disabled={isLoading}
+                className="border-zinc-800 bg-zinc-900 text-zinc-100 focus-visible:ring-zinc-700 placeholder:text-zinc-500"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="username" className="text-zinc-300">
               Username
@@ -107,11 +142,11 @@ export default function RegisterPage() {
             />
           </div>
           {error && error[0] && (
-              <Alert variant="destructive" className="mb-4 bg-red-950 border-red-900 text-red-200">
-                {error.map((err, index) => (
+            <Alert variant="destructive" className="mb-4 bg-red-950 border-red-900 text-red-200">
+              {error.map((err, index) => (
                 <AlertDescription key={index}>{err}</AlertDescription>
-                ))}
-              </Alert>
+              ))}
+            </Alert>
           )}
           <div className="pt-2">
             <Button

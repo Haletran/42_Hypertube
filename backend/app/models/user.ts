@@ -31,6 +31,12 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare profile_picture: string;
 
   @column()
+  declare first_name: string;
+
+  @column()
+  declare last_name: string;
+
+  @column()
   declare role: string;
 
   @column()

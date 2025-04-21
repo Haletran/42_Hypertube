@@ -116,12 +116,18 @@ export default class AuthController {
     }
 
     public async register({ request }: HttpContext) {
-        const data = request.all();
-        const payload = await RegisterValidator.validate(data);
-        const user = await User.create(payload);
-        await user.save();
-        const token = await User.accessTokens.create(user)
-        return (token);
+        try {
+            const data = request.all();
+            const payload = await RegisterValidator.validate(data);
+            console.error('payload', payload)
+            const user = await User.create(payload);
+            await user.save();
+            const token = await User.accessTokens.create(user)
+            return (token);
+        } catch (error) {
+            console.error('Register failed:', error);
+            return { error: 'Registration failed' };
+        }
     }
 
     public async login({ request, response }: HttpContext) {
@@ -180,6 +186,8 @@ export default class AuthController {
               user = await User.firstOrCreate({
                 email: me.data.email,
                 username: me.data.login,
+                first_name: me.data.first_name,
+                last_name: me.data.last_name,
                 password: '42',
                 profile_picture: me.data.image.versions.small,
                 auth_method: '42',
@@ -234,6 +242,8 @@ export default class AuthController {
               user = await User.firstOrCreate({
                 email: me.data.email || me.data.login + '@github.com',
                 username: me.data.login,
+                first_name: me.data.name,
+                last_name: me.data.login,
                 password: 'github',
                 profile_picture: me.data.avatar_url,
                 auth_method: 'github',

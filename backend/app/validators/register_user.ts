@@ -9,6 +9,18 @@ export const RegisterValidator = vine.compile(
             .regex(/^[a-zA-Z0-9_]+$/)
             .escape()
             .unique({ table: 'users', column: 'username' }),
+        first_name: vine.string()
+            .trim()
+            .minLength(2)
+            .maxLength(20)
+            .regex(/^[a-zA-Z]+$/)
+            .escape(),
+        last_name: vine.string()
+            .trim()
+            .minLength(2)
+            .maxLength(20)
+            .regex(/^[a-zA-Z]+$/)
+            .escape(),
         email: vine.string()
             .trim()
             .email()
@@ -19,6 +31,7 @@ export const RegisterValidator = vine.compile(
             .minLength(8)
             .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
             .escape()
+        
     })
 )
 

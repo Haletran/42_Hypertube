@@ -67,6 +67,8 @@ export interface User {
     user: {
         id: number;
         username: string;
+        firstName: string;
+        lastName: string;
         email: string;
         profilePicture: string;
         language: string;
