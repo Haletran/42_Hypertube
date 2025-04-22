@@ -33,7 +33,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
     const [editedContent, setEditedContent] = useState("")
     const { user } = useAuth()
-    const { username, role } = user?.user || {}
+    const { username, role, language } = user?.user || {}
 
     const handleEditComment = (commentId: string, content: string) => {
         setEditingCommentId(commentId)
@@ -201,11 +201,13 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
 
     return (
         <div className="mt-5 w-full mx-auto pb-24">
-            <h2 className="text-xl font-semibold mb-4">Comments</h2>
+            <h2 className="text-xl font-semibold mb-4">
+                {language === 'en' ? "Comments" : "Commentaires"}
+            </h2>
 
             <div className="mb-6 space-y-3">
                 <Textarea
-                    placeholder="Add a comment..."
+                    placeholder={language === 'en' ? "Write a comment..." : "Écrire un commentaire..."}
                     className="bg-zinc-900 border-zinc-700 resize-none min-h-24"
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
@@ -216,15 +218,15 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                         }
                     }}
                 />
-                <div className="flex justify-end">
+                {/* <div className="flex justify-end">
                     <Button
                         onClick={handleSubmitComment}
                         disabled={!newComment.trim() || commentLoading}
                         className="bg-white hover:bg-gray-100 text-black dark:text-black dark:bg-white"
                     >
-                        {commentLoading ? "Posting..." : "Post Comment"}
+                        {commentLoading ? "Posting..." : "Post"}
                     </Button>
-                </div>
+                </div> */}
             </div>
 
             <div className="space-y-4">
@@ -267,7 +269,9 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                                     onClick={() => handleEditComment(comment.id!, comment.content)}
                                                 >
                                                     <Edit2 className="h-4 w-4" />
-                                                    <span className="sr-only">Edit</span>
+                                                    <span className="sr-only">
+                                                        {language === 'en' ? "Edit" : "Modifier"}
+                                                    </span>
                                                 </Button>
                                             )}
                                             {(comment.user?.username === username || role == 'admin') && comment.id && (
@@ -281,8 +285,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                                             <AlertDialogHeader>
                                                                 <AlertDialogTitle>Delete Comment</AlertDialogTitle>
                                                                 <AlertDialogDescription>
-                                                                    This will permanently delete your comment from the discussion. 
-                                                                    This action cannot be reversed.
+                                                                    {language === 'en' ? "Are you sure you want to delete this comment?" : "Êtes-vous sûr de vouloir supprimer ce commentaire ?"}
                                                                 </AlertDialogDescription>
                                                             </AlertDialogHeader>
                                                             <AlertDialogFooter>
@@ -290,7 +293,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                                                 <AlertDialogAction 
                                                                     onClick={() => handleDeleteComment(comment.id)}
                                                                 >
-                                                                    Delete Comment
+                                                                    {language === 'en' ? "Delete" : "Supprimer"}
                                                                 </AlertDialogAction>
                                                             </AlertDialogFooter>
                                                         </AlertDialogContent>
@@ -316,7 +319,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                                     onClick={handleCancelEdit}
                                                 >
                                                     <X className="h-4 w-4 mr-1" />
-                                                    Cancel
+                                                    {language === 'en' ? "Cancel" : "Annuler"}
                                                 </Button>
                                                 <Button
                                                     size="sm"
@@ -325,7 +328,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                                     disabled={!editedContent.trim()}
                                                 >
                                                     <Check className="h-4 w-4 mr-1" />
-                                                    Save
+                                                    {language === 'en' ? "Save" : "Enregistrer"}
                                                 </Button>
                                             </div>
                                         </div>

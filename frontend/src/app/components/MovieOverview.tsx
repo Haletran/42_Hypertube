@@ -26,6 +26,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
   const [error, setError] = useState<string | undefined>()
   const { addMovie, deleteMovie } = useMovieContext()
   const { user } = useAuth()
+  const { language } = user?.user || "en"
 
   const posterUrl = movie?.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -132,7 +133,6 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
     if (localStorage.getItem(`${movie.id}`)) {
         const cachedTorrents = localStorage.getItem(`${movie.id}`)
         if (cachedTorrents) {
-            console.log("Using cached torrents", JSON.parse(cachedTorrents))
             const parsedTorrents = JSON.parse(cachedTorrents)
             await new Promise((resolve) => setTimeout(resolve, 200))
             setProvidersTorrents(parsedTorrents)
@@ -317,7 +317,9 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
         <h1 className="text-3xl md:text-4xl font-bold">{movie.title || "Unknown title"}</h1>
         {movie.production_companies && movie.production_companies?.length > 0 && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="font-medium">Produced by:</span>
+            <span className="font-medium">
+              {language === "en" ? "Produced by" : "Produit par"}:
+            </span>
             {movie.production_companies[0].name}
           </div>
         )}
@@ -352,7 +354,9 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
         </div>
 
         {movie.overview && <p className="text-base text-muted-foreground">{movie.overview}</p>}
-        {!movie.overview && <p className="text-base text-muted-foreground">No description available...</p>}
+        {!movie.overview && <p className="text-base text-muted-foreground">
+            {language === "en" ? "No description available" : "Aucun résumé disponible"}
+          </p>}
             {isDownloading && progress != 100 && (
                     <div className="relative w-full pt-5">
                         <Progress value={progress} className="w-full h-6" />
@@ -374,22 +378,22 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
                         {isFetching ? (
                             <>
                                 <Loader className="h-4 w-4 mr-2 animate-spin" />
-                                Fetching...
+                                {language === "en" ? "Loading torrents..." : "Chargement des torrents..."}
                             </>
                         ) : isDownloading && !isPlayable ? (
                             <>
                                 <Loader className="h-4 w-4 mr-2 animate-spin" />
-                                Downloading...
+                                {language === "en" ? "Downloading..." : "Téléchargement..."}
                             </>
                         ) : isPlayable ? (
                             <>
                                 <Play className="h-4 w-4 mr-2" />
-                                Play
+                                {language === "en" ? "Play" : "Lire"}
                             </>
                         ) : (
                             <>
                                 <Download className="h-4 w-4 mr-2" />
-                                Download
+                                {language === "en" ? "Download" : "Télécharger"}
                             </>
                         )}
                     </Button>
@@ -418,7 +422,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
                                 className="w-full gap-1 bg-white/10 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer"
                             >
                                 <Clapperboard className="h-4 w-4 mr-2" />
-                                Watch Trailer
+                                {language === "en" ? "Watch Trailer" : "Bande-annonce"}
                             </Button>
                         </Link>
                     )}

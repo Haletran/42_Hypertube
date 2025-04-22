@@ -37,7 +37,7 @@ watch videos.
 - [x] Add first_name and last_name to the user
 - [ ] Add show nsfw content option
 - [x] Make the frontend rules for password and everything else the same in the backend
-- [ ] Make the traduction for every page
+- [x] Make the traduction for every page
 
 ## Setup the Project
 

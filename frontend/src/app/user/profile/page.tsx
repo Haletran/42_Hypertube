@@ -9,12 +9,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/ca
 import { Badge } from "@/app/components/ui/badge"
 import { Separator } from "@/app/components/ui/separator"
 import { Clock, Calendar, Mail, Globe, User, BookUser } from "lucide-react"
+import Cookies from "js-cookie"
 
 export default function SettingsPage() {
   const { user } = useAuth()
   const { fetchUserMovies } = useMovieContext()
   const { id, username, email, language, createdAt, profilePicture, role, firstName, lastName } = user?.user || {}
   const [movies, setMovies] = useState<WatchedMovie[]>([])
+  const [lang, setLang] = useState<string>("en")
+  
+  useEffect(() => {
+    // Set language after component mounts to avoid hydration mismatch
+    setLang(language || Cookies.get("language") || "en")
+  }, [language])
 
   const convertTimecode = (timecode: string) => {
     const seconds = Number.parseFloat(timecode)
@@ -46,7 +53,7 @@ export default function SettingsPage() {
             Profile
           </h1>
           <Badge className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1">
-            {movies.length} Movies Watched
+            {movies.length} {lang === "en" ? "watched movies" : "films regardés"}
           </Badge>
         </div>
           
@@ -81,7 +88,7 @@ export default function SettingsPage() {
                   <User className="h-5 w-5 text-zinc-500 group-hover:text-zinc-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">User ID</p>
+                  <p className="text-xs text-zinc-500">ID</p>
                   <p className="text-sm font-medium text-zinc-300 truncate max-w-[250px]">{id}</p>
                 </div>
               </div>
@@ -111,7 +118,7 @@ export default function SettingsPage() {
                   <Calendar className="h-5 w-5 text-zinc-500 group-hover:text-zinc-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Joined</p>
+                  <p className="text-xs text-zinc-500">{lang === "en" ? "Joined" : "Rejoint"}</p>
                   <p className="text-sm font-medium text-zinc-300">
                     {createdAt
                       ? new Date(createdAt).toLocaleDateString(undefined, {
@@ -131,7 +138,7 @@ export default function SettingsPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-bold text-white flex items-center">
               <Clock className="mr-2 h-5 w-5 text-zinc-400" />
-              Watched Movies
+              {lang === "en" ? "Watched Movies" : "Films Regardés"}
             </CardTitle>
           </CardHeader>
 
@@ -179,8 +186,12 @@ export default function SettingsPage() {
               </ul>
             ) : (
               <div className="text-center py-8">
-                <p className="text-zinc-400">No watched movies found.</p>
-                <p className="text-zinc-500 text-sm mt-2">Movies you watch will appear here.</p>
+                <p className="text-zinc-400">
+                  {lang === "en" ? "No watched movies yet." : "Aucun film regardé pour le moment."}
+                </p>
+                <p className="text-zinc-500 text-sm mt-2">
+                  {lang === "en" ? "Start watching movies to see them here." : "Commencez à regarder des films pour les voir ici."}
+                </p>
               </div>
             )}
           </CardContent>
