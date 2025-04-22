@@ -245,12 +245,20 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
 
       const filteredTransformed: Record<string, Torrent[]> = {}
       Object.entries(transformed).forEach(([provider, torrents]) => {
-        if (torrents.length > 0) {
+        if (torrents.length > 0 ) {
           filteredTransformed[provider] = torrents
         }
       })
 
-      setProvidersTorrents(filteredTransformed)
+      const filteredTorrents = Object.keys(filteredTransformed).reduce((acc, provider) => {
+        const filtered = filteredTransformed[provider].filter((torrent) => torrent.quality);
+        if (filtered.length > 0) {
+          acc[provider] = filtered;
+        }
+        return acc;
+      }, {} as Record<string, Torrent[]>);
+
+      setProvidersTorrents(filteredTorrents);
       localStorage.setItem(`${movie.id}`, JSON.stringify(filteredTransformed))
       setShowTorrents(true)
 
