@@ -14,7 +14,7 @@ export function SearchBar() {
     const { user, error, setError, loading, setLoading } = useAuth();
     const [movies, setMovies] = useState<Movie[]>([]);
     const [search, setSearch] = useState<string>('');
-    const language = user?.user?.language || Cookies.get('language') || 'en';
+    const language = user?.user?.language ||  'en';
     const observerRef = useRef(null);
 
     const fetchMovie = async (searchTerm: string) => {
@@ -69,7 +69,7 @@ export function SearchBar() {
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                     type="search"
-                    placeholder="Search for a movie..."
+                    placeholder={language === 'en' ? 'Search for movies...' : 'Rechercher des films...'}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-8"
@@ -83,7 +83,7 @@ export function SearchBar() {
                 <>
                     <div className="flex items-center mb-3">
                         <Badge className="text-black bg-white mt-3">
-                            <span className="text-small text-muted-foreground ml-2 ">{movies.length} {movies.length === 1 ? 'result' : 'results'}</span>
+                            {movies.length} {movies.length === 1 ? (language === 'en' ? 'result' : 'résultat') : (language === 'en' ? 'results' : 'résultats')}
                         </Badge>
                     </div>
                     <MovieCard movies={movies} observerRef={observerRef} loadState={false} />

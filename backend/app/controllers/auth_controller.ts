@@ -242,8 +242,8 @@ export default class AuthController {
               user = await User.firstOrCreate({
                 email: me.data.email || me.data.login + '@github.com',
                 username: me.data.login,
-                first_name: me.data.name,
-                last_name: me.data.login,
+                first_name: me.data.name ? me.data.name.split(' ')[0] : me.data.login,
+                last_name: me.data.name ? me.data.name.split(' ').slice(1).join(' ') : me.data.login,
                 password: 'github',
                 profile_picture: me.data.avatar_url,
                 auth_method: 'github',

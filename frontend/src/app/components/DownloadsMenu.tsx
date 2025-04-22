@@ -28,6 +28,7 @@ export function DownloadsDropdown() {
   const { getMovie } = useMovieContext()
   const [isOpen, setIsOpen] = useState(false)
   const token = Cookies.get('token');
+  const language = Cookies.get('language') || 'en';
 
 useEffect(() => {
     const fetchDownloads = async () => {
@@ -98,14 +99,18 @@ useEffect(() => {
         </Button>
       </DropdownMenuTrigger>
     <DropdownMenuContent className="bg-zinc-900 border border-zinc-800 rounded-md p-2 shadow-xl animate-in fade-in-80 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 w-70" align="end" >
-      <DropdownMenuLabel>Downloads</DropdownMenuLabel>
+      <DropdownMenuLabel>
+        {language === "en" ? "Downloads" : "Téléchargements"}
+      </DropdownMenuLabel>
       <DropdownMenuSeparator />
       {isLoading ? (
         <div className="flex items-center justify-center py-4">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : downloads.length === 0 ? (
-        <div className="px-2 py-4 text-center text-sm text-muted-foreground">No active downloads</div>
+        <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+        {language === "en" ? "No downloads in progress" : "Aucun téléchargement en cours"}
+        </div>
       ) : (
         <DropdownMenuGroup>
         {downloads.map((download) => (

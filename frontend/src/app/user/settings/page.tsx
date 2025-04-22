@@ -23,7 +23,7 @@ export default function SettingsPage() {
   const [selectedAvatar, setSelectedAvatar] = useState(0)
   const [dialogOpen, setDialogOpen] = useState(false)
   const { user, newEmail, newUsername, setEmail, setUsername, error, setError } = useAuth();
-  const {username = '', email = '', profilePicture = ''} = user?.user || {}
+  const {username = '', email = '', profilePicture = '', language} = user?.user || {}
 
   const handleAvatarSelect = (index: number) => {
     setSelectedAvatar(index)
@@ -87,8 +87,12 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="max-w-5xl mx-auto p-6">
         <div className="space-y-2 mb-8">
-          <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-zinc-400">Manage your account settings and preferences.</p>
+          <h1 className="text-3xl font-bold">
+            {language === "en" ? "Settings" : "Paramètres"}
+          </h1>
+          <p className="text-zinc-400">
+            {language === "en" ? "Manage your account settings" : "Gérez les paramètres de votre compte"}
+          </p>
         </div>
 
         <Separator className="my-6 bg-zinc-800" />
@@ -108,7 +112,7 @@ export default function SettingsPage() {
                 className="data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-100"
               >
                 <KeyRound className="h-4 w-4 mr-2" />
-                Password
+                {language === "en" ? "Password" : "Mot de passe"}
               </TabsTrigger>
             </TabsList>
 
@@ -117,9 +121,11 @@ export default function SettingsPage() {
                 <Card className="bg-zinc-900 border-zinc-800">
                   <CardContent className="pt-6">
                     <div className="space-y-2 mb-6">
-                      <h2 className="text-xl font-semibold">Profile Picture</h2>
+                      <h2 className="text-xl font-semibold">
+                        {language === "en" ? "Profile Picture" : "Photo de profil"}
+                      </h2>
                       <p className="text-zinc-400 text-sm">
-                        Update your profile picture. This will be displayed on your profile.
+                        {language === "en" ? "Update your profile picture. This will be displayed on your profile." : "Changer votre photo de profil ici"}
                       </p>
                     </div>
 
@@ -135,12 +141,14 @@ export default function SettingsPage() {
                         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                           <DialogTrigger asChild>
                             <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
-                              Change Picture
+                              {language === "en" ? "Change Picture" : "Changer la photo"}
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 sm:max-w-md">
                             <DialogHeader>
-                              <DialogTitle>Choose an avatar</DialogTitle>
+                              <DialogTitle>
+                                {language === "en" ? "Choose Your Avatar" : "Choisissez votre avatar"}
+                              </DialogTitle>
                             </DialogHeader>
                             <div className="grid grid-cols-5 gap-4 py-4">
                               {avatarOptions.map((avatar, index) => (
@@ -169,15 +177,17 @@ export default function SettingsPage() {
                                 className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
                                 onClick={() => setDialogOpen(false)}
                               >
-                                Cancel
+                                {language === "en" ? "Cancel" : "Annuler"}
                               </Button>
                               <Button className="bg-zinc-800 hover:bg-zinc-700" onClick={() => setDialogOpen(false)}>
-                                Apply
+                                {language === "en" ? "Save" : "Enregistrer"}
                               </Button>
                             </div>
                           </DialogContent>
                         </Dialog>
-                        <p className="text-zinc-500 text-xs mt-2">Choose from our collection of avatars.</p>
+                        <p className="text-zinc-500 text-xs mt-2">
+                          {language === "en" ? "Choose from our collection of avatars." : "Choisissez parmi notre collection d'avatars."}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -186,11 +196,15 @@ export default function SettingsPage() {
                 <Card className="bg-zinc-900 border-zinc-800">
                   <CardContent className="pt-6">
                     <div className="space-y-2 mb-6">
-                      <h2 className="text-xl font-semibold">Profile Information</h2>
-                      <p className="text-zinc-400 text-sm">Update your account information.</p>
+                      <h2 className="text-xl font-semibold">
+                        {language === "en" ? "Account Settings" : "Paramètres du compte"}
+                      </h2>
+                      <p className="text-zinc-400 text-sm">
+                        {language === "en" ? "Update your username and email address." : "Mettez à jour votre nom d'utilisateur et votre adresse e-mail."}
+                      </p>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       <div className="space-y-2">
                         <Label htmlFor="username" className="text-zinc-300">
                           Username
@@ -202,7 +216,6 @@ export default function SettingsPage() {
                           onChange={(e) => setUsername(e.target.value)}
                           className="bg-zinc-950 border-zinc-800 text-zinc-100 focus-visible:ring-zinc-700"
                         />
-                        <p className="text-zinc-500 text-xs">This is your public display name.</p>
                       </div>
 
                       <div className="space-y-2">
@@ -217,7 +230,6 @@ export default function SettingsPage() {
                           onChange={(e) => setEmail(e.target.value)}
                           className="bg-zinc-950 border-zinc-800 text-zinc-100 focus-visible:ring-zinc-700"
                         />
-                        <p className="text-zinc-500 text-xs">We'll send important notifications to this email.</p>
                       </div>
 
                       <div>
@@ -237,7 +249,9 @@ export default function SettingsPage() {
                               Saving...
                             </>
                           ) : (
-                            "Save Changes"
+                            <>
+                              {language === "en" ? "Save Changes" : "Enregistrer les modifications"}
+                            </>
                           )}
                         </Button>
                       </div>
@@ -250,14 +264,18 @@ export default function SettingsPage() {
                 <Card className="bg-zinc-900 border-zinc-800">
                   <CardContent className="pt-6">
                     <div className="space-y-2 mb-6">
-                      <h2 className="text-xl font-semibold">Change Password</h2>
-                      <p className="text-zinc-400 text-sm">Update your password to keep your account secure.</p>
+                      <h2 className="text-xl font-semibold">
+                        {language === "en" ? "Change Password" : "Changer le mot de passe"}
+                      </h2>
+                      <p className="text-zinc-400 text-sm">
+                        {language === "en" ? "Update your password for better security." : "Mettez à jour votre mot de passe pour une meilleure sécurité."}
+                      </p>
                     </div>
 
                     <div className="space-y-6">
                       <div className="space-y-2">
                         <Label htmlFor="current-password" className="text-zinc-300">
-                          Current Password
+                          {language === "en" ? "Current Password" : "Mot de passe actuel"}
                         </Label>
                         <Input
                           id="current-password"
@@ -270,7 +288,7 @@ export default function SettingsPage() {
 
                       <div className="space-y-2">
                         <Label htmlFor="new-password" className="text-zinc-300">
-                          New Password
+                          {language === "en" ? "New Password" : "Nouveau mot de passe"}
                         </Label>
                         <Input
                           id="new-password"
@@ -283,7 +301,7 @@ export default function SettingsPage() {
 
                       <div className="space-y-2">
                         <Label htmlFor="confirm-password" className="text-zinc-300">
-                          Confirm New Password
+                          {language === "en" ? "Confirm New Password" : "Confirmer le nouveau mot de passe"}
                         </Label>
                         <Input
                           id="confirm-password"
@@ -309,10 +327,12 @@ export default function SettingsPage() {
                             {isLoading ? (
                               <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Updating Password...
+                                {language === "en" ? "Updating..." : "Mise à jour..."}
                               </>
                             ) : (
-                              "Update Password"
+                              <>
+                                {language === "en" ? "Update Password" : "Mettre à jour le mot de passe"}
+                              </>
                             )}
                           </Button>
                         </div>

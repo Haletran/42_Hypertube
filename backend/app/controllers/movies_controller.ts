@@ -39,18 +39,19 @@ export default class MoviesController {
         const filter = request.input('filter', '');
         const language = request.input('language', defaultLanguage);
         const page = request.input('page', defaultpage);
+        const sort = request.input('sort_by', '');
         try {
             const check = await auth.check();
             if (!check) {
                 throw new Error('unauthorized');
             }
             console.error(request.input);
-            console.error("filter : ", filter );
+            console.error("filter : ", filter, " page : ", page, " sort : ", sort);
             let res;
-            if (filter === '') {
+            if (filter === '' && sort === '') {
                 res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`);
             } else {
-                res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&sort_by=popularity.desc&page=${page}${filter}`);
+                res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&sort_by=${sort}&page=${page}${filter}`);
             }
             const data = await res.json()
             return response.json(data);

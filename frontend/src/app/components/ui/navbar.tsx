@@ -105,7 +105,7 @@ export function Navbar() {
                                                 className="flex items-center px-3 py-2 text-sm rounded-sm hover:bg-zinc-800 focus:bg-zinc-800 outline-none cursor-pointer"
                                             >
                                                 <Settings className="mr-2 h-4 w-4 text-zinc-400" />
-                                                <span>Settings</span>
+                                                <span>{language === "en" ? "Settings" : "Paramètres"}</span>
                                             </Link>
                                         </DropdownMenu.Item>
                                     </div>
@@ -115,7 +115,7 @@ export function Navbar() {
                                             onClick={logout}
                                         >
                                             <LogOut className="mr-2 h-4 w-4" />
-                                            <span>Log out</span>
+                                                <span>{language === "en" ? "Logout" : "Se déconnecter"}</span>
                                         </DropdownMenu.Item>
                                     </div>
                                 </DropdownMenu.Content>

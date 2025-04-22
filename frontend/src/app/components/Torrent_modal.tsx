@@ -51,14 +51,12 @@ export function TorrentModal({
   const [sortBy, setSortBy] = useState<"seeders">("seeders")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
-  // Set the first provider as selected when data loads
   useEffect(() => {
     if (providersTorrents && Object.keys(providersTorrents).length > 0) {
       setSelectedProvider(Object.keys(providersTorrents)[0])
     }
   }, [providersTorrents])
 
-  // Handle escape key press
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -70,7 +68,6 @@ export function TorrentModal({
     return () => window.removeEventListener("keydown", handleEscape)
   }, [isOpen, onClose])
 
-  // Sort torrents based on current sort settings
   const getSortedTorrents = (torrents: Torrent[]) => {
     return [...torrents].sort((a, b) => {
       if (sortBy === "seeders") {
@@ -81,7 +78,6 @@ export function TorrentModal({
     })
   }
 
-  // Get quality badge color
   const getQualityColor = (quality: string) => {
     if (quality?.includes("4K") || quality?.includes("2160")) return "bg-purple-500"
     if (quality?.includes("1080")) return "bg-blue-500"
@@ -92,7 +88,6 @@ export function TorrentModal({
     return "bg-zinc-500"
   }
 
-  // Toggle sort order
   const toggleSort = (field: "seeders") => {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc")
