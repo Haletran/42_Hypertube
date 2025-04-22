@@ -218,22 +218,24 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                         }
                     }}
                 />
-                {/* <div className="flex justify-end">
+                <div className="flex justify-end">
                     <Button
                         onClick={handleSubmitComment}
                         disabled={!newComment.trim() || commentLoading}
                         className="bg-white hover:bg-gray-100 text-black dark:text-black dark:bg-white"
                     >
-                        {commentLoading ? "Posting..." : "Post"}
+                        {commentLoading ? (language === 'en' ? "Posting..." : "Publication...") : (language === 'en' ? "Post" : "Publier")}
                     </Button>
-                </div> */}
+                </div>
             </div>
 
             <div className="space-y-4">
                 <h3 className="font-medium text-gray-400 mb-4">
                     {comments.length === 0
-                        ? "No comments yet"
-                        : `${comments.length} ${comments.length === 1 ? "Comment" : "Comments"}`}
+                        ? language === 'en' ? "No comments yet" : "Pas de commentaires"
+                        : `${comments.length} ${comments.length === 1 
+                            ? language === 'en' ? "Comment" : "Commentaire" 
+                            : language === 'en' ? "Comments" : "Commentaires"}`}
                 </h3>
 
                 {comments.length > 0 &&
@@ -279,11 +281,15 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                                                     <AlertDialog >
                                                         <AlertDialogTrigger>
                                                             <Trash className="h-4 w-4" />
-                                                            <span className="sr-only">Delete</span>
+                                                            <span className="sr-only">
+                                                                {language === 'en' ? "Delete" : "Supprimer"}
+                                                            </span>
                                                         </AlertDialogTrigger>
                                                         <AlertDialogContent className="border-none">
                                                             <AlertDialogHeader>
-                                                                <AlertDialogTitle>Delete Comment</AlertDialogTitle>
+                                                                <AlertDialogTitle>
+                                                                    {language === 'en' ? "Delete Comment" : "Supprimer le commentaire"}
+                                                                </AlertDialogTitle>
                                                                 <AlertDialogDescription>
                                                                     {language === 'en' ? "Are you sure you want to delete this comment?" : "Êtes-vous sûr de vouloir supprimer ce commentaire ?"}
                                                                 </AlertDialogDescription>
