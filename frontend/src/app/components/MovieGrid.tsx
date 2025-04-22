@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { Loader, Filter, X, ChevronDown, Star } from "lucide-react"
+import { Loader, Filter, X, ChevronDown, Star, ArrowUp } from "lucide-react"
 import { MovieCard } from "./MovieCard"
 import { useAuth } from "@/contexts/AuthContext"
 import type { Movie, MovieGridProps } from "@/types"
@@ -13,6 +13,14 @@ import { Button } from "@/app/components/ui/button"
 import { Badge } from "@/app/components/ui/badge"
 import { Separator } from "@/app/components/ui/separator"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/app/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/ui/select"
+
 
 // Default filter values
 const DEFAULT_YEAR = 2025
@@ -26,6 +34,7 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   const [pagenumber, setpagenumber] = useState<number>(1)
   const [firstLoad, setFirstLoad] = useState<boolean>(true)
   const [filter, setFilter] = useState<string>("")
+  const [sort, setSort] = useState<string>("")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   // Track which filters have been explicitly selected by the user
@@ -72,7 +81,7 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
       setLoading(true)
       const filterQuery = filter ? `&filter=${encodeURIComponent(filter)}` : ""
       console.log("Fetching movies with filter:", filter)
-      const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=${language}${filterQuery}`, {
+      const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=${language}&sort_by=${sort}${filterQuery}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
@@ -106,21 +115,17 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     }
   }
 
-  // Update to only apply filters that have been explicitly selected
   const applyFilters = () => {
     let newFilter = ""
 
-    // Only add year filter if it's been explicitly selected
     if (activeFilterTypes.year && tempFilters.year !== DEFAULT_YEAR) {
       newFilter += `&primary_release_year=${tempFilters.year}`
     }
 
-    // Only add rating filter if it's been explicitly selected
     if (activeFilterTypes.rating && tempFilters.rating !== DEFAULT_RATING) {
       newFilter += `&vote_average.gte=${tempFilters.rating}&vote_average.lte=${tempFilters.rating}`
     }
 
-    // Only add genres filter if any genres have been selected
     if (tempFilters.genres.length > 0) {
       newFilter += `&with_genres=${tempFilters.genres.join(",")}`
       setActiveFilterTypes((prev) => ({ ...prev, genres: true }))
@@ -133,13 +138,11 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     setIsMenuOpen(false)
   }
 
-  // Update to mark year as explicitly selected when changed
   const handleYearChange = (value: number) => {
     setTempFilters((prev) => ({ ...prev, year: value }))
     setActiveFilterTypes((prev) => ({ ...prev, year: true }))
   }
 
-  // Update to mark rating as explicitly selected when changed
   const handleRatingChange = (value: number) => {
     setTempFilters((prev) => ({ ...prev, rating: value }))
     setActiveFilterTypes((prev) => ({ ...prev, rating: true }))
@@ -150,7 +153,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
       const isSelected = prev.genres.includes(genreId)
       if (isSelected) {
         const newGenres = prev.genres.filter((id) => id !== genreId)
-        // If we removed the last genre, update activeFilterTypes
         if (newGenres.length === 0) {
           setActiveFilterTypes((prevTypes) => ({ ...prevTypes, genres: false }))
         }
@@ -183,7 +185,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     } else if (type === "genre" && genreId) {
       newTempFilters.genres = newTempFilters.genres.filter((id) => id !== genreId)
 
-      // If we removed the last genre, update activeFilterTypes
       if (newTempFilters.genres.length === 0) {
         setActiveFilterTypes((prev) => ({ ...prev, genres: false }))
       }
@@ -231,10 +232,16 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     setpagenumber(1)
   }
 
-  useEffect(() => {
+  const applySort = (value: string) => {
+    setSort(value)
+    setDiscover([])
     setpagenumber(1)
-    fetchDiscover()
-  }, [filter])
+  }
+
+  // useEffect(() => {
+  //   setpagenumber(1)
+  //   fetchDiscover()
+  // }, [filter, sort])
 
   useEffect(() => {
     const test = async () => {
@@ -250,9 +257,8 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     }, 500)
     test()
     return () => clearTimeout(debounceTimeout)
-  }, [onMovieSelect])
+  }, [onMovieSelect, filter, sort])
 
-  // Infinite scroll
   useEffect(() => {
     if (!observerRef.current) {
       return
@@ -307,163 +313,207 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
 
       {discover.length > 0 && (
         <>
-            <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-white">
               {language === "en" ? "Discover Movies" : "Découvrir des films"}
             </h1>
             <div className="flex items-center gap-2">
-              <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                variant="outline"
-                className="flex items-center gap-2 bg-white border border-zinc-800 hover:bg-gray-200 text-black rounded-md px-4 py-2 transition-all duration-200"
-                >
-                <Filter className="h-4 w-4" />
-                <span>{language === "en" ? "Filters" : "Filtres"}</span>
-                <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="w-[340px] p-0 bg-zinc-900 border border-zinc-800 shadow-xl shadow-black/50 rounded-md overflow-hidden mr-20"
-              >
-                <div className="p-4 border-b border-zinc-800">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">
-                  {language === "en" ? "Filter Movies" : "Filtrer les films"}
-                  </h3>
-                  {activeFilterCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearAllFilters}
-                    className="h-8 px-2 text-zinc-400 hover:text-white hover:bg-zinc-900"
+              <Select onValueChange={applySort}>
+                <SelectTrigger className="w-[180px] focus:ring-0 focus:outline-none bg-zinc-900 text-white border border-zinc-800 hover:bg-zinc-800">
+                  <SelectValue placeholder={language === "en" ? "Sort by" : "Trier par"} />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border border-zinc-800 text-white">
+                  <SelectItem
+                    value="popularity.desc"
+                    className={`flex items-center gap-2 ${sort === "popularity.desc" ? "bg-zinc-700" : ""}`}
                   >
-                    <X className="h-4 w-4 mr-1" />
-                    {language === "en" ? "Clear" : "Effacer"}
+                    {language === "en" ? "Popularity Desc" : "Popularité Desc"}
+                  </SelectItem>
+                  <SelectItem
+                    value="popularity.asc"
+                    className={sort === "popularity.asc" ? "bg-zinc-700" : ""}
+                  >
+                    {language === "en" ? "Popularity Asc" : "Popularité Asc"}
+                  </SelectItem>
+                  <SelectItem
+                    value="title.desc"
+                    className={sort === "title.desc" ? "bg-zinc-700" : ""}
+                  >
+                    {language === "en" ? "Title Desc" : "Titre Desc"}
+                  </SelectItem>
+                  <SelectItem
+                    value="title.asc"
+                    className={sort === "title.asc" ? "bg-zinc-700" : ""}
+                  >
+                    {language === "en" ? "Title Asc" : "Titre Asc"}
+                  </SelectItem>
+                  <SelectItem
+                    value="revenue.desc"
+                    className={sort === "revenue.desc" ? "bg-zinc-700" : ""}
+                  >
+                    {language === "en" ? "Revenue Desc" : "Revenu Desc"}
+                  </SelectItem>
+                  <SelectItem
+                    value="revenue.asc"
+                    className={sort === "revenue.asc" ? "bg-zinc-700" : ""}
+                  >
+                    {language === "en" ? "Revenue Asc" : "Revenu Asc"}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 bg-white border border-zinc-800 hover:bg-gray-200 text-black rounded-md px-4 py-2 transition-all duration-200"
+                  >
+                    <Filter className="h-4 w-4" />
+                    <span>{language === "en" ? "Filters" : "Filtres"}</span>
+                    <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
                   </Button>
-                  )}
-                </div>
-                <p className="text-sm text-zinc-500 mt-1">
-                  {language === "en"
-                  ? "Select your filters to update results"
-                  : "Sélectionnez vos filtres pour mettre à jour les résultats"}
-                </p>
-                </div>
-
-                <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
-                {/* Year Filter Section */}
-                <div className="p-4 space-y-4">
-                  <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-medium text-white">{language === "en" ? "Year" : "Année"}</h4>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                    className={`bg-white text-black hover:bg-zinc-200 ${activeFilterTypes.year ? "border-2 border-white" : ""
-                      }`}
-                    >
-                    {tempFilters.year}
-                    </Badge>
-                  </div>
-                  </div>
-                  <Slider
-                  defaultValue={[tempFilters.year]}
-                  value={[tempFilters.year]}
-                  min={1920}
-                  max={2025}
-                  step={1}
-                  className="py-4"
-                  onValueChange={(value) => handleYearChange(value[0])}
-                  />
-                  <div className="flex justify-between text-xs text-zinc-500 px-1">
-                  <span>1920</span>
-                  <span>2025</span>
-                  </div>
-                </div>
-
-                <Separator className="bg-zinc-800" />
-
-                {/* Rating Filter Section */}
-                <div className="p-4 space-y-4">
-                  <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-medium text-white">
-                    {language === "en" ? "Minimum Rating" : "Note minimale"}
-                  </h4>
-                  {tempFilters.rating !== DEFAULT_RATING && (
-                    <div className="flex items-center gap-2">
-                    <Badge
-                      className={`bg-white text-black hover:bg-zinc-200 ${activeFilterTypes.rating ? "border-2 border-white" : ""
-                      }`}
-                    >
-                      {tempFilters.rating}/10
-                    </Badge>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="w-[340px] p-0 bg-zinc-900 border border-zinc-800 shadow-xl shadow-black/50 rounded-md overflow-hidden mr-20"
+                >
+                  <div className="p-4 border-b border-zinc-800">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-white">
+                        {language === "en" ? "Filter Movies" : "Filtrer les films"}
+                      </h3>
+                      {activeFilterCount > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearAllFilters}
+                          className="h-8 px-2 text-zinc-400 hover:text-white hover:bg-zinc-900"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          {language === "en" ? "Clear" : "Effacer"}
+                        </Button>
+                      )}
                     </div>
-                  )}
+                    <p className="text-sm text-zinc-500 mt-1">
+                      {language === "en"
+                        ? "Select your filters to update results"
+                        : "Sélectionnez vos filtres pour mettre à jour les résultats"}
+                    </p>
                   </div>
-                  <div className="flex items-center justify-center py-4">
-                  {[...Array(10)].map((_, index) => (
-                    <button
-                    key={index}
-                    type="button"
-                    onClick={() => handleRatingChange(index + 1)}
-                    className="px-1 focus:outline-none transition-all duration-200 hover:scale-125 relative"
-                    >
-                    <Star
-                      fill={index < tempFilters.rating ? "#FFFFFF" : "none"}
-                      className={index < tempFilters.rating ? "text-white" : "text-zinc-700"}
-                      size={22}
-                    />
-                    {index < tempFilters.rating && (
-                      <span className="absolute inset-0 animate-pulse opacity-30 rounded-full bg-white blur-sm -z-10"></span>
-                    )}
-                    </button>
-                  ))}
-                  </div>
-                </div>
 
-                <Separator className="bg-zinc-800" />
+                  <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                    {/* Year Filter Section */}
+                    <div className="p-4 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-medium text-white">{language === "en" ? "Year" : "Année"}</h4>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            className={`bg-white text-black hover:bg-zinc-200 ${activeFilterTypes.year ? "border-2 border-white" : ""
+                              }`}
+                          >
+                            {tempFilters.year}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Slider
+                        defaultValue={[tempFilters.year]}
+                        value={[tempFilters.year]}
+                        min={1920}
+                        max={2025}
+                        step={1}
+                        className="py-4"
+                        onValueChange={(value) => handleYearChange(value[0])}
+                      />
+                      <div className="flex justify-between text-xs text-zinc-500 px-1">
+                        <span>1920</span>
+                        <span>2025</span>
+                      </div>
+                    </div>
 
-                {/* Genres Filter Section */}
-                <div className="p-4 space-y-4">
-                  <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-medium text-white">{language === "en" ? "Genres" : "Genres"}</h4>
-                  <Badge className="bg-white text-black hover:bg-zinc-200">{tempFilters.genres.length}</Badge>
-                  </div>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                  {genres.map((genre) => (
-                    <button
-                    key={genre.id}
-                    onClick={() => toggleGenre(genre.id)}
-                    className={`group px-3 py-1.5 rounded-md text-sm transition-all duration-200 flex items-center gap-1.5
+                    <Separator className="bg-zinc-800" />
+
+                    {/* Rating Filter Section */}
+                    <div className="p-4 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-medium text-white">
+                          {language === "en" ? "Minimum Rating" : "Note minimale"}
+                        </h4>
+                        {tempFilters.rating !== DEFAULT_RATING && (
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              className={`bg-white text-black hover:bg-zinc-200 ${activeFilterTypes.rating ? "border-2 border-white" : ""
+                                }`}
+                            >
+                              {tempFilters.rating}/10
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-center py-4">
+                        {[...Array(10)].map((_, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => handleRatingChange(index + 1)}
+                            className="px-1 focus:outline-none transition-all duration-200 hover:scale-125 relative"
+                          >
+                            <Star
+                              fill={index < tempFilters.rating ? "#FFFFFF" : "none"}
+                              className={index < tempFilters.rating ? "text-white" : "text-zinc-700"}
+                              size={22}
+                            />
+                            {index < tempFilters.rating && (
+                              <span className="absolute inset-0 animate-pulse opacity-30 rounded-full bg-white blur-sm -z-10"></span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Separator className="bg-zinc-800" />
+
+                    {/* Genres Filter Section */}
+                    <div className="p-4 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-medium text-white">{language === "en" ? "Genres" : "Genres"}</h4>
+                        <Badge className="bg-white text-black hover:bg-zinc-200">{tempFilters.genres.length}</Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {genres.map((genre) => (
+                          <button
+                            key={genre.id}
+                            onClick={() => toggleGenre(genre.id)}
+                            className={`group px-3 py-1.5 rounded-md text-sm transition-all duration-200 flex items-center gap-1.5
                       ${tempFilters.genres.includes(genre.id)
-                      ? "bg-white text-black"
-                      : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                      }`}
-                    >
-                    <span
-                      className={`w-3.5 h-3.5 rounded-sm flex items-center justify-center border transition-all
+                                ? "bg-white text-black"
+                                : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                              }`}
+                          >
+                            <span
+                              className={`w-3.5 h-3.5 rounded-sm flex items-center justify-center border transition-all
                       ${tempFilters.genres.includes(genre.id)
-                        ? "border-black bg-black"
-                        : "border-zinc-600 group-hover:border-zinc-400"
-                      }`}
-                    >
-                      {tempFilters.genres.includes(genre.id) && <X className="w-2.5 h-2.5 text-white" />}
-                    </span>
-                    {genre.name}
-                    </button>
-                  ))}
+                                  ? "border-black bg-black"
+                                  : "border-zinc-600 group-hover:border-zinc-400"
+                                }`}
+                            >
+                              {tempFilters.genres.includes(genre.id) && <X className="w-2.5 h-2.5 text-white" />}
+                            </span>
+                            {genre.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                </div>
 
-                <div className="p-4 border-t border-zinc-800 flex justify-end">
-                <Button onClick={applyFilters} className="bg-white hover:bg-zinc-200 text-black">
-                  {language === "en" ? "Apply Filters" : "Appliquer les filtres"}
-                </Button>
-                </div>
-              </DropdownMenuContent>
+                  <div className="p-4 border-t border-zinc-800 flex justify-end">
+                    <Button onClick={applyFilters} className="bg-white hover:bg-zinc-200 text-black">
+                      {language === "en" ? "Apply Filters" : "Appliquer les filtres"}
+                    </Button>
+                  </div>
+                </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            </div>
+          </div>
 
           {activeFilterCount > 0 && (
             <div className="mb-6">
