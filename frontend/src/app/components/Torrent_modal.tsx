@@ -128,7 +128,7 @@ const formatFileSize = (sizeStr: string): string => {
             {/* Header */}
             <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
               <h2 className="text-xl font-bold text-zinc-100">
-                Sources for <span className="text-blue-400">{movieTitle}</span>
+                <span className="text-blue-400">{movieTitle}</span>
               </h2>
               <Button
                 variant="ghost"
