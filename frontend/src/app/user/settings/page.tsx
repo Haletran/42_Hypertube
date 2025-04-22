@@ -23,7 +23,7 @@ export default function SettingsPage() {
   const [selectedAvatar, setSelectedAvatar] = useState(0)
   const [dialogOpen, setDialogOpen] = useState(false)
   const { user, newEmail, newUsername, setEmail, setUsername, error, setError } = useAuth();
-  const {username = '', email = '', profilePicture = '', language} = user?.user || {}
+  const {username = '', email = '', profilePicture = '', language, auth_method} = user?.user || {}
 
   const handleAvatarSelect = (index: number) => {
     setSelectedAvatar(index)
@@ -107,6 +107,8 @@ export default function SettingsPage() {
                 <User className="h-4 w-4 mr-2" />
                 Profile
               </TabsTrigger>
+              {auth_method === "local" && (
+
               <TabsTrigger
                 value="password"
                 className="data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-100"
@@ -114,6 +116,7 @@ export default function SettingsPage() {
                 <KeyRound className="h-4 w-4 mr-2" />
                 {language === "en" ? "Password" : "Mot de passe"}
               </TabsTrigger>
+              )}
             </TabsList>
 
             <div className="mt-6">
@@ -259,7 +262,8 @@ export default function SettingsPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
-
+              
+              {auth_method === "local" && (
               <TabsContent value="password" className="space-y-6">
                 <Card className="bg-zinc-900 border-zinc-800">
                   <CardContent className="pt-6">
@@ -341,6 +345,7 @@ export default function SettingsPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
+              )}
             </div>
           </Tabs>
         </div>

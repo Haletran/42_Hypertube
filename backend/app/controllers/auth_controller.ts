@@ -1,5 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { RegisterValidator, LoginValidator, UpdateValidator } from '#validators/register_user';
+import { RegisterValidator, LoginValidator, UpdateValidator, ResetPasswordValidator } from '#validators/register_user';
 import User from '#models/user'
 import axios from 'axios'
 import { randomBytes } from 'crypto'
@@ -14,11 +14,8 @@ export default class AuthController {
         if (!user) {
           return response.status(404).send({ message: 'Utilisateur non trouvé' })
         }
-    
         const token = randomBytes(32).toString('hex')
-
         const expiresAt = DateTime.fromJSDate(new Date(Date.now() + 60 * 60 * 1000));
-    
         user.merge({
             reset_token: token,
             reset_token_expires: expiresAt,
@@ -90,36 +87,42 @@ export default class AuthController {
         const token = request.input('token')
         const email = request.input('email')
 
+        try {
+            const user = await User.findBy('email', email)
+            if (!user) {
+                throw new Error('Utilisateur non trouvé')
+            }
+            if (user.reset_token !== token) {
+                throw new Error('Token invalide')
+            }
+            if (user.auth_method !== 'local') {
+                throw new Error(`Account is link to ${user.auth_method} cannot reset password`)
+             }
 
-        console.log('email', email)
-        const user = await User.findBy('email', email)
-        if (!user) {
-            return response.status(404).send({ message: 'Utilisateur non trouvé' })
+            const now = DateTime.now()
+            if (user.reset_token_expires && user.reset_token_expires < now) {
+                throw new Error('Token expiré')
+            }
+            const password = request.input('password')
+            if (!password) {
+                throw new Error('Mot de passe requis')
+            }
+            const payload = await ResetPasswordValidator.validate({ password })
+            user.password = password
+            user.reset_token = null
+            user.reset_token_expires = null
+            await user.save()
+            return response.ok({ message: 'Mot de passe réinitialisé avec succès' })
+        } catch (error) {
+            console.error('Reset password failed:', error);
+            return response.status(400).json({ error: 'Failed to reset password' });
         }
-        if (user.reset_token !== token) {
-            return response.status(400).send({ message: 'Token invalide' })
-        }
-
-        const now = DateTime.now()
-        if (user.reset_token_expires && user.reset_token_expires < now) {
-            return response.status(400).send({ message: 'Token expiré' })
-        }
-        const password = request.input('password')
-        if (!password) {
-            return response.status(400).send({ message: 'Mot de passe requis' })
-        }
-        user.password = password
-        user.reset_token = null
-        user.reset_token_expires = null
-        await user.save()
-        return response.ok({ message: 'Mot de passe réinitialisé avec succès' })
     }
 
     public async register({ request }: HttpContext) {
         try {
             const data = request.all();
             const payload = await RegisterValidator.validate(data);
-            console.error('payload', payload)
             const user = await User.create(payload);
             await user.save();
             const token = await User.accessTokens.create(user)
@@ -263,7 +266,6 @@ export default class AuthController {
             if (!check) {
                 return response.status(401).json({ error: 'Unauthorized' });
             }
-
             const user = auth.user!;
             await User.accessTokens.delete(user, user.currentAccessToken.identifier);
             return response.json({ message: 'Successfully logged out' });

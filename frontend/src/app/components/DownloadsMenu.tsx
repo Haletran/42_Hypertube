@@ -75,6 +75,8 @@ useEffect(() => {
     switch (status) {
       case "downloading":
         return "bg-blue-500"
+      case "converting":
+        return "bg-orange-500"
       case "completed":
         return "bg-green-500"
       case "paused":

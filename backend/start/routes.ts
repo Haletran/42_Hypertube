@@ -69,7 +69,6 @@ router.group(() => {
     .where('id', {
       match: /^[0-9]+$/,
     })
-  router.get('/watch/:id', [MoviesController, 'watch'])
   router.get('/search/:name', [MoviesController, 'search'])
   router.delete('/:id', [MoviesController, 'deleteMovie'])
 }).prefix('/api/movies')
