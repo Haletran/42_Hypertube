@@ -329,6 +329,7 @@ async def handle_torrent(magnet: str, stream_id: str):
         extracted_subs = await extract_subtitles(os.path.join(download_path, handle.get_torrent_info().name()), download_path)
         logging.info(f"Sous-titres extraits: {extracted_subs}")
         
+        await r.set(f'stream:{stream_id}:status', 'converting')
         await convert_to_mp4(video_file, download_path, stream_id)
 
         await r.set(f'stream:{stream_id}:status', 'complete')

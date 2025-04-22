@@ -38,6 +38,13 @@ const loginSchema = z.object({
 });
 
 
+const resetPasswordSchema = z.object({
+  password : z.string()
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/, 
+      { message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character" }),
+    })
+
 
 type RegisterData = z.infer<typeof registerSchema>;
 type UpdateData = z.infer<typeof updateSchema>;
@@ -59,6 +66,7 @@ interface AuthContextProps {
   getById: (id: number) => Promise<any>;
   update: (username: string, email: string, password: string, old_password: string, profilePicture: string) => Promise<any>;
   register: (username: string, email: string, first_name: string, last_name: string, password: string) => Promise<any>;
+  handleResetPassword: (token: string, password: string, confirmPassword: string, email: string) => Promise<any>;
   changeLanguage: (language: string) => Promise<any>;
   logout: () => void;
 }
@@ -83,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           error: errors
         };
       }
-
+      console.log("im here")
       const response = await api.post('/api/auth/login', { username, password });
       if (response.status !== 200) {
         return { 
@@ -113,6 +121,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
     };
   };
+
+  const handleResetPassword = async (token: string, password: string, confirmPassword: string, email: string) => {
+    try {
+      const validationResult = resetPasswordSchema.safeParse({ password });
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(err => err.message).join(', ');
+        return { 
+          success: false, 
+          error: errors
+        };
+      }
+      if (password !== confirmPassword) {
+        throw new Error("Passwords do not match")
+      }
+      if (!token) {
+        throw new Error("Invalid or expired reset token")
+      }
+  
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password, email}),
+      })
+  
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.message || 'Failed to reset password')
+      }
+      return { success: true };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.errors || 'Reset password failed'
+      };
+    }
+  }
 
   const register = async (username: string, email: string, first_name: string, last_name: string, password: string) => {
     try {
@@ -273,7 +317,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   
   return (
-    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, getById, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
+    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, getById, handleResetPassword, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
       {children}
     </AuthContext.Provider>
   );

@@ -38,6 +38,8 @@ watch videos.
 - [ ] Add show nsfw content option
 - [x] Make the frontend rules for password and everything else the same in the backend
 - [x] Make the traduction for every page
+- [ ] Delete the token when the user logout
+
 
 ## Setup the Project
 

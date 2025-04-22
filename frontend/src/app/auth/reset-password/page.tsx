@@ -9,6 +9,8 @@ import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { Alert, AlertDescription } from "@/app/components/ui/alert"
+import { useAuth } from "@/contexts/AuthContext"
+import { set } from "zod"
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -23,47 +25,38 @@ export default function ResetPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const { handleResetPassword } = useAuth()
+  
+  const ResetPassword = async () => {
+    setIsLoading(true)
+    setError([])
 
-  const handleResetPassword = async () => {
+    if (!token || !email) {
+      setError(["Invalid token or email"])
+      setIsLoading(false)
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError(["Passwords do not match"])
+      setIsLoading(false)
+      return
+    }
     try {
-      setIsLoading(true)
-      setError([])
-  
-      if (!password) {
-        throw new Error("Please enter a new password")
+      const test = await handleResetPassword(token, password, confirmPassword, email)
+      if (test.success == false) {
+          console.log("Error resetting password:", test)
+          setError([test.error])
+          return
       }
-  
-      if (password.length < 8) {
-        throw new Error("Password must be at least 8 characters long")
-      }
-  
-      if (password !== confirmPassword) {
-        throw new Error("Passwords do not match")
-      }
-  
-      if (!token) {
-        throw new Error("Invalid or expired reset token")
-      }
-  
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password, email}),
-      })
-  
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Failed to reset password')
-      }
-  
       setIsSubmitted(true)
-    } catch (error: any) {
-      setError([error.message || error.toString()])
+    } catch (err: any) {
+      console.error("Error resetting password:", err)
+      setError(err);
     } finally {
       setIsLoading(false)
     }
   }
-  
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
@@ -167,7 +160,7 @@ export default function ResetPasswordPage() {
                     className="border-zinc-800 bg-zinc-900 text-zinc-100 focus-visible:ring-zinc-700 placeholder:text-zinc-500 pr-10"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        handleResetPassword()
+                        ResetPassword()
                       }
                     }}
                   />
@@ -186,7 +179,7 @@ export default function ResetPasswordPage() {
 
               <Button
                 className="w-full bg-zinc-100 text-zinc-900 hover:bg-zinc-200 focus:ring-zinc-300"
-                onClick={handleResetPassword}
+                onClick={ResetPassword}
                 disabled={isLoading}
               >
                 {isLoading ? (
