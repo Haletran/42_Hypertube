@@ -107,7 +107,7 @@ export default class AuthController {
             if (!password) {
                 throw new Error('Mot de passe requis')
             }
-            const payload = await ResetPasswordValidator.validate({ email, password })
+            const payload = await ResetPasswordValidator.validate({ password })
             user.password = password
             user.reset_token = null
             user.reset_token_expires = null

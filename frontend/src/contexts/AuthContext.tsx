@@ -91,7 +91,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           error: errors
         };
       }
-      console.log("im here")
       const response = await api.post('/api/auth/login', { username, password });
       if (response.status !== 200) {
         return { 
