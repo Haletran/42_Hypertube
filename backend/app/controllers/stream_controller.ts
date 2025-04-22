@@ -10,8 +10,6 @@ export default class StreamController {
   public async start({ request, response, auth }: HttpContext) {
     const { magnet, streamId } = request.only(['magnet', 'streamId'])
 
-    // let magnet = "magnet:?xt=urn:btih:79816060ea56d56f2a2148cd45705511079f9bca&dn=TPB.AFK.2013.720p.h264-SimonKlose&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Fopen.demonii.com%3A1337&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Fexodus.desync.com%3A6969"
-    // let streamId = "50275"
     try {
       const check = await auth.check();
       if (!check) {

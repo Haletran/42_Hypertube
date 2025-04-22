@@ -27,83 +27,48 @@ DOWNLOAD_DIR = "./data"
 HLS_DIR = "./data/hls"
 REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
 
-def detect_hardware_acceleration():
-    """Détecte les capacités d'accélération matérielle disponibles"""
-    try:
-        if shutil.which('nvidia-smi'):
-            return 'nvidia'
-        if os.path.exists('/dev/dri/renderD128'):
-            return 'intel'
-        if os.path.exists('/dev/kfd'):
-            return 'amd'
-        if subprocess.check_output(['uname', '-m']).decode().strip() == 'arm64':
-            return 'apple'
-    except Exception:
-        pass
-    return 'software'
-
 def get_ffmpeg_command(input_file, output_file, hls=False):
-    """Génère la commande FFmpeg optimisée pour le hardware"""
-    hw_type = detect_hardware_acceleration()
+    """Génère la commande FFmpeg optimisée pour le traitement et la conversion de fichiers vidéo dans un environnement Docker"""
+    cmd = ['ffmpeg', '-y']  # Initialisation de la commande FFmpeg avec l'option -y (yes) pour écraser automatiquement les fichiers de sortie existants sans demander de confirmation
     
-    base_params = {
-        'nvidia': {
-            'vcodec': 'h264_nvenc',
-            'params': ['-preset', 'p6', '-cq', '23', '-rc-lookahead', '0']
-        },
-        'intel': {
-            'vcodec': 'h264_qsv',
-            'params': ['-global_quality', '23', '-look_ahead', '0']
-        },
-        'amd': {
-            'vcodec': 'h264_amf',
-            'params': ['-quality', 'speed', '-rc', 'cqp', '-qp_i', '23', '-qp_p', '23']
-        },
-        'apple': {
-            'vcodec': 'h264_videotoolbox',
-            'params': ['-q:v', '75']
-        },
-        'software': {
-            'vcodec': 'libx264' if not hls else 'libx264',
-            'params': ['-preset', 'fast', '-crf', '23'] if not hls else ['-preset', 'fast']
-        }
-    }
-
-    config = base_params.get(hw_type, base_params['software'])
-    cmd = ['ffmpeg', '-y']
-
-    if hw_type != 'software':
-        cmd += ['-hwaccel', 'auto']
-
-    cmd += ['-i', input_file]
+    cmd += ['-analyzeduration', '2147483647', '-probesize', '2147483647']  # Augmente la durée d'analyse et la taille de sondage au maximum pour permettre une détection précise du format, surtout pour les fichiers complexes ou endommagés
+    cmd += ['-i', input_file]  # Spécifie le chemin complet du fichier d'entrée à traiter avec FFmpeg
     
     if not hls:
         cmd += [
-            '-profile:v', 'main',
-            '-level', '4.0',
-            '-pix_fmt', 'yuv420p',
-            '-movflags', '+faststart',
-            '-c:s', 'mov_text'
-            
-        ]
-
-    cmd += ['-c:v', config['vcodec']] + config['params']
-    cmd += ['-c:a', 'aac', '-b:a', '128k']
-
-    if hls:
-        cmd += [
-            '-hls_time', '5',
-            '-hls_playlist_type', 'event',
-            '-hls_flags', 'independent_segments',
-            '-f', 'hls',
-            '-map', '0',
-            '-force_key_frames', 'expr:gte(t,n_forced*2)',
-            '-max_muxing_queue_size', '1024'
+            '-profile:v', 'main',  # Utilise le profil "main" pour l'encodage H.264, offrant un bon équilibre entre efficacité de compression, qualité visuelle et compatibilité avec les appareils modernes
+            '-level', '4.0',  # Définit le niveau de compatibilité H.264 à 4.0, garantissant la lecture sur la plupart des appareils tout en permettant une résolution et un débit suffisants
+            '-pix_fmt', 'yuv420p',  # Utilise le format de pixel YUV 4:2:0, standard de l'industrie assurant une compatibilité maximale avec les lecteurs et navigateurs
+            '-c:s', 'mov_text',  # Configure le codec de sous-titres au format mov_text, format natif pour les conteneurs MP4
+            '-c:v', 'libx264',  # Utilise le codec vidéo H.264 (via libx264), offrant un excellent compromis entre qualité et taille de fichier
+            '-preset', 'fast',  # Sélectionne le préréglage d'encodage "fast", privilégiant la vitesse d'encodage tout en maintenant une qualité visuelle satisfaisante
+            '-crf', '23',  # Définit le facteur de qualité constante à 23 (échelle de 0 à 51, où 0 est sans perte et 51 la qualité la plus basse), offrant un bon équilibre entre qualité et taille
+            '-c:a', 'aac',  # Utilise le codec audio AAC, standard de l'industrie pour la compression audio numérique avec une excellente qualité à des débits modérés
+            '-b:a', '128k',  # Fixe le débit audio à 128 kilobits par seconde, offrant une bonne qualité pour la plupart des contenus tout en limitant la taille du fichier
+            '-f', 'mp4'  # Force explicitement le format de conteneur de sortie à MP4, garantissant la compatibilité avec la majorité des lecteurs et plateformes
         ]
     else:
-        cmd += ['-f', 'mp4']
+        cmd += [
+            '-c:v', 'libx264',  # Utilise le codec vidéo H.264 (via libx264), standard de l'industrie pour le streaming adaptatif
+            '-preset', 'veryfast',  # Utilise le préréglage d'encodage "veryfast" pour accélérer considérablement le processus d'encodage, crucial pour les applications de streaming en temps réel
+            '-crf', '23',  # Maintient un facteur de qualité constante de 23, garantissant une qualité visuelle satisfaisante tout en limitant le débit
+            '-profile:v', 'baseline',  # Utilise le profil "baseline" de H.264, le plus compatible mais moins efficace, pour assurer la lecture sur les appareils anciens ou à faible puissance
+            '-level', '3.0',  # Définit un niveau de compatibilité H.264 plus bas (3.0) pour maximiser la compatibilité avec tous les types d'appareils, y compris mobiles
+            '-pix_fmt', 'yuv420p',  # Utilise le format de pixel YUV 4:2:0, assurant une compatibilité universelle pour le streaming adaptatif
+            '-c:a', 'aac',  # Utilise le codec audio AAC, standard pour le streaming adaptatif offrant un bon équilibre entre qualité et débit
+            '-b:a', '128k',  # Fixe le débit audio à 128 kilobits par seconde, adapté pour le streaming sur différentes conditions de réseau
+            '-ac', '2',  # Configure l'audio en stéréo (2 canaux), format le plus compatible et suffisant pour la plupart des contenus
+            '-hls_time', '4',  # Définit la durée de chaque segment HLS à 4 secondes, un bon compromis entre réactivité du streaming et surcharge serveur
+            '-hls_list_size', '0',  # Conserve tous les segments dans la playlist (0 = illimité), permettant la lecture complète du média après le chargement
+            '-hls_segment_type', 'mpegts',  # Utilise le format MPEG Transport Stream pour les segments, offrant une meilleure compatibilité et récupération d'erreur
+            '-hls_playlist_type', 'event',  # Configure la playlist en mode "event", permettant d'ajouter des segments au fur et à mesure sans modifier les segments existants
+            '-hls_flags', 'independent_segments',  # Garantit que chaque segment est décodable indépendamment, améliorant les performances de recherche et la récupération d'erreur
+            '-f', 'hls',  # Spécifie explicitement le format de sortie HLS (HTTP Live Streaming), le standard d'Apple pour le streaming adaptatif
+            '-map', '0:v:0',  # Sélectionne uniquement le premier flux vidéo du fichier source pour l'inclure dans la sortie
+            '-map', '0:a:0?',  # Tente d'inclure le premier flux audio du fichier source (le '?' rend cette sélection optionnelle en cas d'absence)
+            '-max_muxing_queue_size', '4096'  # Augmente la taille de la file d'attente de multiplexage pour éviter les erreurs avec les fichiers volumineux ou complexes
+        ]
 
-    #cmd += ['-threads', '7']
     cmd.append(output_file)
     return cmd
 
