@@ -11,10 +11,12 @@ export default async function NotFound() {
   const gifUrl = await fetchGif();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-auto px-4 text-center">
-      <h1 className="text-6xl font-bold mb-2">404</h1>
-      <h2 className="text-2xl font-semibold mb-4">Page Not Found</h2>
-      <Image src={gifUrl} alt="404" width={400} height={400} className="mb-4" />
+    <div className="flex flex-col items-center justify-center w-full mt-50 px-4 text-center">
+      <div className="flex flex-col items-center justify-center">
+        <Image src={gifUrl} alt="404" width={600} height={600} className="mb-4" />
+        <h1 className="text-6xl font-bold mb-2">404</h1>
+        <h2 className="text-2xl font-semibold mb-4">Page Not Found</h2>
+      </div>
     </div>
   )
 }
