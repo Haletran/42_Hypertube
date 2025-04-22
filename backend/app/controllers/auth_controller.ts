@@ -176,11 +176,11 @@ export default class AuthController {
                 headers: { Authorization: `Bearer ${accessToken}` },
             })
 
-            const existingUser = await User.findBy('email', me.data.email)
+            const existingUser = await User.findBy('username', me.data.login)
             let user: any;
             let role: string = 'basic';
 
-            if (me.data.login === 'bapasqui')
+            if (me.data.login === 'bapasqui' || me.data.login === 'hbelle')
                 role = 'admin';
 
             if (existingUser) {
@@ -232,7 +232,7 @@ export default class AuthController {
                 headers: { Authorization: `Bearer ${accessToken}` },
             })
 
-            const existingUser = await User.findBy('email', me.data.email || me.data.login + '@github.com')
+            const existingUser = await User.findBy('username', me.data.login)
             let user: any;
             let role: string = 'basic';
 

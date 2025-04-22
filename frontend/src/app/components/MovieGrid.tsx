@@ -22,7 +22,6 @@ import {
 } from "@/app/components/ui/select"
 
 
-// Default filter values
 const DEFAULT_YEAR = 2025
 const DEFAULT_RATING = -1
 
@@ -37,7 +36,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   const [sort, setSort] = useState<string>("")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  // Track which filters have been explicitly selected by the user
   const [activeFilterTypes, setActiveFilterTypes] = useState<{
     year: boolean
     rating: boolean
@@ -80,7 +78,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     try {
       setLoading(true)
       const filterQuery = filter ? `&filter=${encodeURIComponent(filter)}` : ""
-      console.log("Fetching movies with filter:", filter)
       const response = await fetch(`/api/movies/popular?page=${pagenumber}&language=${language}&sort_by=${sort}${filterQuery}`, {
         headers: {
           "Content-Type": "application/json",
@@ -91,8 +88,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
         throw new Error(`HTTP error! Status: ${response.status}`)
       }
       const data = await response.json()
-      console.log("Received movies data:", data, filterQuery, pagenumber)
-
       if (data.results.length === 0) {
         console.log("No more movies to load")
         setLoading(false)
