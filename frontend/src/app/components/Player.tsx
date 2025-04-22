@@ -356,7 +356,10 @@ export default function Player({ streamId }: { streamId: string }) {
         onLoadedData={() => {
           const video = videoRef.current;
           if (!video) return;
-          video.play().catch(err => console.error("Autoplay failed:", err));
+          video.play().catch(err => {
+            console.error("Autoplay failed:", err);
+            setLoading(false);
+          });
         }}
         onPlaying={() => setLoading(false)}
         onError={() => {
