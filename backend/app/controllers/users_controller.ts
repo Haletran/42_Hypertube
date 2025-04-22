@@ -16,10 +16,10 @@ export default class UsersController {
       if (data.old_password) {
         await User.verifyCredentials(userWithPassword.email, data.old_password);
       }
-      if (data.password) userWithPassword.password = data.password;
+      if (data.password && userWithPassword.auth_method == 'local') userWithPassword.password = data.password;
       if (data.email) userWithPassword.email = data.email;
-      if (data.username) userWithPassword.username = data.username;
       if (data.profilePicture) userWithPassword.profile_picture = data.profilePicture;
+      if (data.username && userWithPassword.auth_method == 'local') userWithPassword.username = data.username;
       if (data.language) userWithPassword.language = data.language;
       await userWithPassword.save();
       return { message: 'User updated successfully' };

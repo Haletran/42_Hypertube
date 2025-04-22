@@ -23,7 +23,7 @@ export default function SettingsPage() {
   const [selectedAvatar, setSelectedAvatar] = useState(0)
   const [dialogOpen, setDialogOpen] = useState(false)
   const { user, newEmail, newUsername, setEmail, setUsername, error, setError } = useAuth();
-  const {username = '', email = '', profilePicture = '', language, auth_method} = user?.user || {}
+  const {username = '', email = '', profilePicture = '', language, authMethod} = user?.user || {}
 
   const handleAvatarSelect = (index: number) => {
     setSelectedAvatar(index)
@@ -77,6 +77,7 @@ export default function SettingsPage() {
             throw new Error(response.error);
         }
         setIsLoading(false)
+        window.location.reload()
     } catch (error: any) {
         setError(error.message || 'An error occurred')
         setIsLoading(false)
@@ -105,9 +106,9 @@ export default function SettingsPage() {
                 className="data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-100"
               >
                 <User className="h-4 w-4 mr-2" />
-                Profile
+                Profile 
               </TabsTrigger>
-              {auth_method === "local" && (
+              {authMethod === "local" && (
 
               <TabsTrigger
                 value="password"
@@ -217,6 +218,7 @@ export default function SettingsPage() {
                           value={newUsername}
                           placeholder={username}
                           onChange={(e) => setUsername(e.target.value)}
+                          disabled={authMethod !== "local"}
                           className="bg-zinc-950 border-zinc-800 text-zinc-100 focus-visible:ring-zinc-700"
                         />
                       </div>
@@ -263,7 +265,7 @@ export default function SettingsPage() {
                 </Card>
               </TabsContent>
               
-              {auth_method === "local" && (
+              {authMethod === "local" && (
               <TabsContent value="password" className="space-y-6">
                 <Card className="bg-zinc-900 border-zinc-800">
                   <CardContent className="pt-6">

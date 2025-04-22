@@ -74,7 +74,7 @@ export interface User {
         language: string;
         createdAt: string;
         role: string;
-        auth_method: string;
+        authMethod: string;
     }
 }
 
