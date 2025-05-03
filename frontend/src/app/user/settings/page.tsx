@@ -32,10 +32,10 @@ export default function SettingsPage() {
   const avatarOptions = [...new Set([
     profilePicture,
     "/pictures/netflix_default.jpg",
-    "https://loremfaces.net/96/id/1.jpg",
-    "https://loremfaces.net/96/id/2.jpg",
-    "https://loremfaces.net/96/id/3.jpg",
-    "https://loremfaces.net/96/id/4.jpg",
+    "/pictures/netflix-green.jpg",
+    "/pictures/netflix-v.jpg",
+    "/pictures/netflix-blue.jpg",
+    "/pictures/netflix-yellow.jpg",
   ])].filter((url: string) => url)
 
 
