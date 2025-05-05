@@ -64,9 +64,10 @@ interface AuthContextProps {
   setEmail: (email: string) => void;
   setUsername: (username: string) => void;
   getById: (id: number) => Promise<any>;
-  update: (username: string, email: string, password: string, old_password: string, profilePicture: string) => Promise<any>;
+  update: (username: string, email: string, password: string, old_password: string) => Promise<any>;
   register: (username: string, email: string, first_name: string, last_name: string, password: string) => Promise<any>;
   handleResetPassword: (token: string, password: string, confirmPassword: string, email: string) => Promise<any>;
+  updateProfilePicture: (profilePicture: string) => Promise<any>;
   changeLanguage: (language: string) => Promise<any>;
   logout: () => void;
 }
@@ -192,7 +193,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
 
-  const update = async (username: string, email: string, password: string, old_password: string, profilePicture: string) => {
+  const update = async (username: string, email: string, password: string, old_password: string) => {
     try {
       const userResponse = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
@@ -210,7 +211,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           error: errors
         };
       }
-      const response = await api.patch(`/api/users/${userResponse.data.user.id}`, { username, email, password, old_password, profilePicture }, { headers: { Authorization: `Bearer ${Cookies.get('token')}` } });
+      const response = await api.patch(`/api/users/${userResponse.data.user.id}`, { username, email, password, old_password }, { headers: { Authorization: `Bearer ${Cookies.get('token')}` } });
+      const updateResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      setUser(updateResponse.data.user);
+      return { success: true };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.messages?.[0]?.message || 
+          error.response?.data?.errors || 
+          error.response?.data?.name ||  
+          error.response?.data?.messages || 
+          'Update failed'
+      };
+    }
+  }
+
+
+  const updateProfilePicture = async (profilePicture: string) => {
+    try {
+      const userResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      const response = await api.patch(`/api/users/${userResponse.data.user.id}/profilePicture`, { profilePicture }, { headers: { Authorization: `Bearer ${Cookies.get('token')}` } });
       const updateResponse = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
       });
@@ -237,7 +262,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const updateResponse = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
       });
-      setUser(updateResponse.data.user);
+      setUser(updateResponse.data);
       return { success: true };
     } catch (error: any) {
       return { 
@@ -296,7 +321,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     const token = Cookies.get('token');
     try {
-      //await api.delete('/api/auth/logout', { headers: { Authorization: `Bearer ${token}` } });
+      
+      await api.delete('/api/auth/logout', { headers: { Authorization: `Bearer ${token}` } });
       Cookies.remove('token', { path: '/' });
       Cookies.remove('language', { path: '/' });
       setUser(null);
@@ -316,7 +342,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   
   return (
-    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, getById, handleResetPassword, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
+    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, updateProfilePicture, getById, handleResetPassword, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
       {children}
     </AuthContext.Provider>
   );

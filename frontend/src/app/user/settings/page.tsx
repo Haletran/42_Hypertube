@@ -27,6 +27,7 @@ export default function SettingsPage() {
 
   const handleAvatarSelect = (index: number) => {
     setSelectedAvatar(index)
+    console.log(index)
   }
   
   const avatarOptions = [...new Set([
@@ -48,7 +49,7 @@ export default function SettingsPage() {
     try {
         setIsLoading(true)
         if (!auth) throw new Error("Auth context not found")
-        const response = await auth.update(newUsername, newEmail, newPassword, currentPassword, avatarOptions[selectedAvatar])
+        const response = await auth.update(newUsername, newEmail, newPassword, currentPassword)
         await new Promise((resolve) => setTimeout(resolve, 500))
         if (!response.success) {
           throw new Error(response.error);
@@ -71,7 +72,7 @@ export default function SettingsPage() {
             throw new Error('Passwords do not match')
         }
         if (!auth) throw new Error("Auth context not found")
-        const response = await auth.update(newUsername, newEmail, newPassword, currentPassword, avatarOptions[selectedAvatar]);
+        const response = await auth.update(newUsername, newEmail, newPassword, currentPassword);
         await new Promise((resolve) => setTimeout(resolve, 500))
         if (!response.success) {
             throw new Error(response.error);
@@ -81,6 +82,24 @@ export default function SettingsPage() {
     } catch (error: any) {
         setError(error.message || 'An error occurred')
         setIsLoading(false)
+    }
+  }
+
+  const handleProfilePictureChange = async () => {
+      setDialogOpen(false);
+      try {
+      setIsLoading(true)
+      if (!auth) throw new Error("Auth context not found")
+      const response = auth.updateProfilePicture(avatarOptions[selectedAvatar])
+      if (!response.success) {
+        setError(response.error)
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      setIsLoading(false)
+      window.location.reload();
+    } catch (error: any) {
+      setError(error.message || 'An error occurred')
+      setIsLoading(false)
     }
   }
 
@@ -183,7 +202,7 @@ export default function SettingsPage() {
                               >
                                 {language === "en" ? "Cancel" : "Annuler"}
                               </Button>
-                              <Button className="bg-zinc-800 hover:bg-zinc-700" onClick={() => setDialogOpen(false)}>
+                              <Button className="bg-zinc-800 hover:bg-zinc-700" onClick={() => handleProfilePictureChange()}>
                                 {language === "en" ? "Save" : "Enregistrer"}
                               </Button>
                             </div>
