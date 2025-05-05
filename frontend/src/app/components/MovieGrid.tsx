@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/components/ui/select"
+import Link from "next/link"
+
 
 
 const DEFAULT_YEAR = 2025
@@ -286,8 +288,46 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
 
   return (
     <div className="container mx-auto p-4">
+      {activeFilterCount <= 0 && sort.length <= 0 && (
+        <div className="mb-8">
+          {discover.length > 0 && (
+            <div className="relative overflow-hidden rounded-xl bg-zinc-900 shadow-lg border border-zinc-800">
+              <div className="relative w-full h-[300px]">
+                <img
+                  src={`https://image.tmdb.org/t/p/original${discover[0].backdrop_path || discover[0].poster_path}`}
+                  alt={discover[0].title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
 
-
+                <div className="absolute bottom-0 left-0 w-full p-6">
+                  <h2 className="text-3xl font-bold mb-2 text-white drop-shadow-lg">
+                    {discover[0].title}
+                  </h2>
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="flex items-center bg-black/50 rounded-md px-2 py-1">
+                      <Star className="h-4 w-4 mr-1 text-yellow-400 fill-yellow-400" />
+                      <span className="text-white font-medium">{discover[0].vote_average.toFixed(1)}</span>
+                    </div>
+                    <span className="text-white/80 text-sm">{new Date(discover[0].release_date).getFullYear()}</span>
+                  </div>
+                  <p className="text-white/70 line-clamp-2 mb-4 max-w-2xl">
+                    {discover[0].overview}
+                  </p>
+                  <Link href={`/movie/${discover[0].id}`}>
+                    <Button
+                      className="bg-white hover:bg-zinc-200 text-black font-medium px-6 py-2 shadow-lg transition-transform hover:scale-105"
+                    >
+                      {language === "en" ? "Watch Now" : "Regarder maintenant"}
+                      <ArrowUp className="h-4 w-4 ml-2 rotate-45" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       {discover.length === 0 && !error && (
         <div className="flex justify-center items-center mt-4">
           <Loader className="animate-spin h-8 w-8 text-white" />

@@ -246,7 +246,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                         >
                             <div className="flex items-start gap-4">
                                 {comment.user?.username !==  username && (
-                                    <Link href={`/users/${comment?.user?.id}`}>
+                                    <Link prefetch={false} href={`/users/${comment?.user?.id}`}>
                                         <Avatar className="h-10 w-10 border border-zinc-700">
                                             <AvatarImage src={comment?.user?.profilePicture} alt={comment?.user?.username || "User"} />
                                         </Avatar>
