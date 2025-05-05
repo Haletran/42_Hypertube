@@ -11,6 +11,7 @@ import { Separator } from "@/app/components/ui/separator"
 import { Clock, Calendar, Mail, Globe, User, BookUser } from "lucide-react"
 import Cookies from "js-cookie"
 import { Switch } from "@/app/components/ui/switch"
+import Link from "next/link"
 
 export default function SettingsPage() {
   const { user, setNsfw } = useAuth()
@@ -188,6 +189,7 @@ export default function SettingsPage() {
                 {movies.map((movie) => (
                   <li key={movie.id} className="group">
                     <div className="flex items-start space-x-4">
+                      <Link href={`/movie/${movie.movie.id}`} className="flex items-start space-x-4">
                       <Avatar className="h-16 w-16 rounded-md border border-zinc-800 shadow-md transition-transform group-hover:scale-105">
                         <AvatarImage
                           src={"https://image.tmdb.org/t/p/w500" + movie.movie.poster_path}
@@ -198,6 +200,7 @@ export default function SettingsPage() {
                           {movie.movie.title?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
+                      </Link>
 
                       <div className="flex-1">
                         <p className="font-semibold text-zinc-200 mb-2 group-hover:text-white transition-colors">
