@@ -55,7 +55,7 @@ export function Navbar() {
                     </Link>
                     <DropdownMenu.Root>
                         <div className="flex items-center gap-4">
-                            <Link href="/search" className="text-muted-foreground">
+                            <Link prefetch={false} href="/search" className="text-muted-foreground">
                                 <Search className="text-muted-foreground size-4" />
                             </Link>
                             <DownloadsDropdown />
@@ -91,7 +91,7 @@ export function Navbar() {
                                     </div>
                                     <div className="py-1">
                                         <DropdownMenu.Item asChild>
-                                            <Link
+                                            <Link prefetch={true}
                                                 href="/user/profile"
                                                 className="flex items-center px-3 py-2 text-sm rounded-sm hover:bg-zinc-800 focus:bg-zinc-800 outline-none cursor-pointer"
                                             >
@@ -100,7 +100,7 @@ export function Navbar() {
                                             </Link>
                                         </DropdownMenu.Item>
                                         <DropdownMenu.Item asChild>
-                                            <Link
+                                            <Link prefetch={true}
                                                 href="/user/settings"
                                                 className="flex items-center px-3 py-2 text-sm rounded-sm hover:bg-zinc-800 focus:bg-zinc-800 outline-none cursor-pointer"
                                             >

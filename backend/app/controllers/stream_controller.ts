@@ -288,7 +288,6 @@ export default class StreamController {
     if (!title) {
       return response.badRequest({ error: 'Movie title is required' });
     }
-
     const providersMap: Record<string, string> = {
       '1337x': `https://itorrentsearch.vercel.app/api/1337x/${title}`,
       'yts': `https://itorrentsearch.vercel.app/api/yts/${title}`,

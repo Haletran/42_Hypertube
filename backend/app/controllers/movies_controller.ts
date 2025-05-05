@@ -62,16 +62,6 @@ export default class MoviesController {
         }
     }
 
-    // async watch({ params, response }: HttpContext) {
-    //     const embedUrl = `https://vidsrc.to/embed/movie/${params.id}`;
-
-    //     if (!params.id) {
-    //         return response.status(400).json({
-    //             error: 'Missing movie ID'
-    //         });
-    //     }
-    //     return (embedUrl);
-    // }
 
     async getByTmdbById({ params, response, request, auth }: HttpContext) {
         const apiKey = process.env.TMDB_API_KEY || '';

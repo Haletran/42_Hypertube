@@ -86,7 +86,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
 
                 return movie.poster_path && movie.release_date && isReleased && hasRating && (
                     <div key={movie.id} className="group cursor-pointer" >
-                        <Link key={movie.id} href={`/movie/${movie.id}?language=${language}`} onClick={(e) => {
+                        <Link prefetch={true} key={movie.id} href={`/movie/${movie.id}?language=${language}`} onClick={(e) => {
                             const target = e.currentTarget.parentElement;
                             if (target) {
                                 const overlay = document.createElement('div');
