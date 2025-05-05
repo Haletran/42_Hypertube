@@ -289,20 +289,16 @@ export default class StreamController {
       return response.badRequest({ error: 'Movie title is required' });
     }
     const providersMap: Record<string, string> = {
-      '1337x': `https://itorrentsearch.vercel.app/api/1337x/${title}`,
-      'yts': `https://itorrentsearch.vercel.app/api/yts/${title}`,
-      'eztv': `https://itorrentsearch.vercel.app/api/eztv/${title}`,
-      'tgx': `https://itorrentsearch.vercel.app/api/tgx/${title}`,
-      'torlock': `https://itorrentsearch.vercel.app/api/torlock/${title}`,
-      'piratebay': `https://itorrentsearch.vercel.app/api/piratebay/${title}`,
-      'nyaasi': `https://itorrentsearch.vercel.app/api/nyaasi/${title}`,
-      'rarbg': `https://itorrentsearch.vercel.app/api/rarbg/${title}`,
-      'kickass': `https://itorrentsearch.vercel.app/api/kickass/${title}`,
-      'bitsearch': `https://itorrentsearch.vercel.app/api/bitsearch/${title}`,
-      'glodls': `https://itorrentsearch.vercel.app/api/glodls/${title}`,
-      'limetorrent': `https://itorrentsearch.vercel.app/api/limetorrent/${title}`,
-      'torrentfunk': `https://itorrentsearch.vercel.app/api/torrentfunk/${title}`,
-      'torrentproject': `https://itorrentsearch.vercel.app/api/torrentproject/${title}`,
+      '1337x': `http://torrent-search:3001/api/1337x/${title}`,
+      'yts': `http://torrent-search:3001/api/yts/${title}`,
+      'tgx': `http://torrent-search:3001/api/tgx/${title}`,
+      'torlock': `http://torrent-search:3001/api/torlock/${title}`,
+      'piratebay': `http://torrent-search:3001/api/piratebay/${title}`,
+      'nyaasi': `http://torrent-search:3001/api/nyaasi/${title}`,
+      'rarbg': `http://torrent-search:3001/api/rarbg/${title}`,
+      'bitsearch': `http://torrent-search:3001/api/bitsearch/${title}`,
+      'glodls': `http://torrent-search:3001/api/glodls/${title}`,
+      'torrentproject': `http://torrent-search:3001/api/torrentproject/${title}`,
     };
 
     const results: Record<string, any[]> = {};

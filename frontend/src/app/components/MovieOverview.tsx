@@ -144,7 +144,7 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
     }
 
     try {
-      const response = await fetch(`http://localhost:3333/api/stream/${movie.original_title}/download`  , {
+      const response = await fetch(`http://localhost:3333/api/stream/${movie.original_title}.${movie.release_date.split("-")[0]}/download`  , {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
