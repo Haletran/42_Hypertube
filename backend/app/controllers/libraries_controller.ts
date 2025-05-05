@@ -37,10 +37,6 @@ async getAllUserMovies({ auth, params, response }: HttpContext) {
         if (!userId) {
             throw new Error('User not authenticated');
         }
-        if (!userId) {
-            throw new Error('User ID is required');
-        }
-        
         const user = await User.findOrFail(userId);
         if (!user) {
             throw new Error('User not found');
