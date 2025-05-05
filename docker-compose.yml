@@ -76,7 +76,7 @@ services:
   torrent-search:
     image: alpine:3.18
     container_name: torrent-search
-    command: ["sh", "-c", "apk add --no-cache git npm && git clone https://github.com/theriturajps/Torrent-Search-API.git /app && cd /app && npm install && npm start"]
+    command: ["sh", "-c", "apk add --no-cache git npm && rm -rf /app && git clone https://github.com/theriturajps/Torrent-Search-API.git /app && cd /app && npm install && npm start"]
     networks:
       - hypertube-network
     ports:

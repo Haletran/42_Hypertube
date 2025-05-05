@@ -62,6 +62,7 @@ interface AuthContextProps {
   login: (username: string, password: string) => Promise<any>;
   setToken: (token: string) => void;
   setEmail: (email: string) => void;
+  setNsfw: (nsfw: boolean) => Promise<any>;
   setUsername: (username: string) => void;
   getById: (id: number) => Promise<any>;
   update: (username: string, email: string, password: string, old_password: string) => Promise<any>;
@@ -311,6 +312,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const setNsfw = async (nsfw: boolean) => {
+    try {
+      const userResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      const response = await api.patch(`/api/users/${userResponse.data.user.id}/nsfw`, { nsfw }, { headers: { Authorization: `Bearer ${Cookies.get('token')}` } });
+      const updateResponse = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      setUser(updateResponse.data);
+      return { success: true };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.messages?.[0]?.message || 
+          error.response?.data?.errors || 
+          error.response?.data?.name ||  
+          error.response?.data?.messages || 
+          'Update failed'
+      };
+    }
+  }
+
   const setToken = (token: string) => {
     Cookies.set('token', token, {
         expires: 7,
@@ -342,7 +366,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   
   return (
-    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, updateProfilePicture, getById, handleResetPassword, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
+    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, setNsfw, updateProfilePicture, getById, handleResetPassword, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
       {children}
     </AuthContext.Provider>
   );

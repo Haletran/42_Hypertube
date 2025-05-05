@@ -74,6 +74,7 @@ export interface User {
         language: string;
         createdAt: string;
         role: string;
+        nsfw: boolean;
         authMethod: string;
     }
 }

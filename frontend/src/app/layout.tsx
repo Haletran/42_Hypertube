@@ -7,7 +7,7 @@ import { Navbar } from "@/app/components/ui/navbar";
 import { usePathname } from "next/navigation"
 import { Footer } from "@/app/components/ui/footer";
 import useAuthCheck from "@/hooks/useAuthCheck";
-import path from "path";
+import { Transmit } from '@adonisjs/transmit-client'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +18,15 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+let transmit: Transmit;
+if (typeof window !== 'undefined') {
+    transmit = new Transmit({
+        baseUrl: 'http://localhost:3333'
+    });
+}
+
+export { transmit };
 
 export default function RootLayout({
   children,

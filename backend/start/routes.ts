@@ -34,6 +34,7 @@ router.group(() => {
   router.patch('/:id/language', [UsersController, 'updateLanguage'])
   router.patch('/:id/profilePicture', [UsersController, 'updateProfilePicture'])
   router.get('/:id', [UsersController, 'getById'])
+  router.patch('/:id/nsfw', [UsersController, 'updateNsfw'])
 }).prefix('/api/users')
 
 router.group(() => {

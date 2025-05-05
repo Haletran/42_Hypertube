@@ -20,11 +20,7 @@ import {
 } from "@/app/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
-import { Transmit } from '@adonisjs/transmit-client'
-
-const transmit = new Transmit({
-    baseUrl: 'http://localhost:3333'
-})
+import { transmit } from "@/app/layout";
 
 export const CommentSection = ({ movie_id }: { movie_id: number }) => {
     const [comments, setComments] = useState<Comment[]>([]);

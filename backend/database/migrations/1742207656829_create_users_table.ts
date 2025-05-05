@@ -13,6 +13,7 @@ export default class Users extends BaseSchema {
       table.string('password').notNullable()
       table.string('profile_picture').notNullable().defaultTo('/pictures/netflix_default.jpg')
       table.string('role').notNullable().defaultTo('basic')
+      table.boolean('nsfw').notNullable().defaultTo(false)
       table.string('language').notNullable().defaultTo('en')
       table.string('auth_method').notNullable().defaultTo('local')
       table.timestamp('created_at', { useTz: true }).notNullable()
