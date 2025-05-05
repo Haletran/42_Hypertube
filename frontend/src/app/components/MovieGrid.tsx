@@ -336,7 +336,7 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
 
       {error && <div className="bg-zinc-900 border border-zinc-700 text-white px-4 py-3 rounded">Error: {error}</div>}
 
-      {!filter && watchedMovies.length > 0 && (
+      {activeFilterCount <= 0 && sort.length <= 0  && !filter && watchedMovies.length > 0 && (
         <>
           <h1 className="text-2xl font-bold text-white mb-6">
             {language === "en" ? "Currently watching" : "En cours"}
