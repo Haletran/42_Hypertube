@@ -68,6 +68,24 @@ export default class UsersController {
     }
   }
 
+  public async updateNsfw({ auth, request, response }: HttpContext) {
+    try {
+      const response = await auth.check();
+      if (!response) {
+        throw new Error('unauthorized');
+      }
+      const data = request.all();
+      const userWithPassword = await User.findOrFail(request.param('id'));
+      const payload = await UpdateValidator.validate(data);
+      userWithPassword.nsfw = !userWithPassword.nsfw;
+      await userWithPassword.save();
+      return { message: 'NSFW preference updated successfully' };
+    } catch (error) {
+      console.error('Failed to update user:', error);
+      return response.status(400).json(error);
+    }
+  }
+
   public async getById({ auth, request, response }: HttpContext) {
     try {
       const response = await auth.check();

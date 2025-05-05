@@ -35,12 +35,12 @@ watch videos.
 - [x] Add cronjob to delete old torrents (1 months old)
 - [x] Setup frontend validation with Zod (to add multiple validators backend and frontend)
 - [x] Add first_name and last_name to the user
-- [ ] Add show nsfw content option
+- [x] Add show nsfw content option
 - [x] Make the frontend rules for password and everything else the same in the backend
 - [x] Make the traduction for every page
 - [ ] Delete the token when the user logout
 - [ ] Add admin page to see all users, all movies etc...
-- [ ] Implement Redux for removing the need to reload the page every now abnd then just to update some value (keep the context API for api calls)
+- [ ] Implement Redux for removing the need to reload the page every now and then just to update some value (keep the context API for api calls)
 
 
 

@@ -42,6 +42,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare language: string;
 
+  @column()
+  declare nsfw: boolean;
+
   @hasMany(() => Movie)
   declare alreadyWatched: HasMany<typeof Movie>
 

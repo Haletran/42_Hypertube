@@ -4,7 +4,7 @@ import { CommentSection } from "@/app/components/CommentSection";
 import { MovieContext } from "@/contexts/MovieContext";
 import { cookies } from 'next/headers';
 
-export async function getMovieDetails(id: number, language: string) {
+async function getMovieDetails(id: number, language: string) {
     try {
         const cookieStore = cookies();
         const token = cookieStore.get('token')?.value;
@@ -27,7 +27,7 @@ export async function getMovieDetails(id: number, language: string) {
     }
 }
 
-export async function getMovieTrailer(movieId: number, language: string) {
+async function getMovieTrailer(movieId: number, language: string) {
     const tmdbApiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     const response = await fetch(
         `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${tmdbApiKey}&language=${language}`
