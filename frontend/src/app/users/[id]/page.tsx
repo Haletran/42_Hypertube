@@ -38,7 +38,6 @@ export default function SettingsPage({ params }: {
     const fetchData = async () => {
       const userData = await getById(userId)
       const watched = await fetchUserMovies(userId)
-      console.log(userData);
       setUser(userData)
       setMovies(watched)
     }
