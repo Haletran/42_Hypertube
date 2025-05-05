@@ -27,21 +27,28 @@ export default class LibrariesController {
     }
 }
 
-
-async getAllUserMovies({ auth, response }: HttpContext) {
+async getAllUserMovies({ auth, params, response }: HttpContext) {
     try {
         const response = await auth.check();
         if (!response) {
             throw new Error('unauthorized');
         }
-        const userId = auth.user.id;
+        const userId = params.id;
+        if (!userId) {
+            throw new Error('User not authenticated');
+        }
+        if (!userId) {
+            throw new Error('User ID is required');
+        }
+        
         const user = await User.findOrFail(userId);
         if (!user) {
             throw new Error('User not found');
         }
+        
         const movies = await Movie.query().where('user_id', userId);
         if (movies.length === 0) {
-            throw new Error('No movies found');
+            throw new Error('No movies found for this user');
         }
         return movies;
     }
