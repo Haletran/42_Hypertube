@@ -8,7 +8,7 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/front
-    command: [ "sh", "-c", "cd /front && rm -rf nodes_modules && rm -rf .next && npm install && npm run dev" ]
+    command: [ "sh", "-c", "cd /front && rm -rf nodes_modules && rm -rf .next && npm run build && npm run start" ]
     networks:
       - hypertube-network
     restart: always
@@ -22,7 +22,7 @@ services:
       - REDIS_PORT=6379
     ports:
       - "3333:3333"
-    command: [ "sh", "-c", "cd /back && rm -rf node_modules && npm install && node ace migration:run && npm run dev" ]
+    command: [ "sh", "-c", "cd /back && rm -rf node_modules && npm install && node ace migration:run && npm run build && cp .env build/.env && cd build && npm ci --omit=dev && node bin/server.js" ]
     volumes:
       - ./backend:/back
       - ./shared-data:/back/data

@@ -16,7 +16,6 @@ import CommentsController from '#controllers/comments_controller'
 import LibrariesController from '#controllers/libraries_controller'
 import UsersController from '#controllers/users_controller'
 import transmit from '@adonisjs/transmit/services/main'
-import User from '#models/user'
 
 transmit.registerRoutes()
 

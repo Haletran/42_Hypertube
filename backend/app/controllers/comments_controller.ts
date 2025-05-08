@@ -50,7 +50,7 @@ export default class CommentsController {
       await comment.save()
       await comment.load('user')
       
-      transmit.broadcast(`movie:${comment.movieId}`, 'message', {
+      transmit.broadcast(`movie:${comment.movieId}`, {
         type: 'updateComment',
         comment: comment.toJSON()
       })
@@ -80,7 +80,7 @@ export default class CommentsController {
       const movieId = comment.movieId
       await comment.delete()
       
-      transmit.broadcast(`movie:${movieId}`, 'message', { 
+      transmit.broadcast(`movie:${movieId}`, { 
         type: 'deleteComment',
         id: id 
       })
@@ -129,7 +129,7 @@ export default class CommentsController {
       await comment.save()
       
       await comment.load('user')
-      transmit.broadcast(`movie:${id}`, 'message', { 
+      transmit.broadcast(`movie:${id}`, { 
         type: 'newComment',
         comment: comment.toJSON()
       })

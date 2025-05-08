@@ -1,7 +1,6 @@
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 
-import Movie from './movie_user.js'
 import User from './user.js'
 
 export default class Comment extends BaseModel {
@@ -17,7 +16,7 @@ export default class Comment extends BaseModel {
   @column()
   declare userId: number
 
-  @column
+  @column()
   declare createdAt: Date
   
   @belongsTo(() => User)

@@ -12,7 +12,7 @@ export default class UsersController {
       }
       const data = request.all();
       const userWithPassword = await User.findOrFail(request.param('id'));
-      const payload = await UpdateValidator.validate(data);
+      await UpdateValidator.validate(data);
       if (data.old_password) {
         await User.verifyCredentials(userWithPassword.email, data.old_password);
       }
@@ -37,7 +37,7 @@ export default class UsersController {
       }
       const data = request.all();
       const userWithPassword = await User.findOrFail(request.param('id'));
-      const payload = await UpdateValidator.validate(data);
+      await UpdateValidator.validate(data);
       if (data.language != 'fr' && data.language != 'en') {
         throw new Error('language not supported');
       }
@@ -58,7 +58,7 @@ export default class UsersController {
       }
       const data = request.all();
       const userWithPassword = await User.findOrFail(request.param('id'));
-      const payload = await UpdateValidator.validate(data);
+      await UpdateValidator.validate(data);
       if (data.profilePicture) userWithPassword.profile_picture = data.profilePicture;
       await userWithPassword.save();
       return { message: 'User updated successfully' };
@@ -76,7 +76,7 @@ export default class UsersController {
       }
       const data = request.all();
       const userWithPassword = await User.findOrFail(request.param('id'));
-      const payload = await UpdateValidator.validate(data);
+      await UpdateValidator.validate(data);
       userWithPassword.nsfw = !userWithPassword.nsfw;
       await userWithPassword.save();
       return { message: 'NSFW preference updated successfully' };

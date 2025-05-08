@@ -3,8 +3,6 @@ import type { HttpContext } from '@adonisjs/core/http'
 import fs from 'fs/promises'
 import { createReadStream } from 'fs'
 import path from 'path'
-import { request } from 'http'
-import { ALL } from 'dns'
 
 export default class StreamController {
   public async start({ request, response, auth }: HttpContext) {
@@ -82,7 +80,7 @@ export default class StreamController {
     }
   }
 
-  public async videomp4({ params, response, request, auth }: HttpContext) {
+  public async videomp4({ params, response, request }: HttpContext) {
     const mp4Path = path.join('data', params.id, 'video.mp4');
     try {
       // const check = await auth.check();
@@ -138,7 +136,7 @@ export default class StreamController {
 
 
 
-  public async video({ params, response, auth }: HttpContext) {
+  public async video({ params, response }: HttpContext) {
     const streamPath = path.join('data', 'hls', params.id, 'stream.m3u8');
 
     try {
@@ -194,7 +192,7 @@ export default class StreamController {
     }
   }
 
-  public async videoSegment({ params, response, auth }: HttpContext) {
+  public async videoSegment({ params, response }: HttpContext) {
     const segmentPath = path.join('data', 'hls', params.streamId, `${params.segment}.ts`);
 
     try {
@@ -216,7 +214,7 @@ export default class StreamController {
     }
   }
 
-  public async subtitles({ params, response, auth }: HttpContext) {
+  public async subtitles({ params, response }: HttpContext) {
     const subtitlesPath = path.join('data', 'hls', params.streamId, 'subtlist-en.m3u8');
   
     try {
@@ -240,7 +238,7 @@ export default class StreamController {
   }
 
 
-  public async subtitlesFile({ params, response, auth }: HttpContext) {
+  public async subtitlesFile({ params, response }: HttpContext) {
 
     const vttPath = path.join('data', params.streamId, params.file);
   

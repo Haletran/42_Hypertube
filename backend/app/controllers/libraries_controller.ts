@@ -10,7 +10,10 @@ export default class LibrariesController {
         if (!response) {
             throw new Error('unauthorized');
         }
-        const userId = auth.user.id;
+        const userId = auth?.user?.id;
+        if (!userId) {
+            throw new Error('User not authenticated');
+        }
         const movieId = params.id;
         const user = await User.findOrFail(userId);
         if (!user) {
@@ -100,7 +103,10 @@ async updateUserMovie({ auth, request, response, params }: HttpContext) {
         if (!response) {
             throw new Error('unauthorized');
         }
-        const userId = auth.user.id;
+        const userId = auth?.user?.id;
+        if (!userId) {
+            throw new Error('User not found');
+        }
         const movie_id = params.id;
         const user = await User.findOrFail(userId);
         if (!user) {

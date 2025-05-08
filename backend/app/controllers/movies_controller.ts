@@ -91,7 +91,6 @@ export default class MoviesController {
 
 
     async deleteMovie({ params, response, auth }: HttpContext) {
-        const movieId = params.id;
         const mp4Path = path.join('data', params.id);
         const hlsPath = path.join('data', 'hls', params.id);
 

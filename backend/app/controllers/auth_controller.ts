@@ -1,5 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { RegisterValidator, LoginValidator, UpdateValidator, ResetPasswordValidator } from '#validators/register_user';
+import { RegisterValidator, ResetPasswordValidator } from '#validators/register_user';
 import User from '#models/user'
 import axios from 'axios'
 import { randomBytes } from 'crypto'
@@ -26,7 +26,7 @@ export default class AuthController {
     
         await mail.send((message) => {
             message
-              .from(process.env.SMTP_USER)
+              .from(process.env.SMTP_USER || '')
               .to(email)
               .subject('Hypertube - Reset Your Password')
               .html(`
@@ -107,7 +107,7 @@ export default class AuthController {
             if (!password) {
                 throw new Error('Mot de passe requis')
             }
-            const payload = await ResetPasswordValidator.validate({ password })
+            await ResetPasswordValidator.validate({ password })
             user.password = password
             user.reset_token = null
             user.reset_token_expires = null
