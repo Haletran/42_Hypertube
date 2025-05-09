@@ -81,7 +81,8 @@ export default class StreamController {
   }
 
   public async videomp4({ params, response, request }: HttpContext) {
-    const mp4Path = path.join('data', params.id, 'video.mp4');
+    const dataDir = process.env.DATA_DIR || '/back/data';
+    const mp4Path = path.join(dataDir, params.id, 'video.mp4');
     try {
       // const check = await auth.check();
       // if (!check) {
@@ -137,7 +138,8 @@ export default class StreamController {
 
 
   public async video({ params, response }: HttpContext) {
-    const streamPath = path.join('data', 'hls', params.id, 'stream.m3u8');
+    const dataDir = process.env.DATA_DIR || '/back/data';
+    const streamPath = path.join(dataDir, 'hls', params.id, 'stream.m3u8');
 
     try {
       // const check = await auth.check();
@@ -161,8 +163,9 @@ export default class StreamController {
   }
 
   public async isAvailable({ params, response, auth }: HttpContext) {
-    const mp4Path = path.join('data', params.id, 'video.mp4');
-    const hlsPath = path.join('data', 'hls', params.id, 'stream.m3u8');
+    const dataDir = process.env.DATA_DIR || '/back/data';
+    const mp4Path = path.join(dataDir, params.id, 'video.mp4');
+    const hlsPath = path.join(dataDir, 'hls', params.id, 'stream.m3u8');
     
     try {
       const check = await auth.check();
@@ -183,8 +186,6 @@ export default class StreamController {
           },
         });
       }
-
-      return response.json({ message: 'Video is available' });
     } catch (error) {
       return response.notFound({
         error: 'Video not ready yet',
@@ -193,7 +194,8 @@ export default class StreamController {
   }
 
   public async videoSegment({ params, response }: HttpContext) {
-    const segmentPath = path.join('data', 'hls', params.streamId, `${params.segment}.ts`);
+    const dataDir = process.env.DATA_DIR || '/back/data';
+    const segmentPath = path.join(dataDir, 'hls', params.streamId, `${params.segment}.ts`);
 
     try {
       // const check = await auth.check();
@@ -215,7 +217,8 @@ export default class StreamController {
   }
 
   public async subtitles({ params, response }: HttpContext) {
-    const subtitlesPath = path.join('data', 'hls', params.streamId, 'subtlist-en.m3u8');
+    const dataDir = process.env.DATA_DIR || '/back/data';
+    const subtitlesPath = path.join(dataDir, 'hls', params.streamId, 'subtlist-en.m3u8');
   
     try {
       // const check = await auth.check();
@@ -239,8 +242,8 @@ export default class StreamController {
 
 
   public async subtitlesFile({ params, response }: HttpContext) {
-
-    const vttPath = path.join('data', params.streamId, params.file);
+    const dataDir = process.env.DATA_DIR || '/back/data';
+    const vttPath = path.join(dataDir, params.streamId, params.file);
   
     try {
       // const check = await auth.check();
@@ -260,7 +263,8 @@ export default class StreamController {
   }
 
   public async subtitlesList({ params, response, auth }: HttpContext) {
-    const subtitlesDir = path.join('data', params.streamId);
+    const dataDir = process.env.DATA_DIR || '/back/data';
+    const subtitlesDir = path.join(dataDir, params.streamId);
     
     try {
       const check = await auth.check();

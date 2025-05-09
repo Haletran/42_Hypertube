@@ -117,15 +117,16 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                                 )}
                                 {availableMovies[movie.id] && (
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                                    <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        className="w-full gap-1 bg-white/20 backdrop-blur-sm text-white border-none hover:bg-white/30"
-                                        onClick={() => window.location.href = `/movie/${movie.id}/watch/`}
-                                    >
-                                        <Play className="h-4 w-4" />
-                                        Play
-                                    </Button>
+                                    <Link href={`/movie/${movie.id}/watch?language=${language}`} className="w-full">
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            className="w-full gap-1 bg-white/20 backdrop-blur-sm text-white border-none hover:bg-white/30"
+                                        >
+                                            <Play className="h-4 w-4" />
+                                            Play
+                                        </Button>
+                                    </Link>
                                 </div>
                                 )}
                             </div>

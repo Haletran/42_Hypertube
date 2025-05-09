@@ -1,8 +1,7 @@
 "use client"
 
-import { use, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Hls from "hls.js"
-import { set } from "react-hook-form"
 import Cookies from "js-cookie"
 import { useMovieContext } from "@/contexts/MovieContext"
 
@@ -23,7 +22,7 @@ export default function Player({ streamId }: { streamId: string }) {
   const hlsRef = useRef<Hls | null>(null)
   const language = Cookies.get("language") || "en"
 
-  async function getCurrentTime() {
+  async function getCurrentTime() { 
     try {
       const response = await fetch(`http://localhost:3333/api/library/${streamId}`, {
         method: "GET",
@@ -78,6 +77,14 @@ export default function Player({ streamId }: { streamId: string }) {
   }, [streamId])
 
   const saveCurrentTime = async (id:string, current_time: number) => {
+    if (error) {
+      console.error("Error occurred, not saving current time:", error)
+      return
+    }
+    if (current_time === 0) {
+      console.log("Current time is 0, not saving")
+      return
+    }
     try {
       const response = await fetch(`http://localhost:3000/api/library/${id}`, {
         method: "PATCH",
@@ -113,7 +120,7 @@ export default function Player({ streamId }: { streamId: string }) {
     const video = videoRef.current
     if (!video) return false
 
-    const statusUrl = `http://localhost:3000/api/stream/${streamId}/status`
+    const statusUrl = `http://localhost:3333/api/stream/${streamId}/status`
     const mp4Url = `/api/stream/${streamId}/video.mp4`
 
     try {
@@ -231,7 +238,7 @@ export default function Player({ streamId }: { streamId: string }) {
     const tracksToAdd: SubtitleTrack[] = []
 
     try { 
-      const response = await fetch(`http://localhost:3000/api/stream/${streamId}/sub_list`, {
+      const response = await fetch(`http://localhost:3333/api/stream/${streamId}/sub_list`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -245,7 +252,7 @@ export default function Player({ streamId }: { streamId: string }) {
           const parts = subtitle.split('-');
           if (parts.length >= 2) {
             const language = parts[1];
-            const url = `http://localhost:3000/api/stream/${streamId}/${subtitle}`
+            const url = `http://localhost:3333/api/stream/${streamId}/${subtitle}`
             tracksToAdd.push({
               kind: "subtitles",
               label: language.charAt(0).toUpperCase() + language.slice(1) + "-" + number,

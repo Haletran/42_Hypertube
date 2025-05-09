@@ -26,7 +26,6 @@ watch videos.
 - [x] On front-page, only render movies that are on the view and remove the others
 - [x] Make Profile and settings page
 - [x] Make already watched movies page / and render in the /dashboard
-- [ ] Fix status in /movie/:id page (loading infinite if the progress is null)
 - [x] Add a menu to see all the movies that are currently being downloaded
 - [x] Make the comments works (still need to implement updated_at and created_at)
 - [x] Add filter for dashboard page (by date, by rating, by genre)
@@ -38,10 +37,20 @@ watch videos.
 - [x] Add show nsfw content option
 - [x] Make the frontend rules for password and everything else the same in the backend
 - [x] Make the traduction for every page
-- [ ] Delete the token when the user logout
 - [ ] Add admin page to see all users, all movies etc...
-- [ ] Implement Redux for removing the need to reload the page every now and then just to update some value (keep the context API for api calls)
+- [ ] Movie[id] page seems kind of empty
 
+## FIXES
+
+- [ ] Player not loading correctly if the mp4 is available - infinite reload error (if you reboot the server)
+- [ ] Fix status in /movie/:id page (fetching infinitily)
+- [ ] Fix rendering of currently watching movies (if timecode watched is 0, it should not be displayed)
+- [ ] Fix subtitles error (IDK why security error)
+- [ ] Fix the footer (misplaced on mobile)
+- [ ] Make the current download menu on navbar update if the user have a new download (not refreshing if not open for performance - or use a websocket)
+- [ ] When the user logout it does not remove the session cookie in the database since logout does not work
+- [ ] Add clickable to the movie in download menu in navbar
+- [ ] Remove useless console.log and fetching 
 
 
 ## Setup the Project

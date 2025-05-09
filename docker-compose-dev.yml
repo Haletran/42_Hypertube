@@ -1,0 +1,99 @@
+services:
+  frontend:
+    image: node:latest
+    container_name: frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:3333
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/front
+    command: [ "sh", "-c", "cd /front && rm -rf nodes_modules && rm -rf .next && npm run dev" ]
+    networks:
+      - hypertube-network
+    restart: always
+
+  backend:
+    image: node:latest
+    container_name: backend
+    environment:
+      - HOST=0.0.0.0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "3333:3333"
+    command: [ "sh", "-c", "cd /back && rm -rf node_modules && npm install && node ace migration:run && npm run dev" ]
+    volumes:
+      - ./backend:/back
+      - ./shared-data:/back/data
+    networks:
+      - hypertube-network
+    depends_on:
+      - database
+    restart: always
+
+  database:
+    image: postgres
+    container_name: database
+    ports:
+      - "5432:5432"
+    networks:
+      - hypertube-network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hypertube
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6479:6379"
+    networks:
+      - hypertube-network
+    restart: always
+
+  torrent-service:
+    image: python:3.10-slim
+    container_name: torrent-service
+    command: [ "sh", "-c", "apt-get update && apt install ffmpeg curl unzip tar -y && cd /app && pip install -r requirements.txt && python main.py" ]
+    volumes:
+      - ./torrent-service:/app
+      - ./shared-data:/app/data
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - frontend
+      - backend
+      - database
+      - redis
+    networks:
+      - hypertube-network
+    restart: always
+
+
+  torrent-search:
+    image: alpine:3.18
+    container_name: torrent-search
+    command: ["sh", "-c", "apk add --no-cache git npm && rm -rf /app && git clone https://github.com/theriturajps/Torrent-Search-API.git /app && cd /app && npm install && npm start"]
+    networks:
+      - hypertube-network
+    ports:
+      - "3001"
+    restart: always
+
+
+  movie-remover:
+    image: alpine:latest
+    container_name: movie-remover
+    command: ["sh", "-c", "apk add --no-cache findutils && while true; do find /data -type f -atime +30 -delete; sleep 600; done"]
+    volumes:
+      - ./shared-data:/data
+    networks:
+      - hypertube-network
+    restart: always
+
+networks:
+  hypertube-network:
+    driver: bridge
