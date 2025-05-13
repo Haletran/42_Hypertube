@@ -208,26 +208,37 @@ const formatFileSize = (sizeStr: string): string => {
                                     key={index}
                                     className="flex justify-between items-center p-3 rounded-md bg-zinc-800/50 border border-zinc-700 hover:border-zinc-600 transition-colors"
                                   >
-                                    <div className="flex-1">
+                                    <div className="flex-1 min-w-0"> {/* Added min-w-0 for better truncation handling */}
                                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                        <p className="font-medium text-zinc-100 truncate">{torrent.name.length > 10 ? `${torrent.name.slice(0, 50)}...` : torrent.name}</p>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <p className="font-medium text-zinc-100 truncate" title={torrent.name}>
+                                                {torrent.name.length > 60 ? `${torrent.name.slice(0, 60)}...` : torrent.name}
+                                              </p>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">
+                                              <p>{torrent.name}</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
                                         {torrent.quality && (
-                                          <Badge className={`${getQualityColor(torrent.quality)} text-white`}>
+                                          <Badge className={`${getQualityColor(torrent.quality)} text-white text-xs px-1.5 py-0.5`}>
                                             {torrent.quality}
                                           </Badge>
                                         )}
                                         {torrent.language && (
-                                          <Badge className="bg-zinc-700 text-zinc-200">{torrent.language}</Badge>
+                                          <Badge className="bg-zinc-700 text-zinc-200 text-xs px-1.5 py-0.5">{torrent.language}</Badge>
                                         )}
                                       </div>
-                                      <div className="flex flex-wrap gap-y-1 text-xs">
+                                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs items-center">
                                         <span className="text-zinc-400">
                                           <span className="font-medium">{formatFileSize(torrent.size)}</span>
                                         </span>
                                         <TooltipProvider>
                                           <Tooltip>
                                             <TooltipTrigger asChild>
-                                              <span className="text-green-400 flex items-center">
+                                              <span className={`flex items-center ${torrent.seeders > 0 ? 'text-green-400' : 'text-zinc-500'}`}>
                                                 <span className="mr-1">↑</span>
                                                 <span className="font-medium">{torrent.seeders}</span>
                                               </span>
@@ -251,17 +262,29 @@ const formatFileSize = (sizeStr: string): string => {
                                           </Tooltip>
                                         </TooltipProvider>
                                         {provider === "all" && torrent.provider && (
-                                          <span className="text-zinc-500">{torrent.provider.toUpperCase()}</span>
+                                          <Badge variant="outline" className="text-zinc-500 border-zinc-600 text-xs px-1.5 py-0.5">
+                                            {torrent.provider.toUpperCase()}
+                                          </Badge>
                                         )}
                                       </div>
                                     </div>
                                     <Button
                                       size="sm"
-                                      className="bg-white hover:bg-gray-300 text-black whitespace-nowrap"
-                                      onClick={() => onSelectTorrent(torrent.info_hash, movieId)}
+                                      className={`ml-2 whitespace-nowrap ${
+                                        torrent.seeders === 0
+                                          ? "bg-zinc-600 text-zinc-400 cursor-not-allowed"
+                                          : "bg-white hover:bg-gray-300 text-black"
+                                      } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                                      onClick={() => {
+                                        if (torrent.seeders > 0) {
+                                          onSelectTorrent(torrent.info_hash, movieId);
+                                        }
+                                      }}
+                                      disabled={torrent.seeders === 0 || isLoading}
+                                      title={torrent.seeders === 0 ? "Indisponible (0 seeders)" : "Sélectionner ce torrent"}
                                     >
                                       <Download className="h-4 w-4 mr-2" />
-                                      Sélectionner
+                                      {torrent.seeders === 0 ? "Indisponible" : "Sélectionner"}
                                     </Button>
                                   </div>
                                 ))
