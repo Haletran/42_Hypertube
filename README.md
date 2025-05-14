@@ -55,6 +55,13 @@ watch videos.
 - [x] Fix movie remover (dk if it works)
 - [x] Cannot remove comments anymore
 
+## BONUS
+
+- Chat
+- Admin role
+- Option NSFW
+- Download progression
+- A lot of ergomic feature (filter/cache progress/status progress on profil/subtitles/source fetcher/api route/etc...)
 
 ## Setup the Project
 
