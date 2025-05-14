@@ -48,11 +48,11 @@ watch videos.
 - [x] Fix subtitles error (IDK why security error)
 - [x] Fix the footer (misplaced on mobile)
 - [x] Make the current download menu on navbar update if the user have a new download (not refreshing if not open for performance - or use a websocket)
-- [ ] When the user logout it does not remove the session cookie in the database since logout does not work
+- [x] When the user logout it does not remove the session cookie in the database since logout does not work
 - [x] Add clickable to the movie in download menu in navbar
-- [ ] Remove useless console.log and fetching
+- [x] Remove useless console.log and fetching
 - [x] Fix useless call to the backend (debounce needed for settings page)
-- [ ] Fix movie remover (dk if it works)
+- [x] Fix movie remover (dk if it works)
 - [x] Cannot remove comments anymore
 
 

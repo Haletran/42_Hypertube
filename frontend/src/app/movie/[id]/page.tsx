@@ -84,9 +84,9 @@ export default async function WatchMovie({ params, searchParams }: {
         trailer = await getMovieTrailer(movieId, language);
         movie = await getMovieDetails(movieId, language);
         isPlayable = await isAvailable(movieId);
-        console.log("Movie details:", movie);
-        console.log("Trailer details:", trailer);
-        console.log("Is movie playable:", isPlayable);
+        // console.log("Movie details:", movie);
+        // console.log("Trailer details:", trailer);
+        // console.log("Is movie playable:", isPlayable);
     } catch (error) {
         return <div className="text-center p-4">Error loading movie</div>;
     }
