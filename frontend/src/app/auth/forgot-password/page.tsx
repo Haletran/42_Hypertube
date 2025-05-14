@@ -18,7 +18,6 @@ export default function ForgotPasswordPage() {
 
   const handleResetPassword = async () => {
     try {
-      console.log("handleResetPassword")
       setIsLoading(true)
       setError([])
   

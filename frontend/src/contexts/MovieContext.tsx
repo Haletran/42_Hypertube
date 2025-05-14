@@ -84,7 +84,6 @@ export const MovieProvider = ({ children }: { children: ReactNode }) => {
                     original_timecode: movie.runtime,
                 }),
             });
-            console.log(response)
             if (response.status !== 200) {
                 setError('Failed to add movie');
                 return;

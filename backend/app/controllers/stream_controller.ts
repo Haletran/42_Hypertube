@@ -92,15 +92,6 @@ export default class StreamController {
       const stats = await fs.stat(mp4Path);
       const fileSize = stats.size;
 
-      const previousSize = await Redis.get(`file:${params.id}:size`);
-      await Redis.set(`file:${params.id}:size`, fileSize);
-
-      if (previousSize && parseInt(previousSize) < fileSize) {
-      await Redis.set(`file:${params.id}:downloading`, 'true');
-      await Redis.expire(`file:${params.id}:downloading`, 10);
-      throw new Error('File is still downloading');
-      }
-
       const range = request.header('range');
       if (range) {
       const parts = range.replace(/bytes=/, '').split('-');

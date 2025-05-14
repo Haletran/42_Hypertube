@@ -42,15 +42,18 @@ watch videos.
 
 ## FIXES
 
-- [ ] Player not loading correctly if the mp4 is available - infinite reload error (if you reboot the server)
-- [ ] Fix status in /movie/:id page (fetching infinitily)
-- [ ] Fix rendering of currently watching movies (if timecode watched is 0, it should not be displayed)
-- [ ] Fix subtitles error (IDK why security error)
-- [ ] Fix the footer (misplaced on mobile)
-- [ ] Make the current download menu on navbar update if the user have a new download (not refreshing if not open for performance - or use a websocket)
+- [x] Player not loading correctly if the mp4 is available - infinite reload error (if you reboot the server)
+- [x] Fix status in /movie/:id page (fetching infinitily)
+- [x] Fix rendering of currently watching movies (if timecode watched is 0, it should not be displaying the title and the movie card)
+- [x] Fix subtitles error (IDK why security error)
+- [x] Fix the footer (misplaced on mobile)
+- [x] Make the current download menu on navbar update if the user have a new download (not refreshing if not open for performance - or use a websocket)
 - [ ] When the user logout it does not remove the session cookie in the database since logout does not work
-- [ ] Add clickable to the movie in download menu in navbar
-- [ ] Remove useless console.log and fetching 
+- [x] Add clickable to the movie in download menu in navbar
+- [ ] Remove useless console.log and fetching
+- [x] Fix useless call to the backend (debounce needed for settings page)
+- [ ] Fix movie remover (dk if it works)
+- [ ] Cannot remove comments anymore
 
 
 ## Setup the Project

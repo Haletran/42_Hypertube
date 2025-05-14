@@ -45,7 +45,6 @@ export default function ResetPasswordPage() {
     try {
       const test = await handleResetPassword(token, password, confirmPassword, email)
       if (test.success == false) {
-          console.log("Error resetting password:", test)
           setError([test.error])
           return
       }

@@ -27,6 +27,26 @@ async function getMovieDetails(id: number, language: string) {
     }
 }
 
+async function isAvailable(id: number) {
+    const cookieStore = cookies();
+    const token = cookieStore.get('token')?.value;
+    try {
+      const response = await fetch(`http://backend:3333/api/stream/${id}/video/isAvailable` , {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status !== 200) {
+        return false;
+      }
+      return response.ok;
+    } catch (error) {
+      console.error("Failed to fetch movie:", error)
+      return false
+    }
+}
+
 async function getMovieTrailer(movieId: number, language: string) {
     const tmdbApiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     const response = await fetch(
@@ -57,11 +77,16 @@ export default async function WatchMovie({ params, searchParams }: {
     const cookieStore = cookies();
     const language = searchParams.language || cookieStore.get('language')?.value || 'en';
     let movie: any;
+    let isPlayable: boolean = false;
     let trailer: any;
 
     try {
         trailer = await getMovieTrailer(movieId, language);
         movie = await getMovieDetails(movieId, language);
+        isPlayable = await isAvailable(movieId);
+        console.log("Movie details:", movie);
+        console.log("Trailer details:", trailer);
+        console.log("Is movie playable:", isPlayable);
     } catch (error) {
         return <div className="text-center p-4">Error loading movie</div>;
     }
@@ -71,7 +96,7 @@ export default async function WatchMovie({ params, searchParams }: {
             <div className="w-full max-w-4xl flex flex-col gap-3">
                 {movie && (
                     <>
-                        <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} />
+                        <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} test={isPlayable} />
                         <CastScrollableList movie={movie} />
                         <CommentSection movie_id={movieId} />
                     </>

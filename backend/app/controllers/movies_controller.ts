@@ -51,7 +51,6 @@ export default class MoviesController {
 
             let res;
             let nsfw = userInfo.nsfw ? true : false;
-            console.error('VALUES : ', nsfw, filter, sort);
             if (filter === '' && sort === '') {
                 res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&include_adult=${nsfw}&page=${page}`);
             } else {

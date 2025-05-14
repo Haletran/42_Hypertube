@@ -1,28 +1,23 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, use } from "react"
 import { Star, Calendar, Clock, Download, Clapperboard, Play, Loader, Trash } from "lucide-react"
 import Link from "next/link"
 import { Badge } from "@/app/components/ui/badge"
 import { Button } from "@/app/components/ui/button"
-import { Progress } from "@/app/components/ui/progress"
 import { TorrentModal } from "@/app/components/Torrent_modal"
 import { Movie, Torrent } from '@/types';
 import { useMovieContext } from "@/contexts/MovieContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Cookies from "js-cookie"
-import { set } from "react-hook-form"
 
-
-
-export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: string }) {
+export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailerUrl: string; test: boolean }) {
   const [showTorrents, setShowTorrents] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isPlayable, setIsPlayable] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const [providersTorrents, setProvidersTorrents] = useState<Record<string, Torrent[]> | null>(null)
   const [isFetching, setIsFetching] = useState(false)
-  const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | undefined>()
   const { addMovie, deleteMovie } = useMovieContext()
   const { user } = useAuth()
@@ -32,23 +27,6 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
     : "/placeholder.svg?height=750&width=500"
 
-  const isAvailable = useCallback(async (id: number): Promise<boolean> => {
-    try {
-      const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable` , {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      if (response.status !== 200) {
-        return false;
-      }
-      return response.ok
-    } catch (error) {
-      console.error("Failed to fetch movie:", error)
-      return false
-    }
-  }, [])
 
   const checkDownload = useCallback(async (id: any): Promise<boolean> => {
     try {
@@ -64,11 +42,24 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
       const data = await response.json()
       if (data.status === "complete" || data.progress === 100) {
         setIsDownloading(false)
-        setProgress(100)
+        setIsPlayable(true)
         return false
       }
+
+      if (data.status === "converting") {
+        setIsDownloading(false)
+        setIsPlayable(true)
+        return true
+      }
+
+      if (data.status === "error") {
+        setIsDownloading(false)
+        setIsPlayable(false)
+        return false
+      }
+
+
       setIsDownloading(data.status)
-      setProgress(data.progress)
       return data.status === "downloading"
     } catch (error) {
       console.error("Failed to fetch movie status:", error)
@@ -91,39 +82,23 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
       setIsLoading(false)
     }
   }
-
-  useEffect(() => {
-    const checkInitialState = async () => {
-        const available = await isAvailable(movie.id);
-        const isCurrentlyDownloading = await checkDownload(movie.id);
-        if (available) {
-            setIsPlayable(true);
-        } else if (isCurrentlyDownloading) {
-            if (isCurrentlyDownloading || progress > 0) {
-                setIsDownloading(true);
-            }
-        }
-    };
-    
-    checkInitialState();
-    const interval = setInterval(async () => {
-        if (progress === 100) {
-            setIsPlayable(true);
-            clearInterval(interval);
-            return;
-        }
-        const available = await isAvailable(movie.id);
-        await checkDownload(movie.id);
-        if (available) {
-            setIsPlayable(true);
-            console.log("Movie is available for streaming");
-        } else {
-            setIsPlayable(false);
-        }
-    }, 500);
-    
-    return () => clearInterval(interval);
-}, [movie.id, progress]);
+  const isAvailable = useCallback(async (id: number): Promise<boolean> => {
+    try {
+      const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable` , {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      if (response.status !== 200) {
+        return false;
+      }
+      return response.ok
+    } catch (error) {
+      console.error("Failed to fetch movie:", error)
+      return false
+    }
+  }, [])
 
   const fetchTorrents = async () => {
     setIsFetching(true)
@@ -366,46 +341,46 @@ export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: 
         {!movie.overview && <p className="text-base text-muted-foreground">
             {language === "en" ? "No description available" : "Aucun résumé disponible"}
           </p>}
-            {isDownloading && progress != 100 && (
-                    <div className="relative w-full pt-5">
-                        <Progress value={progress} className="w-full h-6" />
-                        {progress > 0 && progress < 100 && (
-                            <span className="text-sm font-medium text-white">
-                                {progress}%
-                            </span>
-                        )}
-                        </div>
-                    )}
                 <div className="flex gap-2 mt-7">
+                  {test && (
+                    <Link href={`/movie/${movie.id}/watch`} passHref>
+                      <Button
+                        className={`flex items-center gap-2 rounded-md ${
+                          isPlayable || test
+                            ? "bg-blue-600 hover:bg-blue-700 text-white"
+                            : "bg-gray-400 text-gray-600 cursor-not-allowed"
+                        } transition-all duration-200 px-4 py-2`}
+                        disabled={!(isPlayable || test)}
+                        aria-label="Play"
+                      >
+                        <Play className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  )}
+                    {!test && (
                     <Button
-                        className={`flex-grow gap-1 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer ${isPlayable ? 'bg-white/50' : 'bg-white/50'}`}
-                        onClick={isPlayable 
-                            ? () => window.location.href = `http://localhost:3000/movie/${movie.id}/watch` 
-                            : fetchTorrents}
-                        disabled={isFetching || isDownloading && !isPlayable}
+                      className="flex-grow gap-1 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer bg-white/50"
+                      onClick={fetchTorrents}
+                      disabled={test || isFetching || isDownloading}
                     >
-                        {isFetching ? (
-                            <>
-                                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                                {language === "en" ? "Loading torrents..." : "Chargement des torrents..."}
-                            </>
-                        ) : isDownloading && !isPlayable ? (
-                            <>
-                                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                                {language === "en" ? "Downloading..." : "Téléchargement..."}
-                            </>
-                        ) : isPlayable ? (
-                            <>
-                                <Play className="h-4 w-4 mr-2" />
-                                {language === "en" ? "Play" : "Lire"}
-                            </>
-                        ) : (
-                            <>
-                                <Download className="h-4 w-4 mr-2" />
-                                {language === "en" ? "Download" : "Télécharger"}
-                            </>
-                        )}
+                      {isFetching ? (
+                        <>
+                          <Loader className="h-4 w-4 mr-2 animate-spin" />
+                          {language === "en" ? "Loading torrents..." : "Chargement des torrents..."}
+                        </>
+                      ) : isDownloading ? (
+                        <>
+                          <Loader className="h-4 w-4 mr-2 animate-spin" />
+                          {language === "en" ? "Downloading..." : "Téléchargement..."}
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          {language === "en" ? "Download" : "Télécharger"}
+                        </>
+                      )}
                     </Button>
+                    )}
                     {/* {user && user?.user && user.user.role === "admin" && isPlayable && (
                       <Button
                       className="flex-grow gap-1 bg-red-500 text-white border-none hover:bg-red-600 cursor-pointer"

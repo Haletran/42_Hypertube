@@ -1,5 +1,5 @@
 "use client"
-import { useState, useContext } from "react"
+import { useState, useContext, useEffect } from "react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
@@ -12,6 +12,7 @@ import { Camera, User, KeyRound, Loader2, Check } from "lucide-react"
 import { Alert, AlertDescription } from "@/app/components/ui/alert"
 import { AuthContext } from "@/contexts/AuthContext"
 import { useAuth } from "@/contexts/AuthContext"
+import { set } from "zod"
 
 export default function SettingsPage() {
   const auth = useContext(AuthContext)
@@ -22,12 +23,12 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedAvatar, setSelectedAvatar] = useState(0)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const { user, newEmail, newUsername, setEmail, setUsername, error, setError } = useAuth();
+  const [newEmail, setEmail] = useState("")
+  const { user, newUsername, setUsername, error, setError } = useAuth();
   const {username = '', email = '', profilePicture = '', language, authMethod} = user?.user || {}
 
   const handleAvatarSelect = (index: number) => {
     setSelectedAvatar(index)
-    console.log(index)
   }
   
   const avatarOptions = [...new Set([
@@ -54,8 +55,9 @@ export default function SettingsPage() {
         if (!response.success) {
           throw new Error(response.error);
         }
-        setIsLoading(false)
         window.location.reload()
+        setError(null);
+        setIsLoading(false);
     } catch (error: any) {
         setError(error.message || 'An error occurred')
         setIsLoading(false)

@@ -14,6 +14,7 @@ import {
 } from "@/app/components/ui/dropdown-menu"
 import { Progress } from "@/app/components/ui/progress"
 import { useMovieContext } from "@/contexts/MovieContext"
+import Link from "next/link"
 
 interface DownloadItem {
   id: string
@@ -118,9 +119,11 @@ useEffect(() => {
         {downloads.map((download) => (
           <DropdownMenuItem key={download.id} className="flex flex-col items-start p-2">
             <div className="flex w-full justify-between">
-            <span className="font-medium truncate max-w-[220px]">
-              {`${download.name}` || `${download.id}`}
-            </span>
+            <Link href={`/movie/${download.id}`} className="flex items-center w-full">
+              <span className="text-sm font-medium truncate max-w-[220px]">
+                {`${download.name}` || `${download.id}`}
+              </span>
+            </Link>
             <span className={`text-xs px-2 rounded-full ${getStatusColor(download.status)} text-white`}>
               {download.status}
             </span>

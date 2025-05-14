@@ -91,7 +91,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
       }
       const data = await response.json()
       if (data.results.length === 0) {
-        console.log("No more movies to load")
         setLoading(false)
         return
       }

@@ -70,6 +70,7 @@ interface AuthContextProps {
   handleResetPassword: (token: string, password: string, confirmPassword: string, email: string) => Promise<any>;
   updateProfilePicture: (profilePicture: string) => Promise<any>;
   changeLanguage: (language: string) => Promise<any>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
 }
 
@@ -216,7 +217,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const updateResponse = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
       });
-      setUser(updateResponse.data.user);
+      await refreshUser();
       return { success: true };
     } catch (error: any) {
       return { 
@@ -292,6 +293,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const refreshUser = async () => {
+    try {
+      const response = await api.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+      });
+      setUser(response.data.user);
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  };
+
   const getById = async (id: number) => {
     try {
       const response = await api.get(`/api/users/${id}`, {
@@ -366,7 +378,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   
   return (
-    <AuthContext.Provider value={{ user, login, newEmail, error, isAuthenticated, setNsfw, updateProfilePicture, getById, handleResetPassword, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
+    <AuthContext.Provider value={{ user, login, refreshUser, newEmail, error, isAuthenticated, setNsfw, updateProfilePicture, getById, handleResetPassword, setError, setEmail, newUsername, setUsername, loading, setLoading, register,  setToken, update, logout, changeLanguage }}>
       {children}
     </AuthContext.Provider>
   );

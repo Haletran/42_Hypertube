@@ -28,7 +28,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const nsfwPref = user?.user.nsfw;
-    console.log("NSFW Preference:", nsfwPref);
     setShowNsfw(nsfwPref);
   }, [])
 

@@ -239,7 +239,7 @@ const formatFileSize = (sizeStr: string): string => {
                                           <Tooltip>
                                             <TooltipTrigger asChild>
                                               <span className={`flex items-center ${torrent.seeders > 0 ? 'text-green-400' : 'text-zinc-500'}`}>
-                                                <span className="mr-1">↑</span>
+                                                <span className="mr-1" role="img" aria-label="Seeders">↑</span>
                                                 <span className="font-medium">{torrent.seeders}</span>
                                               </span>
                                             </TooltipTrigger>

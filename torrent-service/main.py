@@ -26,6 +26,7 @@ logging.basicConfig(
 DOWNLOAD_DIR = "./data"
 HLS_DIR = "./data/hls"
 REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+METADATA_TIMEOUT = 60
 
 def get_ffmpeg_command(input_file, output_file, hls=False):
     """Génère la commande FFmpeg optimisée pour le traitement et la conversion de fichiers vidéo dans un environnement Docker"""
@@ -185,7 +186,7 @@ async def is_file_readable(file_path):
             stderr=asyncio.subprocess.PIPE
         )
         stdout, stderr = await proc.communicate()
-        return proc.returncode == 0 and stdout.strip()
+        return proc.returncode == 0 and bool(stdout.strip())
     except Exception as e:
         logging.error(f"Erreur lors de la vérification du fichier {file_path}: {e}")
         return False
@@ -289,11 +290,10 @@ async def handle_torrent(magnet: str, stream_id: str):
         logging.info(f"Début du téléchargement: {stream_id}")
         await r.set(f'stream:{stream_id}:status', 'downloading')
 
-        metadata_timeout = 60
         metadata_start_time = asyncio.get_event_loop().time()
         while not handle.has_metadata():
-            if asyncio.get_event_loop().time() - metadata_start_time > metadata_timeout:
-                raise Exception(f"Timeout: Metadata non récupérée pour {stream_id} après {metadata_timeout} secondes")
+            if asyncio.get_event_loop().time() - metadata_start_time > METADATA_TIMEOUT:
+                raise Exception(f"Timeout: Metadata non récupérée pour {stream_id} après {METADATA_TIMEOUT} secondes")
             await asyncio.sleep(0.1)
 
         torrent_info = handle.get_torrent_info()
@@ -347,7 +347,7 @@ async def handle_torrent(magnet: str, stream_id: str):
         await convert_to_mp4(video_file, download_path, stream_id)
 
         await r.set(f'stream:{stream_id}:status', 'complete')
-        update_progress(r, stream_id, 101)
+        await update_progress(r, stream_id, 101)
         if os.path.exists(folder_name):
             shutil.rmtree(folder_name)
             logging.info(f"Dossier de téléchargement supprimé pour {stream_id}")

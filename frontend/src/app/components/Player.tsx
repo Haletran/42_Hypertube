@@ -15,7 +15,7 @@ type SubtitleTrack = {
 
 export default function Player({ streamId }: { streamId: string }) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const { getMovieTimecode, movie, addMovie, getMovie } = useMovieContext()
+  const { movie, addMovie, getMovie } = useMovieContext()
   const [loading, setLoading] = useState(true)
   const [timecode, setTimecode] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +33,7 @@ export default function Player({ streamId }: { streamId: string }) {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to save current time")
+        throw new Error("Failed to get current time")
       }
       const data = await response.json()
       console.log("Current time:", data[0].watchedTimecode)
@@ -71,8 +71,8 @@ export default function Player({ streamId }: { streamId: string }) {
         hlsRef.current = null
       }
     }
-    getCurrentTime()
-    loadVideo()
+    getCurrentTime().finally(() => setLoading(false));
+    loadVideo().finally(() => setLoading(false))
     return cleanup
   }, [streamId])
 
@@ -134,6 +134,12 @@ export default function Player({ streamId }: { streamId: string }) {
 
 
       const statusData = await statusResponse.json()
+      if (statusData.status === "converting" && statusData.progress === "100") {
+        console.log("MP4 file is not available yet")
+        return false
+      }
+
+
       if (statusData.progress === "100" || statusData.status === "complete") { // problem with mp4 if ||
         const response = await fetch(mp4Url, { method: "HEAD", 
           headers: {
@@ -141,7 +147,7 @@ export default function Player({ streamId }: { streamId: string }) {
             Authorization: `Bearer ${Cookies.get("token")}`,
           },
         })
-        if (response.ok) {
+        if (response.ok && statusData.status !== "converting") {
           console.log("MP4 file is available")
           video.src = mp4Url
           await loadSubtitles()
@@ -176,7 +182,7 @@ export default function Player({ streamId }: { streamId: string }) {
 
       hlsRef.current = new Hls({
         maxBufferLength: 30,
-        maxMaxBufferLength: 60,
+        maxMaxBufferLength: 40,
         enableWorker: true,
       })
 
@@ -252,7 +258,7 @@ export default function Player({ streamId }: { streamId: string }) {
           const parts = subtitle.split('-');
           if (parts.length >= 2) {
             const language = parts[1];
-            const url = `http://localhost:3333/api/stream/${streamId}/${subtitle}`
+            const url = `http://localhost:3000/api/stream/${streamId}/${subtitle}`
             tracksToAdd.push({
               kind: "subtitles",
               label: language.charAt(0).toUpperCase() + language.slice(1) + "-" + number,

@@ -83,12 +83,10 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
         subscription.create()
         
         const stopListening = subscription.onMessage((data: any) => {
-            console.log('Received message:', data)
             const { type } = data
             
             switch (type) {
                 case 'newComment':
-                    console.log('New comment event received')
                     if (data.comment) {
                         setComments(prev => [...prev, data.comment])
                     } else {
@@ -97,7 +95,6 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                     break
                     
                 case 'updateComment':
-                    console.log('Update comment event received')
                     if (data.comment) {
                         setComments(prev => prev.map(c => c.id === data.comment.id ? data.comment : c))
                     } else {
@@ -106,7 +103,6 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                     break
                     
                 case 'deleteComment':
-                    console.log('Delete comment event received')
                     if (data.id) {
                         setComments(prev => prev.filter(c => c.id !== data.id))
                     } else {
@@ -120,7 +116,6 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
         })
 
         return () => {
-            console.log('Cleaning up subscription')
             stopListening()
             subscription.delete()
         }
