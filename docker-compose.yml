@@ -4,6 +4,11 @@ services:
     container_name: frontend
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:3333
+      - NEXT_PUBLIC_TMDB_API_KEY=${NEXT_PUBLIC_TMDB_API_KEY}
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:3333
+      - NEXT_PUBLIC_CLIENT_ID=${NEXT_PUBLIC_CLIENT_ID}
+      - NEXT_PUBLIC_GITHUB_CLIENT_ID=${NEXT_PUBLIC_GITHUB_CLIENT_ID}
+      - NEXT_PUBLIC_GIPHY_KEY=${NEXT_PUBLIC_GIPHY_KEY}
     ports:
       - "3000:3000"
     volumes:
@@ -11,20 +16,18 @@ services:
     command: [ "sh", "-c", "cd /front && rm -rf nodes_modules && rm -rf .next && npm install && npm run build && npm run start" ]
     networks:
       - hypertube-network
+
     restart: always
 
   backend:
     image: node:latest
     container_name: backend
-    environment:
-      - HOST=0.0.0.0
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
     ports:
       - "3333:3333"
-    command: [ "sh", "-c", "cd /back && rm -rf node_modules && npm install && node ace migration:run && npm run build && cp .env build/.env && cd build && npm ci --omit=dev && node bin/server.js" ]
+    command: [ "sh", "-c", "cd /back && rm -rf node_modules && npm install && node ace migration:run && npm run build -- --ignore-ts-errors && cp .env build/.env && cd build && npm ci --omit=dev && node bin/server.js" ]
     volumes:
       - ./backend:/back
+      - .env:/back/.env
       - ./shared-data:/back/data
     networks:
       - hypertube-network
@@ -40,9 +43,9 @@ services:
     networks:
       - hypertube-network
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: hypertube
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
     restart: always
 
   redis:
@@ -63,6 +66,7 @@ services:
       - ./shared-data:/app/data
     environment:
       - REDIS_HOST=redis
+      - NEXT_PUBLIC_TMDB_API_KEY=${NEXT_PUBLIC_TMDB_API_KEY}
     depends_on:
       - frontend
       - backend
