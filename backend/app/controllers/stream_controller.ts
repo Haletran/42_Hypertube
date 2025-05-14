@@ -283,11 +283,8 @@ export default class StreamController {
     }
     const providersMap: Record<string, string> = {
       '1337x': `http://torrent-search:3001/api/1337x/${title}`,
-      'yts': `http://torrent-search:3001/api/yts/${title}`,
-      'tgx': `http://torrent-search:3001/api/tgx/${title}`,
       'torlock': `http://torrent-search:3001/api/torlock/${title}`,
       'piratebay': `http://torrent-search:3001/api/piratebay/${title}`,
-      'nyaasi': `http://torrent-search:3001/api/nyaasi/${title}`,
       'rarbg': `http://torrent-search:3001/api/rarbg/${title}`,
       'bitsearch': `http://torrent-search:3001/api/bitsearch/${title}`,
       'glodls': `http://torrent-search:3001/api/glodls/${title}`,
@@ -308,6 +305,7 @@ export default class StreamController {
           if (apiResponse.ok) {
             const data = await apiResponse.json();
             results[provider] = Array.isArray(data) ? data : [data];
+            console.log(`Fetched ${provider} data:`, results[provider]);
           } else {
             results[provider] = [{ error: `Failed with status ${apiResponse.status}` }];
           }

@@ -3,29 +3,64 @@ import User from '#models/user'
 import fs from 'fs/promises'
 import path from 'path'
 
+export interface SearchMovie {
+    id: number;
+    title: string;
+    poster_path: string;
+    vote_average: number;
+    release_date: string
+}
+
 
 export default class MoviesController {
     async search({ params, request, response, auth }: HttpContext) {
         const name = params.name;
-        const apiKey = process.env.TMDB_API_KEY || '';
+        const tmdb_api_key = process.env.TMDB_API_KEY || '';
+        const omdb_api_key = process.env.OMDB_API_KEY || '';
         const defaultLanguage = "en-US";
         const language = request.input('language', defaultLanguage);
+        const source = request.input('source', 'tmdb');
+        
         try {
             const check = await auth.check();
             if (!check) {
                 throw new Error('unauthorized');
             }
-            const first = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${name}&language=${language}`);
 
-            const test = await first.json() as { results: { id: number }[] };
-            const movieIds = test.results.map(result => result.id);
+            if (source === 'tmdb') {
+                const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${tmdb_api_key}&query=${name}&language=${language}`);
+                const data = await res.json() as { results: SearchMovie[] };
+                const movieIds = data.results.map(result => result.id);
+    
+                const movies = await Promise.all(movieIds.map(async (id) => {
+                    const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${tmdb_api_key}&language=${language}`);
+                    return res.json();
+                }));
+                return response.json(movies);
+            } else if (source === 'omdb') {
+                const res = await fetch(`http://www.omdbapi.com/?s=${name}&type=movie&apikey=${omdb_api_key}`);
+                const searchData = await res.json();
+                if (searchData.Response === 'True' && searchData.Search) {
+                    const movies = await Promise.all(searchData.Search.map(async (item) => {
+                        const detailRes = await fetch(`http://www.omdbapi.com/?i=${item.imdbID}&apikey=${omdb_api_key}`);
+                        const replaceRes = await fetch(`https://api.themoviedb.org/3/find/${item.imdbID}?api_key=${tmdb_api_key}&external_source=imdb_id`)
+                        const detailData = await detailRes.json();
+                        const replaceData = await replaceRes.json();
+                        return {
+                            id: replaceData.movie_results[0].id,
+                            title: detailData.Title,
+                            poster_path: replaceData.movie_results[0].poster_path,
+                            vote_average: parseFloat(detailData.imdbRating) || 0,
+                            release_date: detailData.Year,
+                        };
+                    }));
+                    return response.json(movies);
+                }
+                return response.status(404).json({ error: 'Movie not found' });
+            } else {
+                return response.status(400).json({ error: 'Invalid source' });
+            }
 
-            const movies = await Promise.all(movieIds.map(async (id) => {
-                const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=${language}`);
-                return res.json();
-            }));
-
-            return response.json(movies);
         } catch (error) {
             return response.status(500).json({
                 error: 'Error fetching movie data'

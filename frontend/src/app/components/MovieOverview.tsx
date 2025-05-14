@@ -100,6 +100,30 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
     }
   }, [])
 
+  useEffect(() => {
+    const checkMovieStatus = async () => {
+      const available = await isAvailable(movie.id);
+      if (available) {
+        setIsPlayable(true)
+      } else {
+        setIsPlayable(false)
+      }      
+      if (isDownloading) {
+        const stillDownloading = await checkDownload(movie.id);
+        
+        if (stillDownloading) {
+          const timer = setTimeout(() => {
+            checkMovieStatus();
+          }, 5000);
+          
+          return () => clearTimeout(timer);
+        }
+      }
+    };
+
+    checkMovieStatus();
+  }, [movie.id, checkDownload, isAvailable]);
+
   const fetchTorrents = async () => {
     setIsFetching(true)
     setIsLoading(true)
