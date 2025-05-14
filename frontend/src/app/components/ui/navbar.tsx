@@ -19,7 +19,7 @@ export function Navbar() {
     const logout = async () => {
         try {
             if (!auth) throw new Error('Auth context not found');
-            auth.logout();
+            await auth.logout();
             window.location.href = '/';
         } catch (error) {
             console.error('Logout failed:', error);

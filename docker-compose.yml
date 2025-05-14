@@ -87,7 +87,7 @@ services:
   movie-remover:
     image: alpine:latest
     container_name: movie-remover
-    command: ["sh", "-c", "apk add --no-cache findutils && while true; do find /data -type f -atime +30 -delete; sleep 600; done"]
+    command: ["sh", "-c", "apk add --no-cache findutils && while true; do echo \"[Movie Remover] $(date): Cleaning...\"; find /data -mindepth 1 -type d -not -path '/data/hls*' -mtime +30 -exec rm -rf {} +; sleep 600; done"]
     volumes:
       - ./shared-data:/data
     networks:

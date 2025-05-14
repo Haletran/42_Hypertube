@@ -36,7 +36,7 @@ export default function Player({ streamId }: { streamId: string }) {
         throw new Error("Failed to get current time")
       }
       const data = await response.json()
-      console.log("Current time:", data[0].watchedTimecode)
+      // console.log("Current time:", data[0].watchedTimecode)
       setTimecode(data[0].watchedTimecode)
     } catch (error) {
       console.error("Error saving current time:", error)
@@ -49,9 +49,9 @@ export default function Player({ streamId }: { streamId: string }) {
       setLoading(true)
       setError(null)
       const mp4Available = await checkAndPlayMp4()
-      console.log("MP4 available:", mp4Available)
+      // console.log("MP4 available:", mp4Available)
       if (mp4Available === false) {
-        console.log("MP4 not available, setting up HLS")
+        // console.log("MP4 not available, setting up HLS")
         await setupHls()
       }
     } catch (err) {
@@ -102,7 +102,7 @@ export default function Player({ streamId }: { streamId: string }) {
       return
     }
     if (current_time === 0) {
-      console.log("Current time is 0, not saving")
+      // console.log("Current time is 0, not saving")
       return
     }
     try {
@@ -155,7 +155,7 @@ export default function Player({ streamId }: { streamId: string }) {
 
       const statusData = await statusResponse.json()
       if (statusData.status === "converting" && statusData.progress === "100") {
-        console.log("MP4 file is not available yet")
+        // console.log("MP4 file is not available yet")
         return false
       }
 
@@ -169,7 +169,7 @@ export default function Player({ streamId }: { streamId: string }) {
           },
         })
         if (response.ok && statusData.status !== "converting") {
-          console.log("MP4 file is available")
+          // console.log("MP4 file is available")
           video.src = mp4Url
           await loadSubtitles()
           return true
@@ -184,7 +184,7 @@ export default function Player({ streamId }: { streamId: string }) {
           },
         })
         if (response.ok) {
-          console.log("MP4 file is available")
+          // console.log("MP4 file is available")
           video.src = mp4Url
           await loadSubtitles()
           return true
@@ -226,11 +226,11 @@ export default function Player({ streamId }: { streamId: string }) {
           console.error("HLS fatal error:", data)
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              console.log("Trying to recover network error...")
+              // console.log("Trying to recover network error...")
               hlsRef.current?.startLoad()
               break
             case Hls.ErrorTypes.MEDIA_ERROR:
-              console.log("Trying to recover media error...")
+              // console.log("Trying to recover media error...")
               hlsRef.current?.recoverMediaError()
               break
             default:
@@ -330,7 +330,7 @@ export default function Player({ streamId }: { streamId: string }) {
             tracks[j].mode = 'disabled';
           }
           track.mode = 'showing';
-          console.log('Selected French subtitle track:', track.label);
+          // console.log('Selected French subtitle track:', track.label);
           break;
         }
       }
