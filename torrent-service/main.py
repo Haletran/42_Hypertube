@@ -169,42 +169,73 @@ async def download_external_subs(imdb_id, title, stream_id):
         logging.error(f"Erreur téléchargement sous-titres: {str(e)}")
         return []
 
-async def convert_to_hls(input_path, output_dir, stream_id, max_retries=3, retry_delay=5):
+async def is_file_readable(file_path):
+    """Vérifie si un fichier vidéo est lisible (moov atom présent)"""
+    cmd = [
+        'ffprobe', 
+        '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        file_path
+    ]
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc.communicate()
+        return proc.returncode == 0 and stdout.strip()
+    except Exception as e:
+        logging.error(f"Erreur lors de la vérification du fichier {file_path}: {e}")
+        return False
+
+async def convert_to_hls(input_path, output_dir, stream_id):
     output_path = os.path.join(output_dir, "stream.m3u8")
     command = get_ffmpeg_command(input_path, output_path, hls=True)
     
-    attempt = 0
-    while attempt < max_retries:
-        attempt += 1
-        logging.info(f"Tentative {attempt}/{max_retries} pour générer le HLS pour {stream_id}")
-        try:
-            proc = await asyncio.create_subprocess_exec(*command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            stdout, stderr = await proc.communicate()
-            if proc.returncode == 0:
-                logging.info(f"HLS généré avec succès pour {stream_id}")
-                return True
-            else:
-                logging.error(f"Erreur FFmpeg (tentative {attempt}): {stderr.decode()}")
-        except Exception as e:
-            logging.error(f"Erreur lors de l'exécution de FFmpeg (tentative {attempt}): {str(e)}")
-        if attempt < max_retries:
-            logging.info(f"Réessai dans {retry_delay} secondes...")
-            await asyncio.sleep(retry_delay)
-    
-    logging.error(f"Échec de la conversion HLS après {max_retries} tentatives pour {stream_id}")
-    return False
+    try:
+        proc = await asyncio.create_subprocess_exec(*command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        stdout, stderr = await proc.communicate()
+        error_output = stderr.decode()
+        
+        if proc.returncode == 0:
+            logging.info(f"HLS généré avec succès pour {stream_id}")
+            return True
+        elif "moov atom not found" in error_output:
+            logging.warning(f"Moov atom non trouvé pour {stream_id} - fichier partiellement téléchargé")
+            return False
+        else:
+            logging.error(f"Erreur FFmpeg : {error_output}")
+            return False
+    except Exception as e:
+        logging.error(f"Erreur lors de l'exécution de FFmpeg : {str(e)}")
+        return False
 
 async def hls_conversion_task(redis_client, stream_id, video_file, hls_path, imdb_id, name):
     try:
-        if os.path.exists(video_file):
-            external_subs = await download_external_subs(imdb_id, name, stream_id)
-            logging.info(f"Sous-titres download: {external_subs}")
-            success = await convert_to_hls(video_file, hls_path, stream_id)
-            if success:
-                await redis_client.set(f'stream:{stream_id}:hls_started', '1')
+        if not os.path.exists(video_file):
+            logging.info(f"Fichier {video_file} n'existe pas encore")
+            return False
+            
+        if not await is_file_readable(video_file):
+            logging.info(f"Fichier {video_file} pas encore lisible (moov atom probablement manquant)")
+            return False
+            
+        external_subs = await download_external_subs(imdb_id, name, stream_id)
+        logging.info(f"Sous-titres download: {external_subs}")
+        
+        success = await convert_to_hls(video_file, hls_path, stream_id)
+        if success:
+            await redis_client.set(f'stream:{stream_id}:hls_started', '1')
+            logging.info(f"Conversion HLS réussie pour {stream_id}")
+            return True
+        
+        logging.info(f"Conversion HLS échouée pour {stream_id}, sera retentée plus tard")
+        return False
     except Exception as e:
         logging.error(f"Erreur conversion HLS: {str(e)}")
-        await redis_client.set(f'stream:{stream_id}:error', str(e))
+        return False
     finally:
         await redis_client.delete(f'stream:{stream_id}:hls_processing')
 
@@ -258,39 +289,57 @@ async def handle_torrent(magnet: str, stream_id: str):
         logging.info(f"Début du téléchargement: {stream_id}")
         await r.set(f'stream:{stream_id}:status', 'downloading')
 
+        metadata_timeout = 60
+        metadata_start_time = asyncio.get_event_loop().time()
         while not handle.has_metadata():
+            if asyncio.get_event_loop().time() - metadata_start_time > metadata_timeout:
+                raise Exception(f"Timeout: Metadata non récupérée pour {stream_id} après {metadata_timeout} secondes")
             await asyncio.sleep(0.1)
 
+        torrent_info = handle.get_torrent_info()
+        folder_name = os.path.join(download_path, torrent_info.name())
+        logging.info(f"Nom du dossier/fichier principal du torrent: {folder_name}")
         video_file = None
         for f in handle.get_torrent_info().files():
             if f.path.endswith(('.mp4', '.mkv', '.avi')):
                 video_file = os.path.join(download_path, f.path)
+                logging.info(f"Fichier vidéo principal identifié: {video_file} (chemin relatif dans le torrent: {f.path})")
                 break
-
         if not video_file:
             raise Exception("Aucun fichier vidéo trouvé dans le torrent")
 
         hls_task = None
-        max_retries = 1800
-        retries = 0
-
-        while not handle.status().is_seeding and retries < max_retries:
+        hls_retry_interval = 5
+        last_hls_attempt = 0
+        
+        while not handle.status().is_seeding:
             status = handle.status()
-            progress = int(status.progress * 101)
+            progress = int(status.progress * 100)
             asyncio.create_task(update_progress(r, stream_id, progress))
+            current_time = asyncio.get_event_loop().time()
+            if not await r.exists(f'stream:{stream_id}:hls_started') and current_time - last_hls_attempt >= hls_retry_interval:
+                if hls_task and hls_task.done():
+                    try:
+                        hls_success = hls_task.result()
+                        if not hls_success:
+                            hls_task = None
+                    except Exception:
+                        hls_task = None
+                if not hls_task and progress >= 5:
+                    if not await is_file_readable(video_file):
+                        logging.info(f"Fichier {video_file} pas encore lisible (moov atom probablement manquant), attente du téléchargement complet.")
+                        if progress < 100:
+                            await asyncio.sleep(1)
+                            continue
 
-            if progress >= 5 and not await r.exists(f'stream:{stream_id}:hls_started'):
-                if not hls_task and video_file:
+                    logging.info(f"Tentative de conversion HLS à {progress}% pour {stream_id}")
+                    last_hls_attempt = current_time
                     hls_task = asyncio.create_task(
                         hls_conversion_task(r, stream_id, video_file, hls_path, imdb_id, name)
                     )
-            
+
             await asyncio.sleep(1)
-            retries += 1
-
-        if retries >= max_retries:
-            logging.error(f"Timeout reached for torrent {stream_id}. Exiting loop.")
-
+        
         extracted_subs = await extract_subtitles(os.path.join(download_path, handle.get_torrent_info().name()), download_path)
         logging.info(f"Sous-titres extraits: {extracted_subs}")
         
@@ -298,6 +347,10 @@ async def handle_torrent(magnet: str, stream_id: str):
         await convert_to_mp4(video_file, download_path, stream_id)
 
         await r.set(f'stream:{stream_id}:status', 'complete')
+        update_progress(r, stream_id, 101)
+        if os.path.exists(folder_name):
+            shutil.rmtree(folder_name)
+            logging.info(f"Dossier de téléchargement supprimé pour {stream_id}")
         logging.info(f"Téléchargement complet: {stream_id}")
         if hls_task and not hls_task.done():
             hls_task.cancel()
