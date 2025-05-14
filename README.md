@@ -53,7 +53,7 @@ watch videos.
 - [ ] Remove useless console.log and fetching
 - [x] Fix useless call to the backend (debounce needed for settings page)
 - [ ] Fix movie remover (dk if it works)
-- [ ] Cannot remove comments anymore
+- [x] Cannot remove comments anymore
 
 
 ## Setup the Project

@@ -173,7 +173,6 @@ export const MovieProvider = ({ children }: { children: ReactNode }) => {
         }
     }
 
-
     return (
         <MovieContext.Provider value={{ movie, loading, error, getMovie, addMovie, fetchUserMovies, deleteMovie, watchedMovies, setWatchedMovies ,saveCurrentTime, getMovieTimecode, setError, getAllUserMovies, setLoading }}>
             {children}

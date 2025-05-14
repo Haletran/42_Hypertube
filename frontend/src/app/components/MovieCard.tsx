@@ -117,7 +117,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                                 )}
                                 {availableMovies[movie.id] && (
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                                    <Link href={`/movie/${movie.id}/watch?language=${language}`} className="w-full">
+                                    <div className="w-full" onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        window.location.href = `/movie/${movie.id}/watch?language=${language}`;
+                                    }}>
                                         <Button
                                             size="sm"
                                             variant="secondary"
@@ -126,7 +130,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movies, observerRef, loadS
                                             <Play className="h-4 w-4" />
                                             Play
                                         </Button>
-                                    </Link>
+                                    </div>
                                 </div>
                                 )}
                             </div>

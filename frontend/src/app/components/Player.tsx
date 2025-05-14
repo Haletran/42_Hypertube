@@ -22,7 +22,7 @@ export default function Player({ streamId }: { streamId: string }) {
   const hlsRef = useRef<Hls | null>(null)
   const language = Cookies.get("language") || "en"
 
-  async function getCurrentTime() { 
+  async function getCurrentTime() {
     try {
       const response = await fetch(`http://localhost:3333/api/library/${streamId}`, {
         method: "GET",
@@ -62,21 +62,41 @@ export default function Player({ streamId }: { streamId: string }) {
   }
 
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
-    const cleanup = () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy()
-        hlsRef.current = null
+    let isMounted = true;
+
+    const initPlayer = async () => {
+      try {
+        await Promise.all([
+          getCurrentTime(),
+          loadVideo()
+        ]);
+
+        if (!isMounted) return;
+        setLoading(false);
+      } catch (err) {
+        console.error("Error initializing player:", err);
+        if (!isMounted) return;
+        setError("Failed to initialize video player");
+        setLoading(false);
       }
-    }
-    getCurrentTime().finally(() => setLoading(false));
-    loadVideo().finally(() => setLoading(false))
-    return cleanup
-  }, [streamId])
+    };
 
-  const saveCurrentTime = async (id:string, current_time: number) => {
+    initPlayer();
+
+    return () => {
+      isMounted = false;
+      const currentTime = video.currentTime;
+      if (currentTime > 0) {
+        saveCurrentTime(streamId, currentTime);
+      }
+      cleanup();
+    };
+  }, [streamId]);
+
+  const saveCurrentTime = async (id: string, current_time: number) => {
     if (error) {
       console.error("Error occurred, not saving current time:", error)
       return
@@ -92,7 +112,7 @@ export default function Player({ streamId }: { streamId: string }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
-        body: JSON.stringify({ watched_timecode: current_time  }),
+        body: JSON.stringify({ watched_timecode: current_time }),
       })
 
       if (!response.ok) {
@@ -124,7 +144,7 @@ export default function Player({ streamId }: { streamId: string }) {
     const mp4Url = `/api/stream/${streamId}/video.mp4`
 
     try {
-      const statusResponse = await fetch(statusUrl, { 
+      const statusResponse = await fetch(statusUrl, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
@@ -141,7 +161,8 @@ export default function Player({ streamId }: { streamId: string }) {
 
 
       if (statusData.progress === "100" || statusData.status === "complete") { // problem with mp4 if ||
-        const response = await fetch(mp4Url, { method: "HEAD", 
+        const response = await fetch(mp4Url, {
+          method: "HEAD",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${Cookies.get("token")}`,
@@ -155,11 +176,13 @@ export default function Player({ streamId }: { streamId: string }) {
         }
       }
       else if (statusData.progress === null || statusData.status === null) {
-        const response = await fetch(mp4Url, { method: "HEAD",           
+        const response = await fetch(mp4Url, {
+          method: "HEAD",
           headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        }, })
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        })
         if (response.ok) {
           console.log("MP4 file is available")
           video.src = mp4Url
@@ -243,7 +266,7 @@ export default function Player({ streamId }: { streamId: string }) {
     let defaultTrackSet = false
     const tracksToAdd: SubtitleTrack[] = []
 
-    try { 
+    try {
       const response = await fetch(`http://localhost:3333/api/stream/${streamId}/sub_list`, {
         method: "GET",
         headers: {
@@ -329,11 +352,11 @@ export default function Player({ streamId }: { streamId: string }) {
     <div className="relative w-full aspect-video bg-black">
       {loading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-20">
-        <div className="relative w-16 h-16">
-          <div className="absolute top-0 left-0 w-full h-full border-4 border-white/30 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-white rounded-full animate-spin"></div>
-        </div>
-        <p className="text-white mt-4 text-sm">Loading video...</p>
+          <div className="relative w-16 h-16">
+            <div className="absolute top-0 left-0 w-full h-full border-4 border-white/30 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-white rounded-full animate-spin"></div>
+          </div>
+          <p className="text-white mt-4 text-sm">Loading video...</p>
         </div>
       )}
 

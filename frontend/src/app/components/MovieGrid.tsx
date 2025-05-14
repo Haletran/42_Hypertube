@@ -36,6 +36,7 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   const [firstLoad, setFirstLoad] = useState<boolean>(true)
   const [filter, setFilter] = useState<string>("")
   const [sort, setSort] = useState<string>("")
+  const [watchedLoading, setWatchedLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const [activeFilterTypes, setActiveFilterTypes] = useState<{
@@ -240,20 +241,26 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
   // }, [filter, sort])
 
   useEffect(() => {
-    const test = async () => {
-      const check = await fetchUserMovies(user?.user?.id)
-      setWatchedMovies(check)
-    }
-    const debounceTimeout = setTimeout(() => {
-      fetchDiscover()
-      if (firstLoad) {
-        setFirstLoad(false)
-        fetchDiscover()
+    const loadData = async () => {
+      if (user?.user?.id) {
+        setWatchedLoading(true);
+        const check = await fetchUserMovies(user?.user?.id);
+        setWatchedMovies(check);
+        setWatchedLoading(false);
       }
-    }, 500)
-    test()
-    return () => clearTimeout(debounceTimeout)
-  }, [onMovieSelect, filter, sort])
+      
+      const debounceTimeout = setTimeout(() => {
+        fetchDiscover();
+        if (firstLoad) {
+          setFirstLoad(false);
+        }
+      }, 500);
+      
+      return () => clearTimeout(debounceTimeout);
+    };
+    
+    loadData();
+  }, [onMovieSelect, filter, sort, user?.user?.id]);
 
   useEffect(() => {
     if (!observerRef.current) {
@@ -284,6 +291,7 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
     (activeFilterTypes.year && appliedFilters.year !== DEFAULT_YEAR ? 1 : 0) +
     (activeFilterTypes.rating && appliedFilters.rating !== DEFAULT_RATING ? 1 : 0) +
     appliedFilters.genres.length
+
 
   return (
     <div className="container mx-auto p-4">
@@ -335,13 +343,17 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
 
       {error && <div className="bg-zinc-900 border border-zinc-700 text-white px-4 py-3 rounded">Error: {error}</div>}
 
-      {activeFilterCount <= 0 && sort.length <= 0  && !filter && watchedMovies.length > 0 && (
+      {activeFilterCount <= 0 && sort.length <= 0 && !filter && !watchedLoading && (
         <>
-          <h1 className="text-2xl font-bold text-white mb-6">
-            {language === "en" ? "Currently watching" : "En cours"}
-          </h1>
-          <WatchCard movie={watchedMovies} language={language} />
-          <br></br>
+          {watchedMovies.length > 0 ? (
+            <>
+              <h1 className="text-2xl font-bold text-white mb-6">
+                {language === "en" ? "Currently watching" : "En cours"}
+              </h1>
+              <WatchCard movie={watchedMovies} language={language} />
+              <br></br>
+            </>
+          ) : null}
         </>
       )}
 

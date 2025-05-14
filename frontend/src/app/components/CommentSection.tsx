@@ -103,11 +103,7 @@ export const CommentSection = ({ movie_id }: { movie_id: number }) => {
                     break
                     
                 case 'deleteComment':
-                    if (data.id) {
-                        setComments(prev => prev.filter(c => c.id !== data.id))
-                    } else {
-                        fetchComments(movie_id)
-                    }
+                    fetchComments(movie_id)
                     break
                     
                 default:

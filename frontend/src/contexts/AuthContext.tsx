@@ -357,7 +357,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     const token = Cookies.get('token');
     try {
-      
       await api.delete('/api/auth/logout', { headers: { Authorization: `Bearer ${token}` } });
       Cookies.remove('token', { path: '/' });
       Cookies.remove('language', { path: '/' });
