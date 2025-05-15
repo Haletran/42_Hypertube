@@ -10,6 +10,7 @@ import { Movie, Torrent } from '@/types';
 import { useMovieContext } from "@/contexts/MovieContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Cookies from "js-cookie"
+import { set } from "zod"
 
 export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailerUrl: string; test: boolean }) {
   const [showTorrents, setShowTorrents] = useState(false)
@@ -82,6 +83,7 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
       setIsLoading(false)
     }
   }
+
   const isAvailable = useCallback(async (id: number): Promise<boolean> => {
     try {
       const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable` , {
@@ -93,6 +95,7 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
       if (response.status !== 200) {
         return false;
       }
+      setIsPlayable(true)
       return response.ok
     } catch (error) {
       console.error("Failed to fetch movie:", error)
@@ -100,36 +103,27 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
     }
   }, [])
 
+
   useEffect(() => {
-    let cancelled = false;
-  
-    const checkMovieStatus = async () => {
-      if (cancelled) return;
-      const available = await isAvailable(movie.id);
-      if (cancelled) return;
-      setIsPlayable(!!available);
-  
-      if (isDownloading) {
-        const stillDownloading = await checkDownload(movie.id);
-        if (cancelled) return;
-        if (stillDownloading) {
-          const timer = setTimeout(() => {
-            checkMovieStatus();
-          }, 5000);
-  
-          return () => clearTimeout(timer);
+    const checkIfAvailable = async () => {
+      if (movie) {
+        const isAvailableResult = await isAvailable(movie.id)
+        setIsPlayable(isAvailableResult)
+        const stillDownloading = await checkDownload(movie.id)
+        if (isDownloading) {
+          const interval = setInterval(async () => {
+            const stillDownloading = await checkDownload(movie.id)
+            if (!stillDownloading) {
+              clearInterval(interval)
+            }
+          }, 5000)
+          return () => clearInterval(interval)
         }
       }
-    };
-  
-    if (!test || !isDownloading) {
-      checkMovieStatus();
     }
-  
-    return () => {
-      cancelled = true;
-    };
-  }, [movie.id, checkDownload, isAvailable, isDownloading, test])
+    checkIfAvailable()
+  }, [movie, isAvailable, isDownloading, checkDownload])
+
 
   const fetchTorrents = async () => {
     setIsFetching(true)
@@ -210,17 +204,10 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
         all: [],
         "1337x": [],
         piratebay: [],
-        yts: [],
-        eztv: [],
-        tgx: [],
         torlock: [],
-        nyaasi: [],
         rarbg: [],
-        kickass: [],
         bitsearch: [],
         glodls: [],
-        limetorrent: [],
-        torrentfunk: [],
         torrentproject: [],
       }
 
@@ -306,10 +293,10 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
 
       localStorage.removeItem(`${movieId}`)
       await addMovie(movie);
-      await checkDownload(movieId)
       setIsDownloading(true)
       setShowTorrents(false)
       setIsFetching(false)
+      await checkDownload(movieId)
     } catch (error) {
       console.error("Error starting stream:", error)
     }

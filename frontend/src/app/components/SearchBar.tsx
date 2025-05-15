@@ -42,7 +42,6 @@ export function SearchBar() {
 
         try {
             setLoading(true);
-
             const encodedSearchTerm = encodeURIComponent(searchTerm);
             const response = await fetch(`/api/movies/search/${encodedSearchTerm}?language=${language}&source=${selectedSource}`, {
                 headers: {

@@ -16,7 +16,6 @@ services:
     command: [ "sh", "-c", "cd /front && rm -rf nodes_modules && rm -rf .next && npm install && npm run build && npm run start" ]
     networks:
       - hypertube-network
-
     restart: always
 
   backend:

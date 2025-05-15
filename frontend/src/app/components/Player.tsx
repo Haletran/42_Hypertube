@@ -36,7 +36,6 @@ export default function Player({ streamId }: { streamId: string }) {
         throw new Error("Failed to get current time")
       }
       const data = await response.json()
-      // console.log("Current time:", data[0].watchedTimecode)
       setTimecode(data[0].watchedTimecode)
     } catch (error) {
       console.error("Error saving current time:", error)
