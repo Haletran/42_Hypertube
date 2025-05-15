@@ -28,12 +28,12 @@ HLS_DIR = "./data/hls"
 REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
 METADATA_TIMEOUT = 60
 
+
 def get_ffmpeg_command(input_file, output_file, hls=False):
-    """Génère la commande FFmpeg optimisée pour le traitement et la conversion de fichiers vidéo dans un environnement Docker"""
-    cmd = ['ffmpeg', '-y']  # Initialisation de la commande FFmpeg avec l'option -y (yes) pour écraser automatiquement les fichiers de sortie existants sans demander de confirmation
+    cmd = ['ffmpeg', '-y']
     
     cmd += ['-analyzeduration', '2147483647', '-probesize', '2147483647']  # Augmente la durée d'analyse et la taille de sondage au maximum pour permettre une détection précise du format, surtout pour les fichiers complexes ou endommagés
-    cmd += ['-i', input_file]  # Spécifie le chemin complet du fichier d'entrée à traiter avec FFmpeg
+    cmd += ['-i', input_file]
     
     if not hls:
         cmd += [
@@ -73,12 +73,17 @@ def get_ffmpeg_command(input_file, output_file, hls=False):
     cmd.append(output_file)
     return cmd
 
+
+
 async def update_progress(redis_client, stream_id, progress):
     try:
         logging.info(f"Progression mise à jour pour {stream_id}: {progress}%")
         await redis_client.setex(f"progress:{stream_id}", 3600, str(progress))
     except Exception as e:
         logging.error(f"Erreur mise à jour progression: {str(e)}")
+
+
+
 
 async def extract_subtitles(path, output_dir):
     extracted = []
@@ -108,8 +113,9 @@ async def extract_subtitles(path, output_dir):
     logging.info(f"Sous-titres extraits: {extracted}")
     return extracted
 
+
+
 async def convert_subtitle(input_path, output_path):
-    """Convertir un sous-titre en VTT"""
     command = [
         'ffmpeg',
         '-i', input_path,
@@ -170,13 +176,14 @@ async def download_external_subs(imdb_id, title, stream_id):
         logging.error(f"Erreur téléchargement sous-titres: {str(e)}")
         return []
 
+
+
 async def is_file_readable(file_path):
-    """Vérifie si un fichier vidéo est lisible (moov atom présent)"""
     cmd = [
-        'ffprobe', 
+        'ffprobe',
         '-v', 'error',
-        '-show_entries', 'format=duration',
-        '-of', 'default=noprint_wrappers=1:nokey=1',
+        '-show_entries', 'format=duration',  # Extrait uniquement la durée du fichier pour vérifier sa lisibilité
+        '-of', 'default=noprint_wrappers=1:nokey=1',  # Format de sortie simplifié sans en-têtes ni noms de clés
         file_path
     ]
     try:
@@ -190,6 +197,8 @@ async def is_file_readable(file_path):
     except Exception as e:
         logging.error(f"Erreur lors de la vérification du fichier {file_path}: {e}")
         return False
+
+
 
 async def convert_to_hls(input_path, output_dir, stream_id):
     output_path = os.path.join(output_dir, "stream.m3u8")
@@ -212,6 +221,8 @@ async def convert_to_hls(input_path, output_dir, stream_id):
     except Exception as e:
         logging.error(f"Erreur lors de l'exécution de FFmpeg : {str(e)}")
         return False
+
+
 
 async def hls_conversion_task(redis_client, stream_id, video_file, hls_path, imdb_id, name):
     try:
@@ -240,6 +251,8 @@ async def hls_conversion_task(redis_client, stream_id, video_file, hls_path, imd
     finally:
         await redis_client.delete(f'stream:{stream_id}:hls_processing')
 
+
+
 async def convert_to_mp4(video_file, download_path, stream_id):
     mp4_file = os.path.join(download_path, "video.mp4")
     convert_cmd = get_ffmpeg_command(video_file, mp4_file)
@@ -256,6 +269,8 @@ async def convert_to_mp4(video_file, download_path, stream_id):
     except Exception as e:
         logging.error(f"Échec de conversion pour {stream_id}: {str(e)}")
         raise
+
+
 
 async def handle_torrent(magnet: str, stream_id: str):
     response = requests.get(
@@ -371,6 +386,8 @@ async def handle_torrent(magnet: str, stream_id: str):
         await r.set(f'stream:{stream_id}:error', str(e))
     finally:
         ses.remove_torrent(handle)
+
+
 
 async def main():
     r = await aioredis.from_url(f"redis://{REDIS_HOST}")
