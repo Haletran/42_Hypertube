@@ -29,5 +29,6 @@ down:
 	-docker image prune -f -a
 	-docker network prune -f
 	-docker system prune --all --volumes --force
+	-rm -rf shared-data/*
 
 re: down all

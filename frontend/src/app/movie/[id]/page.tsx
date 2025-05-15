@@ -83,7 +83,6 @@ export default async function WatchMovie({ params, searchParams }: {
     try {
         trailer = await getMovieTrailer(movieId, language);
         movie = await getMovieDetails(movieId, language);
-        isPlayable = await isAvailable(movieId);
         // console.log("Movie details:", movie);
         // console.log("Trailer details:", trailer);
         // console.log("Is movie playable:", isPlayable);
@@ -96,7 +95,7 @@ export default async function WatchMovie({ params, searchParams }: {
             <div className="w-full max-w-4xl flex flex-col gap-3">
                 {movie && (
                     <>
-                        <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} test={isPlayable} />
+                        <MovieDetails movie={movie} trailerUrl={trailer?.key || ''} />
                         <CastScrollableList movie={movie} />
                         <CommentSection movie_id={movieId} />
                     </>

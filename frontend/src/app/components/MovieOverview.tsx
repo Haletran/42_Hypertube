@@ -10,9 +10,8 @@ import { Movie, Torrent } from '@/types';
 import { useMovieContext } from "@/contexts/MovieContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Cookies from "js-cookie"
-import { set } from "zod"
 
-export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailerUrl: string; test: boolean }) {
+export function MovieDetails({ movie, trailerUrl }: { movie: Movie; trailerUrl: string }) {
   const [showTorrents, setShowTorrents] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isPlayable, setIsPlayable] = useState(false)
@@ -31,7 +30,7 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
 
   const checkDownload = useCallback(async (id: any): Promise<boolean> => {
     try {
-      const response = await fetch(`http://localhost:3333/api/stream/${id}/status`  , {
+      const response = await fetch(`http://localhost:3333/api/stream/${id}/status`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
@@ -86,7 +85,7 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
 
   const isAvailable = useCallback(async (id: number): Promise<boolean> => {
     try {
-      const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable` , {
+      const response = await fetch(`http://localhost:3333/api/stream/${id}/video/isAvailable`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
@@ -104,25 +103,52 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
   }, [])
 
 
-  useEffect(() => {
-    const checkIfAvailable = async () => {
-      if (movie) {
-        const isAvailableResult = await isAvailable(movie.id)
-        setIsPlayable(isAvailableResult)
-        const stillDownloading = await checkDownload(movie.id)
-        if (isDownloading) {
-          const interval = setInterval(async () => {
-            const stillDownloading = await checkDownload(movie.id)
-            if (!stillDownloading) {
-              clearInterval(interval)
-            }
-          }, 5000)
-          return () => clearInterval(interval)
+  const pollDownloadStatus = useCallback((movieId: number) => {
+    let intervalId: NodeJS.Timeout;
+
+    const checkStatus = async () => {
+      try {
+        const response = await fetch(`http://localhost:3333/api/stream/${movieId}/status`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        });
+        if (!response.ok) throw new Error();
+
+        const data = await response.json();
+
+        if (data.status === "downloading") {
+          setIsDownloading(true);
+          const availability = await isAvailable(movieId);
+          if (availability) {
+            setIsPlayable(true);
+            setIsDownloading(false);
+            clearTimeout(intervalId);
+          } else {
+            setIsPlayable(false);
+            intervalId = setTimeout(checkStatus, 5000);
+          }
+        } else if (data.status === "complete") {
+          setIsPlayable(true);
+          setIsDownloading(false);
+        } else if (data.status === "error") {
+          setIsPlayable(false);
+          setIsDownloading(false);
+        } else if (data.status === "converting") {
+          setIsPlayable(true);
+          setIsDownloading(false);
         }
+      } catch {
+        setIsDownloading(false);
+        setIsPlayable(false);
       }
-    }
-    checkIfAvailable()
-  }, [movie, isAvailable, isDownloading, checkDownload])
+    };
+
+    checkStatus();
+
+    return () => clearTimeout(intervalId);
+  }, []);
 
 
   const fetchTorrents = async () => {
@@ -131,21 +157,21 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
     setError(undefined)
 
     if (localStorage.getItem(`${movie.id}`)) {
-        const cachedTorrents = localStorage.getItem(`${movie.id}`)
-        if (cachedTorrents) {
-            const parsedTorrents = JSON.parse(cachedTorrents)
-            await new Promise((resolve) => setTimeout(resolve, 200))
-            setProvidersTorrents(parsedTorrents)
-            setShowTorrents(true)
-            setIsLoading(false)
-            setIsFetching(false)
-            return
-        }
+      const cachedTorrents = localStorage.getItem(`${movie.id}`)
+      if (cachedTorrents) {
+        const parsedTorrents = JSON.parse(cachedTorrents)
+        await new Promise((resolve) => setTimeout(resolve, 200))
+        setProvidersTorrents(parsedTorrents)
+        setShowTorrents(true)
+        setIsLoading(false)
+        setIsFetching(false)
+        return
+      }
     }
 
     try {
       const releaseYear = movie.release_date.split("-")[0];
-      const response = await fetch(`http://localhost:3333/api/stream/${movie.original_title}.${releaseYear}/download`  , {
+      const response = await fetch(`http://localhost:3333/api/stream/${movie.original_title}.${releaseYear}/download`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Cookies.get("token")}`,
@@ -239,7 +265,7 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
 
       const filteredTransformed: Record<string, Torrent[]> = {}
       Object.entries(transformed).forEach(([provider, torrents]) => {
-        if (torrents.length > 0 ) {
+        if (torrents.length > 0) {
           filteredTransformed[provider] = torrents
         }
       })
@@ -269,6 +295,25 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
     }
   }
 
+  useEffect(() => {
+    const checkMovieStatus = async () => {
+      if (movie && movie.id) {
+        const isAvail = await isAvailable(movie.id);
+        if (isAvail) {
+          setIsPlayable(true);
+        } else {
+          const isDownloading = await checkDownload(movie.id);
+          if (isDownloading) {
+            pollDownloadStatus(movie.id);
+          }
+        }
+      }
+    };
+
+    checkMovieStatus();
+  }, [movie, isAvailable, checkDownload, pollDownloadStatus]);
+
+
   const downloadTorrent = async (info_hash: string, movieId: number) => {
     try {
       const hashValue = info_hash.includes("magnet:")
@@ -296,7 +341,8 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
       setIsDownloading(true)
       setShowTorrents(false)
       setIsFetching(false)
-      await checkDownload(movieId)
+      window.location.reload()
+      //pollDownloadStatus(movieId)
     } catch (error) {
       console.error("Error starting stream:", error)
     }
@@ -312,7 +358,7 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
         <img
           src={posterUrl || "/placeholder.svg"}
           alt={movie.title || "Movie poster"}
-          className="w-full rounded-lg shadow-md object-cover"
+          className="w-full h-[300px] sm:h-[350px] md:h-auto rounded-lg shadow-md object-cover"
         />
       </div>
       <div className="md:w-2/3 lg:w-3/4 space-y-4">
@@ -357,49 +403,48 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
 
         {movie.overview && <p className="text-base text-muted-foreground">{movie.overview}</p>}
         {!movie.overview && <p className="text-base text-muted-foreground">
-            {language === "en" ? "No description available" : "Aucun résumé disponible"}
-          </p>}
-                <div className="flex gap-2 mt-7">
-                  {test && (
-                    <Link href={`/movie/${movie.id}/watch`} passHref>
-                      <Button
-                        className={`flex items-center gap-2 rounded-md ${
-                          isPlayable || test
-                            ? "bg-blue-600 hover:bg-blue-700 text-white"
-                            : "bg-gray-400 text-gray-600 cursor-not-allowed"
-                        } transition-all duration-200 px-4 py-2`}
-                        disabled={!(isPlayable || test)}
-                        aria-label="Play"
-                      >
-                        <Play className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  )}
-                    {!test && (
-                    <Button
-                      className="flex-grow gap-1 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer bg-white/50"
-                      onClick={fetchTorrents}
-                      disabled={test || isFetching || isDownloading}
-                    >
-                      {isFetching ? (
-                        <>
-                          <Loader className="h-4 w-4 mr-2 animate-spin" />
-                          {language === "en" ? "Loading torrents..." : "Chargement des torrents..."}
-                        </>
-                      ) : isDownloading ? (
-                        <>
-                          <Loader className="h-4 w-4 mr-2 animate-spin" />
-                          {language === "en" ? "Downloading..." : "Téléchargement..."}
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4 mr-2" />
-                          {language === "en" ? "Download" : "Télécharger"}
-                        </>
-                      )}
-                    </Button>
-                    )}
-                    {/* {user && user?.user && user.user.role === "admin" && isPlayable && (
+          {language === "en" ? "No description available" : "Aucun résumé disponible"}
+        </p>}
+        <div className="flex gap-2 mt-7">
+          {isPlayable  && (
+            <Link href={`/movie/${movie.id}/watch`} passHref>
+              <Button
+                className={`flex items-center gap-2 rounded-md ${isPlayable
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-gray-400 text-gray-600 cursor-not-allowed"
+                  } transition-all duration-200 px-4 py-2`}
+                disabled={!(setIsPlayable)}
+                aria-label="Play"
+              >
+                <Play className="h-4 w-4" />
+              </Button>
+            </Link>
+          )}
+          {!isPlayable && (
+            <Button
+              className="flex-grow gap-1 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer bg-white/50"
+              onClick={fetchTorrents}
+              disabled={isFetching || isDownloading}
+            >
+              {isFetching ? (
+                <>
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  {language === "en" ? "Loading torrents..." : "Chargement des torrents..."}
+                </>
+              ) : isDownloading ? (
+                <>
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  {language === "en" ? "Downloading..." : "Téléchargement..."}
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  {language === "en" ? "Download" : "Télécharger"}
+                </>
+              )}
+            </Button>
+          )}
+          {/* {user && user?.user && user.user.role === "admin" && isPlayable && (
                       <Button
                       className="flex-grow gap-1 bg-red-500 text-white border-none hover:bg-red-600 cursor-pointer"
                       onClick={() => deleteM(movie.id)}
@@ -418,18 +463,18 @@ export function MovieDetails({ movie, trailerUrl, test}: { movie: Movie; trailer
                       )}
                       </Button> 
                     )} */}
-                    {trailerUrl && (
-                        <Link href={`https://www.youtube.com/embed/${trailerUrl}`} target="_blank" className="w-1/3">
-                            <Button
-                                className="w-full gap-1 bg-white/10 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer"
-                            >
-                                <Clapperboard className="h-4 w-4 mr-2" />
-                                {language === "en" ? "Watch Trailer" : "Bande-annonce"}
-                            </Button>
-                        </Link>
-                    )}
-                </div>
-            </div>
+          {trailerUrl && (
+            <Link href={`https://www.youtube.com/embed/${trailerUrl}`} target="_blank" className="w-1/3">
+              <Button
+                className="w-full gap-1 bg-white/10 backdrop-blur-sm text-black dark:text-white border-none hover:bg-white/30 cursor-pointer"
+              >
+                <Clapperboard className="h-4 w-4 mr-2" />
+                {language === "en" ? "Watch Trailer" : "Bande-annonce"}
+              </Button>
+            </Link>
+          )}
+        </div>
+      </div>
 
       <TorrentModal
         isOpen={showTorrents}

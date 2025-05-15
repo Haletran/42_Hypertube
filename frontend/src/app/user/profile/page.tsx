@@ -59,7 +59,7 @@ export default function SettingsPage() {
   }, [id])
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 relative pb-[70px]">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r bg-white bg-clip-text text-transparent">Profile</h1>

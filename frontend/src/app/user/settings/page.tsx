@@ -106,7 +106,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 relative pb-[70px]">
       <div className="max-w-5xl mx-auto p-6">
         <div className="space-y-2 mb-8">
           <h1 className="text-3xl font-bold">

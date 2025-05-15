@@ -360,13 +360,13 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
       {discover.length > 0 && (
         <>
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-xl md:text-2xl font-bold text-white">
               {language === "en" ? "Discover Movies" : "Découvrir des films"}
             </h1>
             <div className="flex items-center gap-2">
               <Select onValueChange={applySort}>
-                <SelectTrigger className="w-[180px] focus:ring-0 focus:outline-none bg-zinc-900 text-white border border-zinc-800 hover:bg-zinc-800">
-                  <SelectValue placeholder={language === "en" ? "Sort by" : "Trier par"} />
+                <SelectTrigger className="w-[120px] md:w-[180px] focus:ring-0 focus:outline-none bg-zinc-900 text-white border border-zinc-800 hover:bg-zinc-800">
+                  <SelectValue placeholder={language === "en" ? "Sort by" : "Trier par"} className="text-xs md:text-sm" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border border-zinc-800 text-white">
                   <SelectItem
@@ -407,7 +407,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
                   </SelectItem>
                 </SelectContent>
               </Select>
-
               <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -415,7 +414,6 @@ export function MovieGrid({ language, onMovieSelect }: MovieGridProps) {
                     className="flex items-center gap-2 bg-white border border-zinc-800 hover:bg-gray-200 text-black rounded-md px-4 py-2 transition-all duration-200"
                   >
                     <Filter className="h-4 w-4" />
-                    <span>{language === "en" ? "Filters" : "Filtres"}</span>
                     <ChevronDown className="h-4 w-4 ml-1 opacity-70" />
                   </Button>
                 </DropdownMenuTrigger>
