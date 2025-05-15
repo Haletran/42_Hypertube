@@ -22,7 +22,7 @@ services:
     image: node:latest
     container_name: backend
     ports:
-      - "3333:3333"
+      - "3333"
     command: [ "sh", "-c", "cd /back && rm -rf node_modules && npm install && node ace migration:run && npm run dev" ]
     volumes:
       - ./backend:/back
@@ -51,7 +51,7 @@ services:
     image: redis:7-alpine
     container_name: redis
     ports:
-      - "6479:6379"
+      - "6479"
     networks:
       - hypertube-network
     restart: always
