@@ -37,8 +37,6 @@ watch videos.
 - [x] Add show nsfw content option
 - [x] Make the frontend rules for password and everything else the same in the backend
 - [x] Make the traduction for every page
-- [ ] Add admin page to see all users, all movies etc...
-- [ ] Movie[id] page seems kind of empty
 
 ## FIXES
 
@@ -61,48 +59,43 @@ watch videos.
 - Admin role
 - Option NSFW
 - Download progression
-- A lot of ergomic feature (filter/cache progress/status progress on profil/subtitles/source fetcher/api route/etc...)
+- A lot of ergonomic feature (filter/cache progress/status progress on profil/subtitles/source fetcher/api route/etc...)
 
 ## Setup the Project
 
-### Setup 42 oauth
-
-Add this to redirect URI in 42 API settings:
-```
-http://localhost:3333/api/oauth/42
-```
-
 ### Environment Setup
-To make the project work, create a `.env` file in the backend folder with the following content:
+To make the project work, create a `.env` file with the following content:
 
 ```bash
+NEXT_PUBLIC_TMDB_API_KEY=
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3333
+NEXT_PUBLIC_CLIENT_ID=
+NEXT_PUBLIC_GITHUB_CLIENT_ID=
+NEXT_PUBLIC_GIPHY_KEY=
 TZ=UTC
 PORT=3333
 LOG_LEVEL=info
-APP_KEY= # generate a new APP_KEY with gpg --gen-random --armor 1 16
+APP_KEY=
 NODE_ENV=development
 DB_HOST=database
 DB_PORT=5432
 SESSION_DRIVER=cookie
 HOST=0.0.0.0
-TMDB_API_KEY= # add your TMDB API key here
+TMDB_API_KEY=
+OMDB_API_KEY=
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_DATABASE=hypertube
-CLIENT_ID= # add your 42 API client ID here
-CLIENT_SECRET= # add your 42 API secret here
-GITHUB_CLIENT_ID= # add your github API client ID here
-GITHUB_CLIENT_SECRET= # add your github API secret here
-```
-
-Also, create a `.env` file in the frontend folder with the following content:
-
-```bash 
-# this is a temporary solution
-NEXT_PUBLIC_TMDB_API_KEY= # add your TMDB API key here
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3333
-NEXT_PUBLIC_CLIENT_ID= # add your 42 API client ID here
-NEXT_PUBLIC_GITHUB_CLIENT_ID= # add your github API client ID here
+CLIENT_ID=
+CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+SMTP_USER=
+SMTP_PORT=587
+SMTP_PASS=
+SMTP_HOST=
+REDIS_HOST=redis
+REDIS_PORT=6379
 ```
 
 ### Launch the Project
